@@ -1,0 +1,175 @@
+/* e-KOSSTA Design Tokens — Palette System V1.0
+   Four base colours with tonal scales. Light/Dark modes change colour tokens only;
+   keep layout metrics in the existing application CSS.
+*/
+
+:root {
+  font-family: "Roboto", Arial, sans-serif;
+  color-scheme: light;
+  --cream-50: #FFFFFE;
+  --cream-100: #FFFEFD;
+  --cream-200: #FEFEFB;
+  --cream-300: #FEFDF7;
+  --cream-400: #FDFCF3;
+  --cream-500: #FCFAEE;
+  --cream-600: #E3E1D6;
+  --cream-700: #C5C3BA;
+  --cream-800: #9C9B94;
+  --cream-900: #71706B;
+  --cream-950: #4C4B47;
+  --teal-50: #F2F7F6;
+  --teal-100: #E6EEEE;
+  --teal-200: #C0D6D4;
+  --teal-300: #8EB5B1;
+  --teal-400: #4F8C86;
+  --teal-500: #035A52;
+  --teal-600: #03514A;
+  --teal-700: #024640;
+  --teal-800: #023833;
+  --teal-900: #012825;
+  --teal-950: #011B19;
+  --lime-soft-50: #FDFEF7;
+  --lime-soft-100: #FBFCF0;
+  --lime-soft-200: #F5F8D9;
+  --lime-soft-300: #EDF2BB;
+  --lime-soft-400: #E4EB95;
+  --lime-soft-500: #D8E267;
+  --lime-soft-600: #C2CB5D;
+  --lime-soft-700: #A8B050;
+  --lime-soft-800: #868C40;
+  --lime-soft-900: #61662E;
+  --lime-soft-950: #41441F;
+  --lime-bright-50: #FCFFF3;
+  --lime-bright-100: #F8FEE6;
+  --lime-bright-200: #EEFDC1;
+  --lime-bright-300: #E1FC8F;
+  --lime-bright-400: #D1FA51;
+  --lime-bright-500: #BDF806;
+  --lime-bright-600: #AADF05;
+  --lime-bright-700: #93C105;
+  --lime-bright-800: #759A04;
+  --lime-bright-900: #557003;
+  --lime-bright-950: #394A02;
+  /* Supporting palette V1.1 — added from the supplied colour reference */
+  --charcoal-500: #151313;
+  --coral-500: #FF5734;
+  --lavender-500: #BE94F5;
+  --yellow-500: #FCCC42;
+  --off-white-500: #F7F7F5;
+  /* Alias tokens for convenient component styling */
+  --ui-charcoal: var(--charcoal-500);
+  --ui-coral: var(--coral-500);
+  --ui-lavender: var(--lavender-500);
+  --ui-yellow: var(--yellow-500);
+  --ui-off-white: var(--off-white-500);
+
+  /* Semantic tokens — Light Mode */
+  --app-bg: var(--cream-50);
+  --surface: #FFFFFF;
+  --surface-secondary: var(--cream-100);
+  --surface-soft: var(--cream-200);
+  --text-primary: var(--teal-900);
+  --text-secondary: var(--teal-700);
+  --text-on-strong: var(--cream-50);
+  --border-color: #000000;
+  --border-subtle: var(--cream-400);
+  --primary: var(--teal-500);
+  --primary-hover: var(--teal-700);
+  --primary-text: var(--cream-50);
+  --accent: var(--lime-bright-500);
+  --accent-soft: var(--lime-soft-300);
+  --success-bg: var(--lime-soft-200);
+  --success-text: var(--teal-900);
+  --focus-ring: var(--teal-500);
+  --card-shadow: none;
+}
+
+/* Dark Mode: same geometry and component structure, colours only */
+html[data-theme="dark"], body[data-theme="dark"], [data-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: var(--teal-950);
+  --surface: var(--teal-900);
+  --surface-secondary: var(--teal-800);
+  --surface-soft: var(--teal-700);
+  --text-primary: var(--cream-50);
+  --text-secondary: var(--cream-200);
+  --text-on-strong: var(--teal-950);
+  --border-color: var(--teal-600);
+  --border-subtle: var(--teal-700);
+  --primary: var(--teal-700);
+  --primary-hover: var(--teal-600);
+  --primary-text: var(--cream-50);
+  --accent: var(--lime-bright-500);
+  --accent-soft: var(--lime-soft-500);
+  --success-bg: var(--teal-800);
+  --success-text: var(--lime-bright-500);
+  --focus-ring: var(--lime-bright-500);
+  --card-shadow: none;
+}
+
+/* Example semantic classes; integrate gradually without changing layout rules. */
+.ek-app-surface { background: var(--app-bg); color: var(--text-primary); }
+.ek-card-surface { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: var(--card-shadow); }
+.ek-section-surface { background: var(--surface-secondary); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: var(--card-shadow); }
+.ek-primary-button { background: var(--primary); color: var(--primary-text); border: 1px solid var(--border-color); box-shadow: none; }
+.ek-accent-button { background: var(--accent); color: var(--teal-900); border: 1px solid var(--border-color); box-shadow: none; }
+.ek-muted-text { color: var(--text-secondary); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* e-KOSSTA PALETTE COMPATIBILITY FIX V1.1
+   Load this file AFTER styles.css. Existing app uses --bg/--text and html.dark. */
+html:not(.dark){
+  --bg:var(--cream-500)!important;
+  --surface:var(--cream-100)!important;
+  --surface2:var(--cream-50)!important;
+  --text:var(--teal-500)!important;
+  --muted:var(--teal-700)!important;
+  --border:var(--cream-700)!important;
+  --ui-outline:var(--cream-700)!important;
+  --primary:var(--teal-500)!important;
+  --primary-soft:var(--lime-soft-300)!important;
+  --shadow:none!important;
+  --shadow-hover:none!important;
+}
+html.dark{
+  color-scheme:dark!important;
+  --bg:var(--teal-950)!important;
+  --surface:var(--teal-900)!important;
+  --surface2:var(--teal-800)!important;
+  --text:var(--cream-50)!important;
+  --muted:var(--cream-300)!important;
+  --border:var(--teal-600)!important;
+  --ui-outline:var(--teal-600)!important;
+  --primary:var(--lime-bright-500)!important;
+  --primary-soft:var(--teal-800)!important;
+  --shadow:none!important;
+  --shadow-hover:none!important;
+}
+html body,html body button,html body input,html body select,html body textarea,html body table,html body label{
+  font-family:"Roboto",Arial,sans-serif!important;
+}
+html:not(.dark) body{background:var(--cream-500)!important;color:var(--teal-500)!important}
+html.dark body{background:var(--teal-950)!important;color:var(--cream-50)!important}
+html:not(.dark) .desktop-topbar,html:not(.dark) .mobile-topbar{background:var(--cream-100)!important;color:var(--teal-500)!important;border-color:var(--cream-700)!important}
+html.dark .desktop-topbar,html.dark .mobile-topbar{background:var(--teal-950)!important;color:var(--cream-50)!important;border-color:var(--teal-800)!important}
+.sidebar{background:var(--teal-950)!important;color:var(--cream-50)!important;border-color:var(--teal-800)!important;box-shadow:none!important}
+.nav-item.main-nav-item.active{background:var(--teal-800)!important;color:var(--cream-50)!important;box-shadow:none!important;border-radius:12px!important}
+html:not(.dark) .hero,html:not(.dark) .page-section:not([hidden])>.head,html:not(.dark) .page-section:not([hidden])>.unit-overview-head,html:not(.dark) .page-section:not([hidden])>.activity-participants-head,html:not(.dark) .page-section:not([hidden])>.editor-heading{
+  background:color-mix(in srgb,var(--page-accent,var(--lime-soft-300)) 28%,var(--cream-500))!important;color:var(--teal-500)!important;border-color:var(--cream-700)!important;box-shadow:none!important;
+}
+html:not(.dark) .hero h1,html:not(.dark) .hero h2,html:not(.dark) .page-section:not([hidden])>.head h2,html:not(.dark) .page-section:not([hidden])>.unit-overview-head h2,html:not(.dark) .page-section:not([hidden])>.activity-participants-head h2,html:not(.dark) .page-section:not([hidden])>.editor-heading h2{color:var(--teal-500)!important}
+html.dark .hero,html.dark .page-section:not([hidden])>.head,html.dark .page-section:not([hidden])>.unit-overview-head,html.dark .page-section:not([hidden])>.activity-participants-head,html.dark .page-section:not([hidden])>.editor-heading{
+  background:color-mix(in srgb,var(--page-accent-dark,var(--teal-700)) 16%,var(--teal-900))!important;color:var(--cream-50)!important;border-color:var(--teal-700)!important;box-shadow:none!important;
+}
+html.dark .hero h1,html.dark .hero h2,html.dark .page-section:not([hidden])>.head h2,html.dark .page-section:not([hidden])>.unit-overview-head h2,html.dark .page-section:not([hidden])>.activity-participants-head h2,html.dark .page-section:not([hidden])>.editor-heading h2,html.dark .hero p,html.dark .page-section:not([hidden])>.head .muted,html.dark .page-section:not([hidden])>.editor-heading .muted{color:var(--cream-50)!important}
+html:not(.dark) input,html:not(.dark) select,html:not(.dark) textarea{background:var(--cream-50)!important;color:var(--teal-900)!important;border-color:var(--cream-700)!important}
+html.dark input,html.dark select,html.dark textarea{background:var(--teal-950)!important;color:var(--cream-50)!important;border-color:var(--teal-700)!important}
+html:not(.dark) .btn.primary,html:not(.dark) .subnav-tab.active{background:var(--teal-500)!important;color:var(--cream-50)!important;border-color:var(--teal-500)!important;box-shadow:none!important}
+html.dark .btn.primary,html.dark .subnav-tab.active{background:var(--lime-bright-500)!important;color:var(--teal-950)!important;border-color:var(--lime-bright-500)!important;box-shadow:none!important}
+html:not(.dark) .btn.secondary,html:not(.dark) .subnav-tab{background:var(--cream-50)!important;color:var(--teal-500)!important;border-color:var(--cream-700)!important;box-shadow:none!important}
+html.dark .btn.secondary,html.dark .subnav-tab{background:var(--teal-800)!important;color:var(--cream-50)!important;border-color:var(--teal-700)!important;box-shadow:none!important}
+html:not(.dark) table,html:not(.dark) td{background:var(--cream-50)!important;color:var(--teal-900)!important}
+html:not(.dark) th{background:var(--cream-200)!important;color:var(--teal-500)!important}
+html.dark table,html.dark td{background:var(--teal-900)!important;color:var(--cream-50)!important}
+html.dark th{background:var(--teal-800)!important;color:var(--cream-50)!important}
+.card,.unit-card,.unit-summary>div,.stat,.page-subnav,.subnav-tab,.unit-card-open,.table-wrap,.modal-content,.sidebar,.desktop-topbar,.mobile-topbar{box-shadow:none!important}

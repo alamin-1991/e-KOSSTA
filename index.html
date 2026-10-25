@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101714"><meta name="description" content="e-KOSSTA — Sistem Pengurusan Kokurikulum Sekolah"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css"><title>e-KOSSTA | Pengurusan Kokurikulum</title></head>
+<body>
+<header class="mobile-topbar">
+  <div class="mobile-brand-cluster"><img id="mobileBrandLogo" class="mobile-brand-logo" alt="Logo sekolah" hidden><div class="mobile-brand-text"><b>e-KOSSTA</b><small id="mobilePageTitle">Dashboard</small></div></div>
+  <button id="themeBtn" class="icon-btn theme-toggle" type="button" aria-label="Tukar tema" title="Tukar tema"></button>
+</header>
+<aside id="sidebar" class="sidebar" aria-label="Navigasi utama">
+  <div class="brand">
+    <div class="brand-mark">e</div>
+    <div><b>e-KOSSTA</b><small>Sistem Kokurikulum</small></div>
+  </div>
+
+  <nav class="side-nav" aria-label="Menu utama">
+    <div class="nav-section-label">WORKSPACE</div>
+    <button class="nav-item main-nav-item active" data-page="dashboard" type="button" aria-current="page">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item main-nav-item" data-main-group="kokurikulum" type="button" aria-label="Buka modul Kokurikulum">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg>
+      <span>Kokurikulum</span><svg class="main-nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="nav-item main-nav-item" data-page="analysis" type="button">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V12h4v8M10 20V5h4v15M16 20V9h4v11"/></svg>
+      <span>Analisis</span>
+    </button>
+    <button class="nav-item main-nav-item" data-main-group="laporan" type="button" aria-label="Buka modul Laporan">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg>
+      <span>Laporan &amp; Dokumen</span><svg class="main-nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <div id="managementNavLabel" class="nav-section-label nav-section-spaced">PENGURUSAN</div>
+    <button id="managementNavButton" class="nav-item main-nav-item" data-main-group="tetapan" type="button" aria-label="Buka modul Pengurusan Data">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 8h5M16 12h5M16 16h5"/></svg>
+      <span>Pengurusan Data</span><svg class="main-nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button id="sidebarThemeBtn" class="nav-item theme-toggle" type="button" aria-label="Tukar tema" title="Tukar tema">
+      <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <span>Tukar Tema</span>
+    </button>
+    <button id="sidebarLogoutBtn" class="nav-item danger-nav" type="button">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M9 12h9"/></svg>
+      <span>Log Keluar</span>
+    </button>
+    <div class="profile-mini"><span class="avatar">U</span><div><b id="sideUserName">Pengguna</b><small id="sideUserRole">-</small></div></div>
+  </div>
+</aside>
+<main class="app-shell">
+  <div class="desktop-topbar">
+    <div><span class="breadcrumb">e-KOSSTA</span><strong id="desktopPageTitle">Dashboard</strong></div>
+    <div class="top-actions"><span id="desktopUser" class="user-chip">-</span><button id="desktopThemeBtn" class="icon-btn theme-toggle" type="button" aria-label="Tukar tema" title="Tukar tema"></button></div>
+  </div>
+<div class="container">
+<section id="loginView" class="login-terminal" aria-labelledby="loginHeading">
+  <div class="login-terminal-aside">
+    <div class="login-brand-lockup">
+      <span class="login-brand-mark">e</span>
+      <span><b>e-KOSSTA</b><small>SISTEM KOKURIKULUM</small></span>
+    </div>
+    <div class="login-aside-content">
+      <span class="login-terminal-code">PLATFORM / SEKOLAH / 01</span>
+      <h2>Urus kokurikulum.<br><em>Lebih tersusun.</em></h2>
+      <p>Semua unit, kehadiran, aktiviti, pencapaian dan dokumen dalam satu ruang pengurusan.</p>
+      <div class="login-feature-list" aria-label="Modul sistem">
+        <div><span>01</span><b>Unit &amp; Keahlian</b><small>Rekod murid mengikut unit</small></div>
+        <div><span>02</span><b>Kehadiran &amp; Aktiviti</b><small>Rekod perjumpaan dan acara</small></div>
+        <div><span>03</span><b>Analisis &amp; Dokumen</b><small>Semakan data dan laporan</small></div>
+      </div>
+    </div>
+    <div class="login-aside-footer"><span class="login-live-dot"></span><span>SISTEM PENGURUSAN KOKURIKULUM SEKOLAH</span><span class="login-aside-footer-code">EK / 01</span></div>
+  </div>
+  <div class="login-form-panel">
+    <div class="login-form-topline"><span class="login-auth-label">&gt;_ AUTHENTICATION</span><span id="loginApiIndicator" class="login-connection-pill"><i></i><span id="loginApiStatus">SAMBUNGAN BELUM DITETAPKAN</span></span></div>
+    <div id="loginModeSection">
+      <div class="login-form-heading"><span class="login-form-index">LOG MASUK / PENGGUNA BERDAFTAR</span><h1 id="loginHeading">Selamat kembali.</h1><p>Gunakan alamat e-mel berdaftar dan kata laluan.</p></div>
+      <div class="login-field-group"><label for="username">Alamat e-mel / username ADMIN sedia ada</label><div class="login-input-shell"><span aria-hidden="true">&gt;</span><input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="nama@sekolah.edu.my atau username ADMIN lama" required></div></div>
+      <div class="login-field-group"><label for="password">Kata laluan</label><div class="login-input-shell login-password-shell"><span aria-hidden="true">*</span><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Masukkan kata laluan" required><button id="passwordRevealBtn" class="login-reveal-btn" type="button" aria-label="Paparkan kata laluan" aria-pressed="false">PAPAR</button></div></div>
+      <button id="loginBtn" class="btn primary full login-submit" type="button"><span>Log Masuk</span><b aria-hidden="true">→</b></button>
+      <div id="loginResult" class="result muted login-result" role="status" aria-live="polite"></div>
+      <div class="login-mode-switch"><span>Pengguna baharu?</span><button id="showRegisterBtn" type="button">Daftar akaun →</button></div>
+    </div>
+    <div id="registerModeSection" hidden>
+      <div class="login-form-heading"><span class="login-form-index">PENDAFTARAN AKAUN</span><h1 id="registerHeading">Cipta akaun.</h1><p>Isi maklumat dan pilih peranan yang dimohon. Semua akaun baharu perlu diluluskan ADMIN sebelum boleh log masuk.</p></div>
+      <div class="login-field-group"><label for="registerNama">Nama penuh</label><div class="login-input-shell"><span aria-hidden="true">&gt;</span><input id="registerNama" autocomplete="name" placeholder="Nama penuh seperti rekod sekolah" required></div></div>
+      <div class="login-field-group"><label for="registerEmail">Alamat e-mel</label><div class="login-input-shell"><span aria-hidden="true">@</span><input id="registerEmail" type="email" autocomplete="email" autocapitalize="none" placeholder="nama@sekolah.edu.my" required></div></div>
+      <div class="login-field-group"><label for="registerPassword">Kata laluan (minimum 8 aksara)</label><div class="login-input-shell"><span aria-hidden="true">*</span><input id="registerPassword" type="password" autocomplete="new-password" placeholder="Cipta kata laluan" minlength="8" required></div></div>
+      <div class="login-field-group"><label for="registerRole">Peranan yang dimohon</label><select id="registerRole" class="login-role-select"><option value="GURU">Guru Penasihat</option><option value="PENTADBIR">Pentadbir</option></select></div>
+      <button id="registerBtn" class="btn primary full login-submit" type="button"><span>Hantar Pendaftaran</span><b aria-hidden="true">→</b></button>
+      <div id="registerResult" class="result muted login-result" role="status" aria-live="polite"></div>
+      <div class="login-mode-switch"><span>Sudah mempunyai akaun?</span><button id="showLoginBtn" type="button">Kembali log masuk →</button></div>
+    </div>
+    <details id="loginApiSettings" class="login-api-settings">
+      <summary><span>Sambungan Google Apps Script</span><span class="login-settings-indicator">KONFIGURASI</span></summary>
+      <p>Masukkan URL web app Apps Script yang berakhir dengan <code>/exec</code>. URL disimpan dalam pelayar ini.</p>
+      <label for="loginApiUrl">URL Backend /exec</label>
+      <input id="loginApiUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="url" spellcheck="false">
+      <div class="login-api-actions"><button id="saveApiUrlBtn" class="btn secondary small" type="button">Simpan URL</button><small id="loginApiSaveStatus" role="status">Belum disahkan</small></div>
+    </details>
+    <div class="login-form-footer"><span>SESI DILINDUNGI</span><span>e-KOSSTA • SISTEM KOKURIKULUM</span></div>
+  </div>
+</section>
+<section id="unitSetupView" class="unit-setup-view" hidden aria-labelledby="unitSetupHeading">
+  <div class="unit-setup-card">
+    <div class="unit-setup-topline"><span class="login-auth-label">&gt;_ KONFIGURASI AKAUN</span><span class="unit-setup-status"><i></i> AKAUN DILULUSKAN</span></div>
+    <div class="unit-setup-heading"><span class="login-form-index">LANGKAH WAJIB / GURU PENASIHAT</span><h1 id="unitSetupHeading">Pilih unit anda.</h1><p id="unitSetupGreeting">Sebelum membuka dashboard, pilih unit kokurikulum yang anda urus.</p><p class="unit-setup-note">Hanya unit yang dipilih dan disimpan akan dipaparkan untuk akaun anda. Anda boleh memilih satu atau lebih unit.</p></div>
+    <fieldset class="unit-setup-fieldset"><legend>PILIH UNIT YANG ANDA URUS</legend><div id="unitSetupOptions" class="unit-setup-options"><p class="unit-setup-empty">Memuatkan senarai unit aktif…</p></div></fieldset>
+    <div class="unit-setup-actions"><button id="saveUnitSelectionBtn" class="btn primary full" type="button"><span>Simpan Pilihan &amp; Masuk</span><b aria-hidden="true">→</b></button><button id="unitSetupLogoutBtn" class="btn secondary" type="button">Log Keluar</button></div>
+    <div id="unitSetupResult" class="result muted unit-setup-result" role="status" aria-live="polite"></div>
+    <div class="unit-setup-footer"><span>e-KOSSTA • AKSES IKUT UNIT</span><span>SESI DILINDUNGI</span></div>
+  </div>
+</section>
+<section id="appView" hidden>
+<div id="pageSubnav" class="page-subnav" hidden aria-label="Submenu halaman"></div>
+<section id="dashboardHero" class="dashboard-hero page-section page-dashboard" aria-labelledby="dashboardTitle">
+  <div class="dashboard-hero-main">
+    <div class="dashboard-kicker"><span>WORKSPACE / RINGKASAN</span><span class="dashboard-live-chip"><i></i> SESI AKTIF</span></div>
+    <h1 id="dashboardTitle">Dashboard <span>e-KOSSTA</span></h1>
+    <p id="welcome" class="dashboard-welcome">Selamat datang ke sistem pengurusan kokurikulum.</p>
+    <div class="dashboard-hero-actions">
+      <button id="dashboardRefreshBtn" class="btn secondary" type="button"><span aria-hidden="true">↻</span> Segar Semula Data</button>
+      <button class="btn primary" type="button" data-page-jump="unit">Buka Unit Kokurikulum <span aria-hidden="true">→</span></button>
+    </div>
+  </div>
+  <aside class="dashboard-system-panel" aria-label="Status sesi pengguna">
+    <div class="dashboard-system-panel-head"><span>STATUS SISTEM</span><span class="dashboard-system-signal">● ONLINE</span></div>
+    <div class="dashboard-system-record"><small>TAHUN PENGURUSAN</small><strong id="dashboardYear">2026</strong></div>
+    <div class="dashboard-system-record"><small>AKSES PENGGUNA</small><strong id="dashboardRole">PENGGUNA</strong></div>
+    <div class="dashboard-system-record"><small>TARIKH HARI INI</small><strong id="dashboardDate">—</strong></div>
+  </aside>
+</section>
+<section id="dashboardGrid" class="dashboard-workspace page-section page-dashboard" aria-label="Ringkasan dan akses modul">
+  <div class="dashboard-section-heading"><div><span>01 / DATA SEMASA</span><h2>Ringkasan Sistem</h2></div><span class="dashboard-section-meta">LIVE DATA • GOOGLE SHEETS</span></div>
+  <div class="dashboard-metrics-grid">
+    <article class="dashboard-metric dashboard-metric-students" data-admin-only-section><div class="dashboard-metric-top"><span>01</span><span>MURID</span></div><strong id="muridCount">—</strong><p>Profil murid dalam sistem</p><button type="button" data-page-jump="murid">Buka Data Murid <b aria-hidden="true">→</b></button></article>
+    <article class="dashboard-metric"><div class="dashboard-metric-top"><span>02</span><span>UNIT KOKURIKULUM</span></div><strong id="dashboardUnitCount">—</strong><p>Unit yang didaftarkan</p><button type="button" data-page-jump="unit">Semak Unit <b aria-hidden="true">→</b></button></article>
+    <article class="dashboard-metric"><div class="dashboard-metric-top"><span>03</span><span>KEAHLIAN</span></div><strong id="dashboardMembershipCount">—</strong><p>Jumlah penempatan dalam unit</p><button type="button" data-page-jump="unit">Semak Keahlian <b aria-hidden="true">→</b></button></article>
+    <article class="dashboard-metric dashboard-metric-accent"><div class="dashboard-metric-top"><span>04</span><span>KATEGORI</span></div><strong id="dashboardCategoryCount">—</strong><p>Kategori unit aktif</p><div class="dashboard-category-track"><span></span><span></span><span></span><span></span></div></article>
+  </div>
+  <div class="dashboard-section-heading dashboard-modules-heading"><div><span>02 / AKSES PANTAS</span><h2>Akses Pantas</h2></div><small>Pilih modul utama dengan satu klik.</small></div>
+  <nav class="dashboard-quick-access" aria-label="Akses pantas ke modul">
+    <button type="button" class="dashboard-quick-link" data-page-jump="attendance"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="1"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M8 17h6"/></svg></span><span>Rekod Kehadiran</span><b aria-hidden="true">↗</b></button>
+    <button type="button" class="dashboard-quick-link" data-page-jump="activity"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M7 2v4M17 2v4M3 9h18M7 13h4M7 17h8"/></svg></span><span>Aktiviti / Acara</span><b aria-hidden="true">↗</b></button>
+    <button type="button" class="dashboard-quick-link" data-page-jump="pencapaian"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4M12 13v5M8 21h8M9 18h6"/></svg></span><span>Pencapaian</span><b aria-hidden="true">↗</b></button>
+    <button type="button" class="dashboard-quick-link" data-page-jump="reports"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></svg></span><span>Laporan</span><b aria-hidden="true">↗</b></button>
+    <button type="button" class="dashboard-quick-link" data-page-jump="analysis"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h17M7 16l4-5 3 2 5-7"/><circle cx="7" cy="16" r="1"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="6" r="1"/></svg></span><span>Analisis PAJSK</span><b aria-hidden="true">↗</b></button>
+  </nav>
+  <div class="dashboard-section-heading dashboard-analytics-heading"><div><span>03 / ANALITIK KOKURIKULUM</span><h2>Prestasi &amp; Ringkasan Data</h2></div><small id="dashboardAnalyticsNote">Memuatkan data menyeluruh...</small></div>
+  <div class="dashboard-analytics-grid" id="dashboardAnalyticsGrid">
+    <article class="dashboard-analysis-card dashboard-top-awards-card">
+      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">PRESTASI MURID</span><h3>Top 10 Ranking Pencapaian</h3></div><span id="dashboardAnalyticsYear" class="dashboard-analysis-year">2026</span></div>
+      <p class="dashboard-analysis-caption">Keutamaan: peringkat antarabangsa, kebangsaan, negeri, daerah dan sekolah; kedudukan Johan hingga tempat kelima.</p>
+      <div id="dashboardTopStudents" class="dashboard-top-students"><div class="dashboard-analytics-empty">Memuatkan ranking pencapaian...</div></div>
+    </article>
+    <article class="dashboard-analysis-card dashboard-events-card">
+      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">AKTIVITI &amp; PENYERTAAN</span><h3>Ringkasan Acara</h3></div><button type="button" class="dashboard-mini-link" data-page-jump="activity">Lihat semua ↗</button></div>
+      <div id="dashboardEventsTableWrap" class="dashboard-events-table-wrap"><div class="dashboard-analytics-empty">Memuatkan ringkasan acara...</div></div>
+    </article>
+    <article class="dashboard-analysis-card dashboard-attendance-card">
+      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">KEHADIRAN UNIT</span><h3>Analisis Peratus Kehadiran</h3></div><span class="dashboard-analysis-chip">SLIDER KATEGORI</span></div>
+      <div class="dashboard-slider-header"><span id="dashboardAttendanceCategoryLabel">Unit Beruniform</span><span id="dashboardAttendanceSlideMeta">1 / 4</span></div>
+      <input id="dashboardAttendanceSlider" class="dashboard-category-slider" type="range" min="0" max="3" step="1" value="0" aria-label="Pilih kategori unit untuk analisis kehadiran">
+      <div class="dashboard-slider-actions"><button id="dashboardAttendancePrev" type="button" aria-label="Kategori sebelumnya">‹</button><button id="dashboardAttendanceNext" type="button" aria-label="Kategori seterusnya">›</button></div>
+      <div id="dashboardAttendanceChart" class="dashboard-analytics-bars"><div class="dashboard-analytics-empty">Memuatkan peratus kehadiran...</div></div>
+    </article>
+    <article class="dashboard-analysis-card dashboard-members-card">
+      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">KEAHLIAN UNIT</span><h3>Ahli Lelaki &amp; Perempuan</h3></div><span class="dashboard-analysis-chip">SLIDER KATEGORI</span></div>
+      <div class="dashboard-slider-header"><span id="dashboardMembersCategoryLabel">Unit Beruniform</span><span id="dashboardMembersSlideMeta">1 / 4</span></div>
+      <input id="dashboardMembersSlider" class="dashboard-category-slider" type="range" min="0" max="3" step="1" value="0" aria-label="Pilih kategori unit untuk analisis ahli">
+      <div class="dashboard-slider-actions"><button id="dashboardMembersPrev" type="button" aria-label="Kategori sebelumnya">‹</button><button id="dashboardMembersNext" type="button" aria-label="Kategori seterusnya">›</button></div>
+      <div id="dashboardMembersChart" class="dashboard-member-bars"><div class="dashboard-analytics-empty">Memuatkan bilangan ahli...</div></div>
+      <div class="dashboard-gender-legend"><span><i class="legend-male"></i>Lelaki</span><span><i class="legend-female"></i>Perempuan</span></div>
+    </article>
+  </div>
+  <div class="dashboard-footer-line"><span><i></i> e-KOSSTA / OPERASI PENGURUSAN KOKURIKULUM</span><span id="dashboardDataNote">Metrik akan dikemas kini selepas data dimuatkan.</span></div>
+</section>
+<section id="muridBulkSection" class="card page-section page-murid admin-only" hidden>
+  <div class="head"><div><h2 class="material-section-title">Bulk Data Murid / CSV</h2><small class="muted">ADMIN SAHAJA • IMPORT DAN PADAM SECARA BERKELOMPOK</small></div><span class="analysis-count">ADMIN</span></div>
+  <div class="form-grid"><div><label>Fail CSV murid</label><input id="muridCsvFile" type="file" accept=".csv,text/csv"></div><div><label>Format CSV</label><div class="muted">NO KP,NAMA,JANTINA,TINGKATAN,NAMA KELAS,UNIT,KELAB,SUKAN,RUMAH SUKAN</div><button id="muridCsvTemplateBtn" type="button" class="btn secondary">Muat Turun Templat CSV</button></div></div>
+  <div class="head"><button id="muridCsvUploadBtn" type="button" class="btn primary">↑ Import CSV</button><span id="muridBulkStatus" class="result muted" role="status" aria-live="polite"></span></div>
+  <div id="muridImportProgressWrap" class="murid-import-progress" hidden>
+    <div class="murid-import-progress-meta"><strong id="muridImportProgressLabel">0% • 0/0 murid</strong><span id="muridImportEta">Anggaran baki: menunggu proses</span></div>
+    <progress id="muridImportProgress" max="100" value="0" aria-label="Kemajuan import CSV"></progress>
+  </div>
+  <div class="divider"></div>
+  <div class="head"><div><h3>Padam Data Murid Secara Bulk</h3><small class="muted">Padam pilihan atau kosongkan profil murid, penempatan, kehadiran, AJK, peserta aktiviti dan pencapaian individu. Master unit/guru/aktiviti dikekalkan.</small></div><div class="murid-bulk-action-row"><button id="muridBulkDeleteBtn" type="button" class="btn danger">Padam Pilihan (0)</button><button id="muridBulkDeleteAllBtn" type="button" class="btn danger">Padam Semua Data Murid</button></div></div>
+</section>
+<section id="muridSection" class="card page-section page-murid"><div class="head murid-section-head"><div><h2 class="material-section-title"><svg class="heading-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 8h5M18.5 5.5v5"/></svg>Murid</h2><small class="muted">DATA MURID SEKOLAH</small></div><div class="murid-heading-actions"><button id="addMuridOpenBtn" class="btn primary" type="button">＋ Tambah Murid</button><button id="refreshBtn" class="btn secondary" type="button">↻ Refresh</button></div></div><div id="tableWrap"><div class="empty">Belum ada data.</div></div></section>
+<section id="userSection" class="card page-section page-users" hidden>
+  <div class="head"><div><h2 class="material-section-title"><svg class="heading-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11a3 3 0 0 0 0-6M17 15a5 5 0 0 1 4 5"/></svg>Pengurusan Pengguna</h2><small class="muted">ADMIN sahaja</small></div><button id="usersRefreshBtn" class="btn secondary">↻ Refresh</button></div>
+  <div class="form-grid user-form-grid">
+    <div><label>Username</label><input id="newUsername" placeholder="contoh: guru2"></div>
+    <div><label>Nama</label><input id="newUserNama" placeholder="Nama pengguna"></div>
+    <div><label>Role</label><select id="newUserRole"><option value="GURU">GURU PENASIHAT</option><option value="PENTADBIR">PENTADBIR</option><option value="ADMIN">ADMIN</option></select></div>
+    <div><label>Password</label><input id="newUserPassword" type="password" placeholder="Minimum 8 aksara"></div>
+  </div>
+  <button id="addUserBtn" class="btn primary">+ Tambah Pengguna</button>
+  <div id="userResult" class="result muted"></div>
+  <div id="usersTableWrap" class="table-wrap"><div class="empty">Belum dimuatkan.</div></div>
+</section>
+
+
+<section id="unitSection" class="card page-section page-unit" hidden>
+  <div id="unitSummary" class="unit-summary" aria-hidden="true"></div>
+  <div id="unitCards" class="unit-grid"></div>
+</section>
+<section id="unitOverviewSection" class="card page-section page-unit-overview" hidden>
+  <div class="unit-overview-head">
+    <div><button id="unitOverviewBackBtn" class="btn secondary small" type="button">← Kembali ke Unit</button><div class="unit-overview-kicker">Kokurikulum • Unit</div><h2 id="unitOverviewTitle">Unit Kokurikulum</h2><p id="unitOverviewMeta" class="muted"></p></div>
+    <div class="unit-overview-actions">
+      <button id="unitOverviewRefreshBtn" class="btn secondary" type="button">↻ Refresh</button>
+      <button id="unitAddMemberBtn" class="btn secondary" type="button" hidden>+ Ahli</button>
+    </div>
+  </div>
+  <div id="unitOverviewStats" class="unit-overview-stats"></div>
+  <nav id="unitOverviewTabs" class="unit-overview-tabs" aria-label="Bahagian butiran unit" role="tablist">
+    <button id="unitOverviewTabMembers" class="unit-overview-tab" type="button" role="tab" aria-selected="true" aria-controls="unitOverviewPanelMembers" tabindex="0" data-unit-overview-tab="members">Ahli</button>
+    <button id="unitOverviewTabAttendance" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelAttendance" tabindex="-1" data-unit-overview-tab="attendance">Rekod Keseluruhan</button>
+    <button id="unitOverviewTabMemberAttendance" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelMemberAttendance" tabindex="-1" data-unit-overview-tab="member-attendance">Rekod Individu</button>
+    <button id="unitOverviewTabAjk" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelAjk" tabindex="-1" data-unit-overview-tab="ajk">AJK</button>
+  </nav>
+  <section id="unitOverviewPanelMembers" class="unit-overview-panel unit-overview-tab-panel" data-unit-overview-panel="members" role="tabpanel" aria-labelledby="unitOverviewTabMembers">
+    <div class="unit-overview-section-head"><div><h3>Senarai Ahli Unit</h3></div><button id="unitOverviewMembersPrintBtn" class="btn secondary small" type="button">▤ Cetak Senarai Ahli</button></div>
+    <div class="unit-members-filterbar"><div><label for="unitOverviewMemberClassFilter">Kelas</label><select id="unitOverviewMemberClassFilter"><option value="">Semua Kelas</option></select></div><div><label for="unitOverviewMemberGenderFilter">Jantina</label><select id="unitOverviewMemberGenderFilter"><option value="">Semua Jantina</option><option value="L">Lelaki</option><option value="P">Perempuan</option></select></div></div>
+    <div id="unitOverviewMembers" class="table-wrap"></div>
+  </section>
+  <section id="unitOverviewPanelAttendance" class="unit-overview-panel unit-overview-tab-panel" data-unit-overview-panel="attendance" role="tabpanel" aria-labelledby="unitOverviewTabAttendance" hidden>
+    <div class="unit-overview-section-head"><div><h3>Rekod Kehadiran Minggu 1–15</h3><small class="muted">Ringkasan kehadiran unit mengikut minggu persekolahan.</small></div><button id="unitOverviewAttendancePrintBtn" class="btn secondary small" type="button">▤ Cetak Rekod Kehadiran</button></div>
+    <div id="unitOverviewWeeks" class="table-wrap"></div>
+  </section>
+  <section id="unitOverviewPanelMemberAttendance" class="unit-overview-panel unit-overview-tab-panel" data-unit-overview-panel="member-attendance" role="tabpanel" aria-labelledby="unitOverviewTabMemberAttendance" hidden>
+    <div class="unit-overview-section-head"><div><h3>Kehadiran Setiap Ahli</h3><small class="muted">Status setiap murid bagi minggu 1 hingga 15.</small></div><button id="unitOverviewMemberAttendancePrintBtn" class="btn secondary small" type="button">▤ Cetak Kehadiran Setiap Ahli</button></div>
+    <div id="unitOverviewMemberAttendance" class="table-wrap"></div>
+  </section>
+  <section id="unitOverviewPanelAjk" class="unit-overview-panel unit-overview-tab-panel" data-unit-overview-panel="ajk" role="tabpanel" aria-labelledby="unitOverviewTabAjk" hidden>
+    <div class="unit-overview-section-head"><div><h3>Jawatankuasa / AJK</h3><small class="muted">Disusun mengikut hierarki jawatan bermula dengan Pengerusi.</small></div><div class="unit-overview-section-actions"><button id="unitOverviewAjkAddBtn" class="btn primary small" type="button">+ AJK</button><button id="unitOverviewAjkPrintBtn" class="btn secondary small" type="button">▤ Cetak AJK</button></div></div>
+    <div id="unitOverviewAjk" class="table-wrap"></div>
+  </section>
+</section>
+<div id="unitMemberModal" class="unit-member-modal" hidden>
+  <div class="unit-member-backdrop" data-unit-member-close></div>
+  <section class="unit-member-dialog" role="dialog" aria-modal="true" aria-labelledby="unitMemberModalTitle">
+    <div class="unit-member-dialog-head">
+      <div><span class="unit-member-kicker">PENGURUSAN UNIT</span><h3 id="unitMemberModalTitle">Tambah Ahli Unit</h3><p id="unitMemberModalMeta" class="muted">Pilih murid yang sedia ada dalam rekod e-KOSSTA.</p></div>
+      <button class="unit-member-close" type="button" data-unit-member-close aria-label="Tutup">×</button>
+    </div>
+    <form id="unitMemberForm">
+      <div class="unit-member-form-grid">
+        <div class="unit-member-field unit-member-wide"><label for="unitMemberStudentSearch">Cari murid</label><input id="unitMemberStudentSearch" type="search" placeholder="Taip nama, No. KP atau kelas..."></div>
+        <div class="unit-member-field unit-member-wide"><label for="unitMemberStudent">Nama murid *</label><select id="unitMemberStudent" required><option value="">-- Pilih Murid --</option></select><small class="muted">Hanya murid yang sudah berdaftar dalam modul Murid boleh dipilih.</small></div>
+        <div class="unit-member-field"><label for="unitMemberYear">Tahun penempatan *</label><input id="unitMemberYear" type="number" min="2000" max="2100" required></div>
+      </div>
+      <div id="unitMemberFormStatus" class="unit-member-form-status" role="status" aria-live="polite"></div>
+      <div class="unit-member-dialog-actions"><button class="btn secondary" type="button" data-unit-member-close>Batal</button><button id="unitMemberSaveBtn" class="btn primary" type="submit">Simpan Ahli</button></div>
+    </form>
+  </section>
+</div>
+
+<div id="addMuridModal" class="unit-member-modal add-murid-modal" hidden>
+  <div class="unit-member-backdrop" data-add-murid-close></div>
+  <section class="unit-member-dialog" role="dialog" aria-modal="true" aria-labelledby="addMuridModalTitle">
+    <div class="unit-member-dialog-head"><div><span class="unit-member-kicker">PENGURUSAN DATA • MURID</span><h3 id="addMuridModalTitle">Tambah Murid</h3><p class="muted">Lengkapkan maklumat murid untuk menyimpan rekod baharu.</p></div><button class="unit-member-close" type="button" data-add-murid-close aria-label="Tutup">×</button></div>
+    <form id="addMuridForm">
+      <div class="unit-member-form-grid add-murid-form-grid">
+        <div class="unit-member-field unit-member-wide"><label for="nama">Nama murid *</label><input id="nama" name="nama" placeholder="Nama penuh murid" autocomplete="off" required></div>
+        <div class="unit-member-field unit-member-wide"><label for="noKp">No. KP *</label><input id="noKp" name="noKp" placeholder="Masukkan No. KP" autocomplete="off" required></div>
+        <div class="unit-member-field"><label for="jantina">Jantina *</label><select id="jantina" name="jantina" required><option value="">-- Pilih --</option><option value="L">Lelaki</option><option value="P">Perempuan</option></select></div>
+        <div class="unit-member-field"><label for="tingkatan">Tingkatan *</label><input id="tingkatan" name="tingkatan" placeholder="Contoh: 4" required></div>
+        <div class="unit-member-field unit-member-wide"><label for="kelas">Kelas *</label><input id="kelas" name="kelas" placeholder="Contoh: 4 Amanah" required></div>
+      </div>
+      <div id="addResult" class="unit-member-form-status" role="status" aria-live="polite"></div>
+      <div class="unit-member-dialog-actions"><button class="btn secondary" type="button" data-add-murid-close>Batal</button><button id="addBtn" class="btn primary" type="submit">Simpan Murid</button></div>
+    </form>
+  </section>
+</div>
+
+<section id="unitAjkSection" class="card page-section page-unit-ajk" hidden>
+  <div class="unit-overview-head unit-ajk-page-head">
+    <div>
+      <button id="unitAjkBackBtn" class="btn secondary small" type="button">← Kembali ke Butiran Unit</button>
+      <div class="unit-overview-kicker">KOKURIKULUM • PENGURUSAN AJK</div>
+      <h2 id="unitAjkTitle">Pengurusan AJK</h2>
+      <p id="unitAjkMeta" class="muted">Lantik ahli aktif sebagai jawatankuasa unit.</p>
+    </div>
+    <div class="unit-overview-actions">
+      <button id="unitAjkRefreshBtn" class="btn secondary" type="button">↻ Refresh</button>
+      <button id="unitAjkPrintBtn" class="btn secondary" type="button">▤ Cetak AJK</button>
+    </div>
+  </div>
+  <div class="unit-overview-panel unit-ajk-panel">
+    <div class="unit-overview-section-head"><div><h3>Senarai AJK Semasa</h3><small class="muted">Susunan jawatan mengikut hierarki. Pengerusi dipaparkan paling atas.</small></div></div>
+    <div id="unitAjkCurrentTableWrap" class="table-wrap"><div class="empty">Memuatkan senarai AJK...</div></div>
+  </div>
+  <div class="unit-overview-panel unit-ajk-panel">
+    <div class="unit-overview-section-head"><div><h3>Lantik AJK Baharu</h3><small class="muted">Pilih kelas, pilih jawatan dan lantik murid yang sudah menjadi ahli aktif unit ini.</small></div></div>
+    <div class="unit-ajk-filters">
+      <div><label for="unitAjkClassFilter">Tapis mengikut kelas</label><select id="unitAjkClassFilter"><option value="">Semua Kelas</option></select></div>
+      <div><label for="unitAjkSearch">Cari murid</label><input id="unitAjkSearch" type="search" placeholder="Nama, No. KP atau tingkatan"></div>
+    </div>
+    <div id="unitAjkCandidateCount" class="unit-ajk-candidate-count" aria-live="polite"></div>
+    <div id="unitAjkCandidateTableWrap" class="table-wrap"><div class="empty">Memuatkan calon AJK...</div></div>
+    <div class="unit-ajk-appointment-form">
+      <div class="unit-ajk-position-field"><label for="unitAjkPositionSelect">Jenis jawatan AJK</label><select id="unitAjkPositionSelect"><option value="">-- Pilih Jenis AJK --</option></select></div>
+      <div class="unit-ajk-save-field"><p class="muted">Pilih seorang murid dalam jadual, kemudian pilih jawatan.</p><button id="unitAjkSaveBtn" class="btn primary" type="button" disabled>▣ Simpan Pelantikan</button></div>
+    </div>
+    <p id="unitAjkStatus" class="result muted" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<section id="attendanceSection" class="card page-section page-attendance" hidden>
+  <div class="head"><div><h2>Kehadiran Kokurikulum</h2></div><button id="attendanceRefreshBtn" class="btn secondary" type="button">↻ Refresh</button></div>
+  <div class="attendance-kpis" id="attendanceKpis">
+    <div class="attendance-kpi"><b id="attKpiJumlah">0</b><small>Jumlah Ahli</small></div>
+    <div class="attendance-kpi"><b id="attKpiHadir">0</b><small>Hadir</small></div>
+    <div class="attendance-kpi"><b id="attKpiTidak">0</b><small>Tidak Hadir</small></div>
+    <div class="attendance-kpi"><b id="attKpiPeratus">0%</b><small>Kehadiran</small></div>
+  </div>
+  <div class="attendance-panel">
+    <div class="attendance-form-grid">
+      <div><label>Kategori Unit</label><select id="attCategoryFilter"><option value="">Semua Kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab / Persatuan</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select></div>
+      <div><label>Unit Kokurikulum</label><select id="attUnit"><option value="">-- Pilih Unit --</option></select></div>
+      <div><label>Tahun</label><input id="attTahun" type="number"></div>
+      <div><label>Tarikh Perjumpaan</label><input id="attTarikh" type="date"></div>
+      <div><label>Minggu Persekolahan</label><input id="attMinggu" type="number" min="1" max="52" placeholder="Contoh: 1"></div>
+      <div><label>No. Perjumpaan</label><input id="attNoPerjumpaan" type="number" min="1" readonly></div>
+    </div>
+    <div class="attendance-actions"><button id="attLoadBtn" class="btn primary" type="button">Muat Senarai Ahli</button><button id="attSaveBtn" class="btn primary" type="button" disabled>Simpan Kehadiran</button></div>
+    <div id="attFormResult" class="result muted"></div>
+  </div>
+  <div class="attendance-panel" id="attendanceEntryPanel" hidden>
+    <div class="attendance-entry-head"><div><h3>Senarai Kehadiran</h3><p class="muted">Status lalai ialah HADIR. Tukar status dan catatan jika diperlukan.</p></div><div class="attendance-bulk"><button class="btn secondary small" type="button" data-att-bulk="HADIR">Semua Hadir</button><button class="btn secondary small" type="button" data-att-bulk="TIDAK HADIR">Semua Tidak Hadir</button></div></div>
+    <div id="attendanceTableWrap" class="table-wrap"></div>
+  </div>
+  <div class="attendance-panel">
+    <div class="head"><div><h3>Rekod Perjumpaan</h3><small class="muted">Ringkasan rekod yang telah disimpan.</small></div></div>
+    <div class="attendance-record-filter"><select id="attRecordUnit"><option value="">Semua Unit</option></select><input id="attRecordMinggu" type="number" min="1" max="52" placeholder="Minggu"><button id="attRecordRefreshBtn" class="btn secondary" type="button">Tapis</button></div>
+    <div id="attendanceRecordsWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<section id="activitySection" class="card page-section page-activity" hidden>
+  <div class="head"><div><h2>Aktiviti &amp; Acara</h2></div><button id="activityAddBtn" class="btn primary" type="button">+ Tambah Aktiviti</button></div>
+  <div class="activity-toolbar">
+    <input id="activitySearch" type="search" placeholder="Cari aktiviti atau tempat">
+    <select id="activityYear"><option value="">Semua Tahun</option></select>
+    <select id="activityLevel"><option value="">Semua Peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select>
+    <button id="activityRefreshBtn" class="btn secondary" type="button">Refresh</button>
+  </div>
+  <div id="activityTableWrap" class="table-wrap"><div class="empty">Belum dimuatkan.</div></div>
+</section>
+<div id="activityModal" class="activity-modal" hidden>
+  <div class="activity-modal-backdrop" data-activity-close></div>
+  <section class="activity-dialog" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
+    <div class="activity-dialog-head"><h3 id="activityModalTitle">Tambah Aktiviti</h3><button class="activity-close" type="button" data-activity-close>×</button></div>
+    <form id="activityForm">
+      <input id="activityId" type="hidden">
+      <div class="activity-form-grid">
+        <div class="activity-field activity-wide"><label>Nama Aktiviti</label><input id="activityName" required></div>
+        <div class="activity-field"><label>Tarikh</label><input id="activityDate" type="date" required></div>
+        <div class="activity-field"><label>Hari</label><input id="activityDay" readonly></div>
+        <div class="activity-field"><label>Masa</label><input id="activityTime" type="time"></div>
+        <div class="activity-field"><label>Tempat</label><input id="activityPlace" required></div>
+        <div class="activity-field"><label>Peringkat</label><select id="activityLevelForm" required><option value="">-- Pilih Peringkat --</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
+        <div class="activity-field"><label>Guru</label><select id="activityTeacher" required><option value="">-- Pilih Guru --</option></select></div>
+      </div>
+      <div class="activity-dialog-actions"><button class="btn secondary" type="button" data-activity-close>Batal</button><button id="activitySaveBtn" class="btn primary" type="submit">Simpan Aktiviti</button></div>
+    </form>
+  </section>
+</div>
+
+<section id="activityParticipantsSection" class="card page-section page-activity-participants" hidden>
+  <div class="activity-participants-head">
+    <div>
+      <button id="activityParticipantsBackBtn" class="btn secondary" type="button">← Kembali ke Aktiviti</button>
+      <div class="activity-participants-kicker">KOKURIKULUM • AKTIVITI &amp; ACARA</div>
+      <h2 id="activityParticipantsTitle">Daftar Peserta</h2>
+      <div id="activityParticipantsMeta" class="activity-participants-meta"></div>
+    </div>
+    <button id="activityParticipantsSaveBtn" class="btn primary" type="button">Simpan Peserta</button>
+  </div>
+  <div class="activity-participants-panel">
+    <div class="activity-participants-filter">
+      <div><label>Kelas</label><select id="activityParticipantClass"><option value="">Semua Kelas</option></select></div>
+      <div><label>Carian Murid</label><input id="activityParticipantSearch" type="search" placeholder="Nama atau No. KP"></div>
+    </div>
+    <div id="activityParticipantsCount" class="activity-participants-count"></div>
+    <div id="activityParticipantsTableWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+
+<section id="pencapaianSection" class="card page-section page-pencapaian" hidden>
+  <div id="pencapaianListView">
+    <div class="head pencapaian-page-head">
+      <div><span class="pencapaian-kicker">KOKURIKULUM • PENCAPAIAN</span><h2>Aktiviti Berdaftar</h2></div>
+      <button id="pencapaianRefreshBtn" class="btn secondary" type="button">↻ Refresh</button>
+    </div>
+    <div class="pencapaian-toolbar pencapaian-activity-toolbar">
+      <input id="pencapaianActivitySearch" type="search" placeholder="Cari aktiviti atau tempat..." aria-label="Cari aktiviti berdaftar">
+      <select id="pencapaianActivityFilterYear" aria-label="Tapis tahun aktiviti"><option value="">Semua Tahun</option></select>
+      <select id="pencapaianActivityFilterLevel" aria-label="Tapis peringkat"><option value="">Semua Peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select>
+    </div>
+    <div id="pencapaianActivityCount" class="pencapaian-activity-count">Memuatkan aktiviti...</div>
+    <div id="pencapaianActivitiesTableWrap" class="table-wrap"><div class="empty">Memuatkan aktiviti berdaftar...</div></div>
+  </div>
+
+  <div id="pencapaianRecordView" hidden>
+    <div class="pencapaian-record-heading">
+      <div>
+        <span class="pencapaian-kicker">KOKURIKULUM • PENCAPAIAN</span>
+        <h2>Rekod Pencapaian Aktiviti</h2>
+        <p class="muted">Isi satu acara atau pencapaian pada satu masa. Semua peserta aktif bagi aktiviti ini ditandakan secara automatik; nyahpilih murid yang tidak terlibat dalam acara ini.</p>
+      </div>
+      <button id="pencapaianRecordBackBtn" class="btn secondary" type="button">← Kembali</button>
+    </div>
+    <div class="pencapaian-record-activity-card">
+      <div><small>AKTIVITI / ACARA</small><h3 id="pencapaianRecordActivityTitle">Aktiviti</h3><p id="pencapaianRecordActivityMeta"></p></div>
+      <div class="pencapaian-record-head-actions"><button id="pencapaianNewEventBtn" class="btn secondary" type="button">+ Acara Baharu</button><button id="pencapaianRefreshRecordBtn" class="btn secondary" type="button">↻ Refresh Peserta</button></div>
+    </div>
+
+    <form id="pencapaianActivityRecordForm" class="pencapaian-record-form">
+      <input type="hidden" id="pencapaianRecordActivityId">
+      <input type="hidden" id="pencapaianRecordGroupId">
+      <input type="hidden" id="pencapaianRecordLegacyKey">
+      <div class="pencapaian-record-grid">
+        <div class="pencapaian-record-wide"><label for="pencapaianRecordName">Acara / Pencapaian *</label><input id="pencapaianRecordName" maxlength="180" required placeholder="Contoh: 100 Meter Lelaki atau Kejohanan Hoki MSSD Tangkak"></div>
+        <div><label for="pencapaianRecordEngagementTitle">Tajuk Penglibatan *</label><select id="pencapaianRecordEngagementTitle" required><option value="">Pilih tajuk penglibatan</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+        <div><label for="pencapaianRecordYear">Tahun *</label><input id="pencapaianRecordYear" type="number" min="2000" max="2100" required></div>
+        <div><label for="pencapaianRecordLevel">Peringkat *</label><select id="pencapaianRecordLevel" required><option value="">Pilih peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
+        <div><label for="pencapaianRecordPosition">Kedudukan *</label><select id="pencapaianRecordPosition" required><option value="">Pilih kedudukan</option><option value="JOHAN">Johan</option><option value="NAIB JOHAN">Naib Johan</option><option value="KETIGA">Ketiga</option><option value="KEEMPAT">Keempat</option><option value="KELIMA">Kelima</option><option value="PENYERTAAN">Penyertaan sahaja</option><option value="EMAS">Emas</option><option value="PERAK">Perak</option><option value="GANGSA">Gangsa</option><option value="ANUGERAH KHAS">Anugerah Khas</option><option value="LAIN-LAIN">Lain-lain</option></select></div>
+        <div><label for="pencapaianRecordCategory">Kategori Penyertaan *</label><select id="pencapaianRecordCategory" required><option value="">Pilih kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab / Persatuan</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select><small class="pencapaian-help">Setiap murid dipautkan kepada unit masing-masing berdasarkan kategori dan tahun. Contoh: Ali → Pengakap, Abu → Bomba.</small><div id="pencapaianUnitMappingPreview" class="pencapaian-unit-mapping-preview" aria-live="polite"><span class="pencapaian-preview-muted">Pilih kategori dan tahun untuk menyemak unit bagi setiap peserta.</span></div></div>
+        <div><label for="pencapaianRecordDate">Tarikh *</label><input id="pencapaianRecordDate" type="date" required></div>
+        <div class="pencapaian-record-wide"><label>Rujukan Kedudukan PAJSK</label><div class="pencapaian-rank-reference"><button type="button" data-pencapaian-rank="JOHAN"><b>1</b><span>Johan</span></button><button type="button" data-pencapaian-rank="NAIB JOHAN"><b>2</b><span>Naib Johan</span></button><button type="button" data-pencapaian-rank="KETIGA"><b>3</b><span>Ketiga</span></button><button type="button" data-pencapaian-rank="KEEMPAT"><b>4</b><span>Keempat</span></button><button type="button" data-pencapaian-rank="KELIMA"><b>5</b><span>Kelima</span></button><div class="pencapaian-rank-note">Pilih kedudukan yang betul. Untuk acara penyertaan tanpa kedudukan, gunakan “Penyertaan sahaja”.</div></div></div>
+      </div>
+
+      <div class="pencapaian-participant-section">
+        <div class="pencapaian-participant-head"><div><h3>Peserta / Murid Berdaftar</h3><p id="pencapaianRecordParticipantsCount" class="muted">Memuatkan peserta...</p><small class="muted">Senarai ini datang daripada peserta yang didaftarkan dalam Aktiviti &amp; Acara. Semua peserta ditandakan secara automatik bagi acara baharu.</small></div><div class="pencapaian-selection-actions"><button id="pencapaianSelectAllBtn" type="button" class="btn secondary small">Pilih Semua</button><button id="pencapaianClearAllBtn" type="button" class="btn secondary small">Kosongkan</button></div></div>
+        <div class="pencapaian-participant-filters"><input id="pencapaianRecordParticipantSearch" type="search" placeholder="Cari nama / No. KP..."><select id="pencapaianRecordParticipantClass"><option value="">Semua Kelas</option></select></div>
+        <div id="pencapaianRecordParticipantsWrap" class="pencapaian-record-participants"><div class="empty">Memuatkan peserta...</div></div>
+      </div>
+      <div class="pencapaian-record-grid"><div class="pencapaian-record-wide"><label for="pencapaianRecordEvidence">Pautan bukti / sijil (pilihan)</label><input id="pencapaianRecordEvidence" type="url" placeholder="https://..."></div><div class="pencapaian-record-wide"><label for="pencapaianRecordNotes">Catatan (pilihan)</label><textarea id="pencapaianRecordNotes" rows="3" maxlength="1500" placeholder="Catatan tambahan... "></textarea></div></div>
+      <div id="pencapaianRecordStatus" class="pencapaian-form-status" role="status" aria-live="polite"></div>
+      <div class="pencapaian-record-actions"><button id="pencapaianRecordBackBottomBtn" class="btn secondary" type="button">Kembali ke Aktiviti Berdaftar</button><div><button id="pencapaianSaveAndBackBtn" class="btn secondary" type="button">Simpan &amp; Kembali</button><button id="pencapaianRecordSaveBtn" class="btn primary" type="submit">Simpan Rekod</button></div></div>
+    </form>
+
+    <div class="pencapaian-existing-records"><div><h3>Rekod Acara yang Telah Disimpan</h3><p class="muted">Pilih rekod untuk menyemak atau mengemas kini senarai murid bagi acara itu.</p></div><div id="pencapaianExistingGroupsWrap"><div class="empty">Belum ada rekod pencapaian untuk aktiviti ini.</div></div></div>
+  </div>
+</section>
+<section id="penempatanSection" class="card page-section page-penempatan" hidden>
+  <div class="empty-state-large"><div class="empty-icon">👥</div><h2>Penempatan Unit</h2><p class="muted">Paparan penempatan akan dibina dalam patch modul seterusnya. Fungsi tambah ahli unit V2.3 tersedia melalui halaman <b>Unit Kokurikulum</b>.</p><button class="btn primary" type="button" data-page-jump="unit">Buka Unit Kokurikulum</button></div>
+</section>
+<section id="guruSection" class="card page-section page-guru" hidden>
+  <div class="head"><div><h2 class="material-section-title"><svg class="heading-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 21a8 8 0 0 1 16 0M8 13l4 3 4-3"/></svg>Pengurusan Guru</h2><small class="muted">ADMIN sahaja • TEST_GURU</small></div><button id="guruRefreshBtn" class="btn secondary">↻ Refresh</button></div>
+  <div class="form-grid guru-form-grid">
+    <div><label>No. Guru</label><input id="guruNo" placeholder="Auto: G001, G002, G003… (boleh kosong)"></div>
+    <div><label>Nama</label><input id="guruNama" placeholder="Nama guru"></div>
+    <div><label>Email</label><input id="guruEmail" type="email" placeholder="guru@contoh.edu.my"></div>
+    <div><label>No. Telefon</label><input id="guruTel" placeholder="01X-XXXXXXX"></div>
+    <div><label>Status</label><select id="guruStatus"><option value="AKTIF">AKTIF</option><option value="TIDAK_AKTIF">TIDAK AKTIF</option></select></div>
+    <div><label>Akaun Login</label><select id="guruUserId"><option value="">-- Tiada pautan --</option></select></div>
+  </div>
+  <input id="guruOriginalNo" type="hidden">
+  <button id="addGuruBtn" class="btn primary">+ Tambah Guru</button>
+  <button id="cancelGuruBtn" class="btn secondary" hidden>Batal Edit</button>
+  <div id="guruResult" class="result muted"></div>
+  <div class="table-wrap"><div id="guruTableWrap"><div class="empty">Belum dimuatkan.</div></div></div>
+</section>
+<section id="analysisSection" class="page-section page-analysis" hidden>
+  <div class="analysis-subtabs" role="tablist" aria-label="Submenu Analisis">
+    <button id="analysisOverviewTab" class="analysis-subtab active" type="button" role="tab" aria-selected="true" data-analysis-view="overview"><span>[</span> ANALISIS KOKURIKULUM <span>]</span></button>
+    <button id="analysisPajskTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="pajsk"><span>[</span> ANALISIS PAJSK <span>]</span></button>
+  </div>
+  <div id="analysisOverviewView" class="analysis-overview-view">
+  <div class="analysis-heading">
+    <div>
+      <span class="analysis-kicker">ANALISIS • e-KOSSTA / DATA LANGSUNG</span>
+      <h2><span class="analysis-prompt">&gt;_</span> Analisis Kokurikulum</h2>
+      <p>Ringkasan ahli, kehadiran, aktiviti, pencapaian dan dokumentasi berdasarkan rekod sistem.</p>
+    </div>
+    <div class="analysis-actions">
+      <button id="analysisExportBtn" class="btn secondary" type="button">↓ Muat Turun CSV</button>
+      <button id="analysisRefreshBtn" class="btn primary" type="button">↻ Kemas Kini Analisis</button>
+    </div>
+  </div>
+  <div class="analysis-filterbar">
+    <div><label for="analysisYearFilter">Tahun Analisis</label><select id="analysisYearFilter"><option value="">Memuatkan tahun...</option></select></div>
+    <div><label for="analysisCategoryFilter">Kategori Unit</label><select id="analysisCategoryFilter"><option value="">Semua Kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select></div>
+    <div class="analysis-search-field"><label for="analysisUnitSearch">Cari Unit</label><input id="analysisUnitSearch" type="search" placeholder="Nama unit atau guru penasihat..."></div>
+  </div>
+  <div id="analysisStatus" class="analysis-status" role="status" aria-live="polite">Sedia memuatkan data analisis...</div>
+  <div class="analysis-kpi-grid">
+    <article class="analysis-kpi"><span class="analysis-kpi-label">MURID AKTIF</span><strong id="analysisKpiStudents">—</strong><small>Murid dalam data sistem</small><span class="analysis-kpi-index">01</span></article>
+    <article class="analysis-kpi"><span class="analysis-kpi-label">UNIT AKTIF</span><strong id="analysisKpiUnits">—</strong><small>Unit bagi tahun dipilih</small><span class="analysis-kpi-index">02</span></article>
+    <article class="analysis-kpi"><span class="analysis-kpi-label">KEAHLIAN UNIT</span><strong id="analysisKpiMembers">—</strong><small>Jumlah keahlian merentas unit</small><span class="analysis-kpi-index">03</span></article>
+    <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">PURATA KEHADIRAN</span><strong id="analysisKpiAttendance">—</strong><small>Berdasarkan rekod kehadiran</small><span class="analysis-kpi-index">04</span></article>
+    <article class="analysis-kpi"><span class="analysis-kpi-label">AKTIVITI</span><strong id="analysisKpiActivities">—</strong><small>Aktiviti berdaftar bagi tahun</small><span class="analysis-kpi-index">05</span></article>
+    <article class="analysis-kpi"><span class="analysis-kpi-label">REKOD PENCAPAIAN</span><strong id="analysisKpiAchievements">—</strong><small>Rekod pencapaian aktif</small><span class="analysis-kpi-index">06</span></article>
+  </div>
+  <section class="analysis-panel analysis-unit-gender-slider" aria-labelledby="analysisUnitGenderTitle">
+    <div class="analysis-panel-heading analysis-unit-slider-heading">
+      <div><span class="analysis-panel-index">A / 00</span><h3 id="analysisUnitGenderTitle">Analisis Ahli Mengikut Unit</h3><p>Jumlah murid lelaki dan perempuan bagi setiap unit untuk tahun dipilih.</p></div>
+      <div class="analysis-unit-slider-controls"><button id="analysisUnitSlidePrev" type="button" class="btn secondary small" aria-label="Kategori sebelumnya" title="Kategori sebelumnya">←</button><span id="analysisUnitSlidePosition" class="analysis-count">1 / 4</span><button id="analysisUnitSlideNext" type="button" class="btn secondary small" aria-label="Kategori seterusnya" title="Kategori seterusnya">→</button></div>
+    </div>
+    <div class="analysis-unit-slider-meta" id="analysisUnitSliderMeta" aria-live="polite"></div>
+    <div id="analysisUnitGenderSlide" class="analysis-unit-gender-slide"><div class="analysis-empty">Memuatkan analisis ahli mengikut unit...</div></div>
+  </section>
+  <div class="analysis-chart-grid">
+    <section class="analysis-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">A / 01</span><h3>Keahlian Mengikut Kategori</h3></div><small>JUMLAH AHLI</small></div>
+      <div id="analysisCategoryChart" class="analysis-category-chart"><div class="empty">Memuatkan data...</div></div>
+    </section>
+    <section class="analysis-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">A / 02</span><h3>Murid Mengikut Tingkatan</h3></div><small>MURID AKTIF</small></div>
+      <div id="analysisStudentLevelChart" class="analysis-level-chart"><div class="empty">Memuatkan data...</div></div>
+    </section>
+    <section class="analysis-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">A / 03</span><h3>Komposisi Jantina</h3></div><small>MURID AKTIF</small></div>
+      <div id="analysisGenderChart" class="analysis-level-chart"><div class="empty">Memuatkan data...</div></div>
+    </section>
+    <section class="analysis-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">A / 04</span><h3>Aktiviti Mengikut Peringkat</h3></div><small>JUMLAH AKTIVITI</small></div>
+      <div id="analysisActivityLevelChart" class="analysis-level-chart"><div class="empty">Memuatkan data...</div></div>
+    </section>
+    <section class="analysis-panel analysis-attendance-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">A / 05</span><h3>Kehadiran Minggu 1–15</h3><p>Peratus kehadiran gabungan bagi unit yang ditapis.</p></div><small>HADIR / REKOD</small></div>
+      <div id="analysisAttendanceChart" class="analysis-attendance-chart"><div class="empty">Memuatkan rekod kehadiran...</div></div>
+    </section>
+    <section class="analysis-panel analysis-output-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">A / 06</span><h3>Ringkasan Dokumentasi</h3></div><small>OUTPUT</small></div>
+      <div class="analysis-output-list">
+        <div><span>Laporan tersimpan</span><strong id="analysisKpiReports">—</strong></div>
+        <div><span>Aktiviti dengan rekod pencapaian</span><strong id="analysisRecordedActivities">—</strong></div>
+        <div><span>Aktiviti belum mempunyai rekod pencapaian</span><strong id="analysisPendingActivities">—</strong></div>
+      </div>
+      <p class="analysis-note">Angka berpandukan data yang dibenarkan untuk akaun semasa. Guru hanya melihat unit dan aktiviti dalam skop akses masing-masing.</p>
+    </section>
+  </div>
+  <section class="analysis-panel analysis-table-panel">
+    <div class="analysis-panel-heading"><div><span class="analysis-panel-index">B / 01</span><h3>Prestasi Unit</h3><p>Perbandingan keahlian dan rekod kehadiran bagi tahun yang dipilih.</p></div><span id="analysisUnitCount" class="analysis-count">0 UNIT</span></div>
+    <div class="analysis-unit-table-filters" aria-label="Penapis jadual prestasi unit">
+      <div><label for="analysisUnitTableCategoryFilter">Kategori Unit</label><select id="analysisUnitTableCategoryFilter"><option value="">Semua Kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab / Persatuan</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select></div>
+      <div><label for="analysisUnitTableUnitFilter">Pilih Unit</label><select id="analysisUnitTableUnitFilter"><option value="">Semua Unit</option></select></div>
+      <div class="analysis-unit-table-filter-actions"><button id="analysisUnitTableFilterReset" class="btn secondary small" type="button">Reset Penapis</button></div>
+    </div>
+    <div id="analysisUnitTableWrap" class="table-wrap"><div class="empty">Memuatkan data unit...</div></div>
+  </section>
+  <section class="analysis-panel analysis-table-panel">
+    <div class="analysis-panel-heading"><div><span class="analysis-panel-index">B / 02</span><h3>Aktiviti & Pencapaian</h3><p>Rekod aktiviti dan tahap pengisian pencapaian berdasarkan sistem.</p></div><span id="analysisActivityCount" class="analysis-count">0 AKTIVITI</span></div>
+    <div id="analysisActivitiesTableWrap" class="table-wrap"><div class="empty">Memuatkan data aktiviti...</div></div>
+  </section>
+  <div id="analysisUpdatedAt" class="analysis-updated">Belum dikemas kini.</div>
+  </div>
+  <div id="analysisPajskView" class="analysis-pajsk-view" hidden>
+    <div class="analysis-heading">
+      <div>
+        <span class="analysis-kicker">ANALISIS • PAJSK / DATA PENYERTAAN</span>
+        <h2><span class="analysis-prompt">&gt;_</span> Pemarkahan PAJSK Murid</h2>
+        <p>Paparan keseluruhan murid aktif daripada semua kelas. Pilihan kelas digunakan hanya untuk mencetak laporan kelas ke PDF.</p>
+      </div>
+      <div class="analysis-actions">
+        <button id="analysisPajskRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button>
+        <button id="analysisPajskExportBtn" class="btn secondary" type="button" disabled>↓ Muat Turun CSV Terperinci</button>
+        <button id="analysisPajskPrintBtn" class="btn primary" type="button" disabled>▣ Cetak Kelas / PDF</button>
+      </div>
+    </div>
+    <div class="analysis-filterbar analysis-pajsk-filterbar">
+      <div><label for="analysisPajskYearFilter">Tahun</label><select id="analysisPajskYearFilter"><option value="">Memuatkan tahun...</option></select></div>
+      <div><label for="analysisPajskClassFilter">Tapis kelas / cetakan</label><select id="analysisPajskClassFilter"><option value="">Semua Kelas</option></select></div>
+      <div class="analysis-search-field"><label for="analysisPajskSearch">Cari Murid</label><input id="analysisPajskSearch" type="search" placeholder="Nama murid atau No. KP..."></div>
+    </div>
+    <div id="analysisPajskStatus" class="analysis-status" role="status" aria-live="polite">Pilih tahun dan kelas untuk menapis senarai murid serta skop cetakan.</div>
+    <div class="analysis-pajsk-kpi-grid">
+      <article class="analysis-kpi"><span class="analysis-kpi-label">JUMLAH MURID</span><strong id="analysisPajskKpiStudents">—</strong><small>Murid aktif semua kelas</small><span class="analysis-kpi-index">01</span></article>
+      <article class="analysis-kpi"><span class="analysis-kpi-label">ADA 2+ KATEGORI</span><strong id="analysisPajskKpiCategories">—</strong><small>Murid dengan penempatan unit</small><span class="analysis-kpi-index">02</span></article>
+      <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">ADA REKOD ACARA</span><strong id="analysisPajskKpiEvents">—</strong><small>Penyertaan acara direkod</small><span class="analysis-kpi-index">03</span></article>
+      <article class="analysis-kpi"><span class="analysis-kpi-label">REKOD PERLU SEMAK</span><strong id="analysisPajskKpiIncomplete">—</strong><small>Unit / penyertaan belum lengkap</small><span class="analysis-kpi-index">04</span></article>
+    </div>
+    <div class="analysis-pajsk-note"><b>NOTA DATA</b><span>CSV terperinci menyusun medan Kelab/Persatuan, Badan Beruniform, Sukan/Permainan dan Ekstra Kokurikulum mengikut struktur borang extension. Penglibatan, peringkat pencapaian, jawatan, aktiviti dan kehadiran diisi daripada rekod e-KOSSTA; komitmen, khidmat sumbangan, NILAM, TIMSS/PISA serta markah rasmi dibiarkan kosong jika belum direkod, bukan direka.</span></div>
+    <section class="analysis-panel analysis-table-panel analysis-pajsk-table-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Senarai Pemarkahan PAJSK Murid</h3><p>Senarai dipaparkan mengikut kelas yang dipilih. Pilih Semua Kelas untuk melihat keseluruhan sekolah.</p></div><span id="analysisPajskStudentCount" class="analysis-count">0 MURID</span></div>
+      <div id="analysisPajskTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan rekod PAJSK...</div></div>
+    </section>
+    <div id="analysisPajskUpdatedAt" class="analysis-updated">Belum dikemas kini.</div>
+  </div>
+  <div id="analysisPajskDetailModal" class="analysis-pajsk-detail-modal" hidden>
+    <div class="analysis-pajsk-detail-backdrop" data-pajsk-detail-close></div>
+    <section class="analysis-pajsk-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="analysisPajskDetailTitle">
+      <div class="analysis-pajsk-detail-head"><div><span class="analysis-kicker">PAJSK • MURID</span><h2 id="analysisPajskDetailTitle">Butiran Murid</h2><p id="analysisPajskDetailMeta" class="muted"></p></div><button class="btn secondary small" type="button" data-pajsk-detail-close>Tutup</button></div>
+      <div id="analysisPajskDetailContent"></div>
+      <div class="analysis-pajsk-detail-actions"><button id="analysisPajskPrintStudentBtn" class="btn primary" type="button">▣ Cetak Butiran Murid</button><button class="btn secondary" type="button" data-pajsk-detail-close>Kembali</button></div>
+    </section>
+  </div>
+</section>
+<section id="reportsSection" class="card page-section page-reports" hidden>
+  <div class="reports-module-heading">
+    <div><span class="editor-kicker">LAPORAN & DOKUMENTASI • e-KOSSTA</span><h2>Jana Laporan</h2><p class="muted">Pilih aktiviti yang telah direkodkan, atau cipta laporan perjumpaan unit tanpa acara.</p></div>
+    <div class="reports-heading-actions"><button id="reportNewMeetingBtn" class="btn primary compact-btn" type="button">+ Laporan Perjumpaan</button><button id="reportOverviewRefreshBtn" class="btn secondary compact-btn" type="button">↻ Segar</button></div>
+  </div>
+  <div class="reports-list-card">
+    <div class="reports-list-heading"><div><h3>Aktiviti Berdaftar</h3><small class="muted">Laporan yang dijana akan mengambil data aktiviti dan peserta yang telah direkodkan.</small></div><span id="reportActivityCount" class="report-count-pill">0 aktiviti</span></div>
+    <div class="report-list-filters">
+      <div><label for="reportActivitySearch">Carian aktiviti</label><input id="reportActivitySearch" type="search" placeholder="Cari nama aktiviti atau tempat..."></div>
+      <div><label for="reportYearFilter">Tahun</label><select id="reportYearFilter"><option value="">Semua tahun</option></select></div>
+      <button id="reportResetFilterBtn" class="btn secondary compact-btn" type="button">Reset</button>
+    </div>
+    <div id="reportActivityListWrap" class="table-wrap"><div class="empty">Memuatkan aktiviti...</div></div>
+  </div>
+  <div class="report-standalone-note"><div><b>Perjumpaan unit tanpa acara</b><small>Gunakan pilihan ini untuk laporan mesyuarat, perjumpaan mingguan atau aktiviti unit yang tiada acara khusus.</small></div><button class="btn secondary compact-btn" type="button" data-report-new-meeting>+ Cipta laporan</button></div>
+</section>
+<section id="reportsEditSection" class="card page-section page-reports-edit page-report-templates" hidden>
+  <div class="reports-module-heading">
+    <div><span class="editor-kicker">LAPORAN & DOKUMENTASI • e-KOSSTA</span><h2 id="reportWorkspaceTitle">Isi Laporan Aktiviti</h2><p id="reportWorkspaceDescription" class="muted">Lengkapkan objektif, ringkasan aktiviti dan impak. Maklumat aktiviti serta peserta dimasukkan secara automatik.</p></div>
+    <div id="reportFormHeaderActions" class="editor-heading-actions compact-editor-actions"><button id="reportFormBackBtn" class="btn secondary compact-btn" type="button">← Kembali ke Jana Laporan</button></div>
+    <div id="reportTemplateHeaderActions" class="editor-heading-actions compact-editor-actions" hidden><button id="docLoadReportTemplateBtn" data-admin-template class="btn secondary compact-btn" type="button">Muat Templat Laporan</button><button id="docLoadLetterTemplateBtn" data-admin-template class="btn secondary compact-btn" type="button">Muat Templat Surat</button><button id="docListRefreshBtn" class="btn secondary compact-btn" type="button">Muat Semula Templat</button></div>
+  </div>
+  <div id="reportFillingForm" class="report-filling-form" hidden>
+    <div id="reportFormActivitySummary" class="report-form-activity-summary"></div>
+    <div id="reportStandaloneParticipantsPanel" class="report-standalone-participants-panel" hidden>
+      <div class="report-standalone-participants-copy"><b>Peserta laporan</b><small>Pilihan ini hanya untuk laporan yang tidak dipautkan kepada aktiviti atau acara berdaftar.</small></div>
+      <div class="report-standalone-participants-actions"><button id="reportAddParticipantsBtn" class="btn secondary compact-btn" type="button">＋ Peserta</button><button id="reportNoParticipantsBtn" class="btn secondary compact-btn" type="button">Tiada Peserta</button></div>
+      <small id="reportParticipantChoiceStatus" class="report-participant-choice-status" aria-live="polite">Pilih + Peserta atau Tiada Peserta sebelum menyimpan laporan.</small>
+    </div>
+    <div class="report-form-grid">
+      <div class="report-form-field report-form-full"><label for="reportFormTitle">Tajuk laporan *</label><input id="reportFormTitle" maxlength="180" placeholder="Tajuk laporan aktiviti"></div>
+      <div class="report-form-field"><label for="reportPreparedByDisplay">Disediakan oleh (Guru Penasihat)</label><input id="reportPreparedByDisplay" readonly aria-readonly="true"></div>
+      <div class="report-form-field"><label for="reportObjectiveInput">Objektif aktiviti *</label><textarea id="reportObjectiveInput" rows="3" placeholder="Nyatakan objektif aktiviti atau perjumpaan..."></textarea></div>
+      <div class="report-form-field"><label for="reportSummaryInput">Ringkasan aktiviti *</label><textarea id="reportSummaryInput" rows="5" placeholder="Terangkan aktiviti yang dijalankan..."></textarea></div>
+      <div class="report-form-field"><label for="reportImpactInput">Impak / refleksi *</label><textarea id="reportImpactInput" rows="4" placeholder="Nyatakan impak atau refleksi aktiviti..."></textarea></div>
+    </div>
+    <p id="reportFormHelp" class="report-form-help">Lengkapkan maklumat laporan dan pilih pengurusan peserta yang sesuai.</p>
+  </div>
+  <div id="docEditorMetaPanel" class="editor-meta-grid" hidden>
+    <div><label for="docTitle">Tajuk dokumen</label><input id="docTitle" maxlength="180" placeholder="Contoh: Laporan Perjumpaan Mingguan Kokurikulum"></div>
+    <div><label for="docType">Jenis dokumen</label><select id="docType"><option value="LAPORAN">Laporan Aktiviti / Perjumpaan</option><option value="SURAT_RASMI">Surat Rasmi</option><option value="SURAT_KEBENARAN">Surat Kebenaran Ibu Bapa</option><option value="LAIN">Dokumen Lain</option></select></div>
+  </div>
+  <div id="docLinkedActivityNote" class="document-link-note" hidden></div>
+  <div id="docEditorToolbarPanel" class="editor-toolbar compact-editor-toolbar" role="toolbar" aria-label="Format dokumen" hidden>
+    <button type="button" data-editor-cmd="bold" title="Tebal"><b>B</b></button><button type="button" data-editor-cmd="italic" title="Condong"><i>I</i></button><button type="button" data-editor-cmd="underline" title="Garis bawah"><u>U</u></button><span class="toolbar-separator"></span>
+    <select id="editorBlockFormat" aria-label="Gaya teks"><option value="p">Perenggan</option><option value="h1">Tajuk 1</option><option value="h2">Tajuk 2</option><option value="h3">Tajuk 3</option></select>
+    <button type="button" data-editor-cmd="justifyLeft" title="Rata kiri">Kiri</button><button type="button" data-editor-cmd="justifyCenter" title="Tengah">Tengah</button><button type="button" data-editor-cmd="justifyRight" title="Rata kanan">Kanan</button><button type="button" data-editor-cmd="insertUnorderedList" title="Senarai berbulet">• Senarai</button><button type="button" data-editor-cmd="insertOrderedList" title="Senarai bernombor">1. Senarai</button><label class="toolbar-color compact-color" title="Warna teks">Warna <input id="editorTextColor" type="color" value="#222222" aria-label="Warna teks"></label><button id="editorLinkBtn" type="button" title="Masukkan pautan">Pautan</button><button type="button" data-editor-cmd="undo" title="Undo">↶</button><button type="button" data-editor-cmd="redo" title="Redo">↷</button>
+  </div>
+  <div id="reportPhotoUploadPanel" class="report-photo-upload-panel" hidden>
+    <div class="report-photo-panel-heading"><div><b>Gambar laporan</b><small class="muted">Muat naik sehingga 4 keping gambar. Gambar akan diletakkan pada slot yang sepadan dalam laporan.</small></div><span class="report-count-pill">4 foto</span></div>
+    <div class="report-photo-input-grid">
+      <label class="report-photo-input" for="reportPhoto1"><span class="report-photo-number">01</span><b>Foto 1</b><small id="reportPhotoName1">Pilih gambar</small><input id="reportPhoto1" type="file" accept="image/*"></label>
+      <label class="report-photo-input" for="reportPhoto2"><span class="report-photo-number">02</span><b>Foto 2</b><small id="reportPhotoName2">Pilih gambar</small><input id="reportPhoto2" type="file" accept="image/*"></label>
+      <label class="report-photo-input" for="reportPhoto3"><span class="report-photo-number">03</span><b>Foto 3</b><small id="reportPhotoName3">Pilih gambar</small><input id="reportPhoto3" type="file" accept="image/*"></label>
+      <label class="report-photo-input" for="reportPhoto4"><span class="report-photo-number">04</span><b>Foto 4</b><small id="reportPhotoName4">Pilih gambar</small><input id="reportPhoto4" type="file" accept="image/*"></label>
+    </div>
+  </div>
+  <div id="reportPreviewHeading" class="report-preview-heading"><b>Pratonton laporan A4</b><small class="muted">Pratonton akan berubah apabila kandungan borang dikemas kini.</small></div>
+  <div class="editor-page-wrap"><div id="docEditor" class="rich-editor" contenteditable="false" role="textbox" aria-label="Pratonton laporan" aria-multiline="true" spellcheck="true"><h2>SMK TENGKU TEMENGGONG AHMAD</h2><p>Tekan Rekod pada aktiviti untuk bermula.</p></div></div>
+  <div class="editor-footer compact-editor-footer"><small id="docEditorStatus" class="muted">Laporan belum disimpan.</small><div><button id="docSaveBtn" class="btn primary compact-btn" type="button">Simpan Laporan</button><button id="docPrintBtn" class="btn secondary compact-btn" type="button">Cetak A4 / PDF</button></div></div>
+  <div id="savedDocumentsPanel" class="saved-documents">
+    <div class="head"><div><h3 id="savedDocumentsTitle">Templat Tersimpan</h3><small class="muted">Pilih Buka untuk menyambung suntingan, atau Cetak untuk menghasilkan PDF.</small></div></div>
+    <div class="document-list-filters"><div><label for="docSearch">Cari dokumen</label><input id="docSearch" type="search" placeholder="Cari tajuk atau nama aktiviti..."></div><div><label for="docListType">Jenis dokumen</label><select id="docListType"><option value="">Semua jenis</option><option value="LAPORAN">Laporan Aktiviti / Perjumpaan</option><option value="SURAT_RASMI">Surat Rasmi</option><option value="SURAT_KEBENARAN">Surat Kebenaran</option><option value="LAIN">Dokumen Lain</option></select></div></div>
+    <div id="savedDocsWrap" class="table-wrap"><div class="empty">Tekan Muat Semula untuk melihat dokumen.</div></div>
+  </div>
+</section>
+<section id="systemSettingsSection" class="card page-section page-system-settings" hidden>
+  <div class="head"><div><h2>Tetapan Sistem</h2><small class="muted">ADMIN sahaja • Nama aplikasi dan identiti sekolah</small></div></div>
+  <div class="system-settings-layout">
+    <section class="system-settings-panel">
+      <div class="system-settings-panel-head"><div><span class="unit-member-kicker">IDENTITI APLIKASI</span><h3>Nama Aplikasi</h3><p class="muted">Nama ini akan digunakan pada menu, tajuk halaman dan paparan dalam e-KOSSTA. Halaman log masuk tidak akan berubah.</p></div></div>
+      <div class="unit-member-field"><label for="systemAppName">Nama aplikasi *</label><input id="systemAppName" maxlength="60" placeholder="Contoh: KOKU SEKOLAH" autocomplete="off"></div>
+    </section>
+    <section class="system-settings-panel">
+      <div class="system-settings-panel-head"><div><span class="unit-member-kicker">IDENTITI SEKOLAH</span><h3>Logo Sekolah</h3><p class="muted">Logo akan digunakan pada bahagian logo aplikasi serta templat surat kebenaran dan laporan One Page Report.</p></div></div>
+      <div class="system-logo-preview-wrap"><div id="systemLogoPreviewBox" class="system-logo-preview-box"><span id="systemLogoPlaceholder">Tiada logo dipilih</span><img id="systemLogoPreview" alt="Pratonton logo sekolah" hidden></div><div class="system-logo-actions"><label class="btn secondary system-logo-file-btn" for="systemSchoolLogo">Pilih Logo</label><input id="systemSchoolLogo" type="file" accept="image/png,image/jpeg,image/webp" hidden><button id="systemLogoClearBtn" class="btn secondary" type="button">Buang Logo</button></div></div>
+      <small class="muted system-logo-note">Format PNG, JPG atau WebP. Logo akan dimampatkan sebelum disimpan. Had fail asal 12 MB.</small>
+    </section>
+  </div>
+  <div class="system-settings-footer"><div><div id="systemSettingsStatus" class="unit-member-form-status" role="status" aria-live="polite">Tetapan belum dimuatkan.</div><small class="muted">Tetapan disimpan di Google Sheets dan digunakan untuk paparan aplikasi, surat kebenaran serta One Page Report.</small></div><button id="saveSystemSettingsBtn" class="btn primary" type="button">Simpan Tetapan</button></div>
+</section></section></div></main>
+<nav id="mobileNav" class="mobile-nav" aria-label="Navigasi mudah alih">
+  <button class="nav-item active" data-page="dashboard" type="button" aria-label="Utama"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5.5 9.5V21h13V9.5M9 21v-7h6v7"/></svg><span>Utama</span></button>
+  <button class="nav-item" data-mobile-open-group="kokurikulum" type="button" aria-label="Kokurikulum"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg><span>Kokurikulum</span></button>
+  <button class="nav-item" data-page="analysis" type="button" aria-label="Analisis"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V12h4v8M10 20V5h4v15M16 20V9h4v11"/></svg><span>Analisis</span></button>
+  <button class="nav-item" data-mobile-open-group="laporan" type="button" aria-label="Dokumen"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span>Dokumen</span></button>
+  <button id="mobileManagementMenuButton" class="nav-item" data-mobile-open-group="tetapan" type="button" aria-label="Menu"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.7-1.4-2.4 1.4-1.1a8 8 0 0 1 0-1.8L6.9 12l1.4-2.4 1.7.7a8 8 0 0 1 1.5-.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.7 1.4 2.4-1.4 1.2a8 8 0 0 1 0 1.8Z"/></svg><span>Menu</span></button>
+</nav>
+
+<div id="mobileMenu" class="mobile-menu" hidden aria-hidden="true">
+  <div class="mobile-menu-backdrop" data-mobile-close></div>
+  <section class="mobile-menu-panel" role="dialog" aria-modal="true" aria-label="Menu e-KOSSTA">
+    <div class="mobile-menu-head">
+      <div><small>MENU UTAMA</small><strong>e-KOSSTA</strong></div>
+      <button class="mobile-menu-close" type="button" data-mobile-close aria-label="Tutup menu">×</button>
+    </div>
+    <div id="mobileMenuContent" class="mobile-menu-content"></div>
+  </section>
+</div>
+<div id="reportParticipantModal" class="report-participant-modal" hidden>
+  <div class="report-participant-backdrop" data-report-participant-close></div>
+  <section class="report-participant-dialog" role="dialog" aria-modal="true" aria-labelledby="reportParticipantModalTitle">
+    <header class="report-participant-dialog-head"><div><span class="editor-kicker">PESERTA LAPORAN</span><h3 id="reportParticipantModalTitle">Tambah Peserta</h3><p>Pilih nama murid sebenar daripada senarai kelas e-KOSSTA.</p></div><button type="button" class="report-participant-close" data-report-participant-close aria-label="Tutup">×</button></header>
+    <div class="report-participant-toolbar"><div><label for="reportParticipantClassFilter">Tapis ikut kelas</label><select id="reportParticipantClassFilter"><option value="">Semua kelas</option></select></div><div><label for="reportParticipantSearch">Cari murid</label><input id="reportParticipantSearch" type="search" placeholder="Nama atau nombor murid..."></div></div>
+    <div class="report-participant-selection-tools"><span id="reportParticipantSelectedCount">0 murid dipilih</span><div><button id="reportParticipantSelectVisibleBtn" type="button" class="btn secondary small compact-btn">Pilih dipaparkan</button><button id="reportParticipantClearVisibleBtn" type="button" class="btn secondary small compact-btn">Nyahpilih dipaparkan</button></div></div>
+    <div id="reportParticipantModalStatus" class="report-participant-modal-status" role="status" aria-live="polite">Memuatkan senarai murid...</div>
+    <div id="reportParticipantListWrap" class="report-participant-list-wrap"><div class="empty">Memuatkan senarai murid...</div></div>
+    <footer class="report-participant-dialog-actions"><button type="button" class="btn secondary" data-report-participant-close>Batal</button><button id="reportParticipantSaveBtn" type="button" class="btn primary" disabled>Simpan Peserta</button></footer>
+  </section>
+</div>
+<div id="toast" class="toast"></div><script src="app.js"></script></body></html>

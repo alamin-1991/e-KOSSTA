@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101714">
+<title>e-KOSSTA — Terminal UI v4 Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="material-ui.css">
+<link rel="stylesheet" href="ekossta-ui-refresh.css">
+<link rel="stylesheet" href="ekossta-terminal-ui.css?v=4-20261023">
+<style>
+.preview-topbar {display:flex;align-items:center;justify-content:space-between;gap:18px;margin:-8px 0 22px;padding:14px 18px;background:#1A2922;color:#EDF4EC;border-bottom:1px solid #35564A}
+.preview-topbar strong {font-family:'IBM Plex Mono',monospace;letter-spacing:-.04em}
+.preview-topbar .crumb {font-size:11px;margin-right:12px;color:#A9B9AE}
+.preview-theme {background:transparent;color:#D8E267;border:1px solid #35564A;padding:8px 12px;font:700 11px 'IBM Plex Mono',monospace;cursor:pointer}
+.preview-intro {margin:0 0 16px;color:var(--muted);font-size:12px}
+.preview-section {margin-top:22px}
+.preview-label {font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--ekt-muted);margin-bottom:8px}
+.preview-card {background:var(--surface2);padding:clamp(16px,2vw,28px);border-left:2px solid var(--ekt-teal)}
+html.dark .preview-card {border-left-color:var(--ekt-lime)}
+.preview-table-wrap {overflow-x:auto}
+@media(max-width:700px){.preview-topbar{padding:12px}.preview-topbar .crumb{display:none}}
+</style>
+</head>
+<body>
+<main class="app-shell" style="margin-left:0!important">
+  <div class="preview-topbar"><div><span class="crumb">e-KOSSTA / UI REVIEW</span><strong>Terminal UI v4</strong></div><button class="preview-theme" id="themeToggle" type="button">TOGGLE LIGHT / DARK</button></div>
+  <div class="container">
+    <div id="pageSubnav" class="page-subnav" aria-label="Submenu halaman">
+      <div class="page-subnav-top"><span class="page-subnav-kicker">KOKURIKULUM</span><span class="page-subnav-current">Unit Kokurikulum</span></div>
+      <div class="page-subnav-tabs" role="tablist" aria-label="Kokurikulum">
+        <button class="subnav-tab active" type="button" role="tab" aria-selected="true" data-subnav-page="unit">Unit Kokurikulum</button>
+        <button class="subnav-tab" type="button" role="tab" aria-selected="false" data-subnav-page="attendance">Kehadiran</button>
+        <button class="subnav-tab" type="button" role="tab" aria-selected="false" data-subnav-page="activity">Aktiviti &amp; Acara</button>
+        <button class="subnav-tab" type="button" role="tab" aria-selected="false" data-subnav-page="pencapaian">Pencapaian</button>
+      </div>
+    </div>
+    <section class="preview-card preview-section">
+      <div class="preview-label">KOKURIKULUM / UNIT</div>
+      <div id="unitCards" class="unit-grid unit-data-panel">
+        <section class="unit-category-section"><div class="unit-section-heading"><h3>Unit Beruniform</h3></div>
+          <div class="unit-table-scroll"><table class="unit-data-table"><thead><tr><th>Unit</th><th>Jumlah</th><th>Lelaki</th><th>Perempuan</th><th>Peratus</th><th>Butiran</th></tr></thead><tbody>
+          <tr><td>KRS</td><td>42</td><td>24</td><td>18</td><td>24.00</td><td><button class="unit-row-open" type="button">›</button></td></tr>
+          <tr><td>Pengakap</td><td>35</td><td>20</td><td>15</td><td>20.00</td><td><button class="unit-row-open" type="button">›</button></td></tr>
+          </tbody></table></div>
+        </section>
+        <section class="unit-category-section"><div class="unit-section-heading"><h3>Kelab</h3></div>
+          <div class="unit-table-scroll"><table class="unit-data-table"><thead><tr><th>Unit</th><th>Jumlah</th><th>Lelaki</th><th>Perempuan</th><th>Peratus</th><th>Butiran</th></tr></thead><tbody>
+          <tr><td>Kelab Bahasa Melayu</td><td>31</td><td>12</td><td>19</td><td>17.71</td><td><button class="unit-row-open" type="button">›</button></td></tr>
+          </tbody></table></div>
+        </section>
+      </div>
+    </section>
+    <section class="preview-section">
+      <div class="preview-label">UNIT / RINGKASAN KEHADIRAN</div>
+      <div class="preview-card">
+        <div class="unit-overview-panel"><div class="unit-overview-section-head"><h3>Rekod Kehadiran Minggu 1–15</h3></div>
+          <div id="unitOverviewWeeks" class="table-wrap"><table class="unit-overview-table"><thead><tr><th>Minggu</th><th>Tarikh</th><th>Perjumpaan</th><th>Ahli</th><th>Hadir</th><th>Tidak Hadir</th><th>Bersebab</th><th>Cuti</th><th>Kehadiran</th></tr></thead><tbody>
+            <tr><td><b>1</b></td><td>—</td><td>—</td><td>42</td><td>38</td><td>2</td><td>1</td><td>1</td><td><b>90%</b></td></tr>
+            <tr><td><b>2</b></td><td>—</td><td>—</td><td>42</td><td>40</td><td>1</td><td>1</td><td>0</td><td><b>95%</b></td></tr>
+            <tr><td><b>3</b></td><td>—</td><td>—</td><td>42</td><td>0</td><td>0</td><td>0</td><td>0</td><td><b>0%</b></td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<script>
+document.getElementById('themeToggle').addEventListener('click',()=>{document.documentElement.classList.toggle('dark')});
+document.querySelectorAll('[data-subnav-page]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-subnav-page]').forEach(other=>{other.classList.toggle('active',other===btn);other.setAttribute('aria-selected',other===btn?'true':'false')})}));
+</script>
+</body>
+</html>

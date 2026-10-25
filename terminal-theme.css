@@ -1,0 +1,99 @@
+/* e-KOSSTA Terminal UI — visual layer only. Existing DOM, JS IDs, events and GAS calls are untouched. */
+:root {
+  color-scheme: light;
+  --bg:#F4F7F5; --surface:#FFFFFF; --surface-2:#EEF3F0; --surface-raised:#E5F0E9;
+  --text:#17231D; --muted:#52645A; --border:#D8E2DC; --accent:#087C52;
+  --accent-strong:#056440; --accent-soft:#E5FEC9; --success:#087C52;
+  --warning:#946200; --danger:#C52F49; --info:#245FC7;
+  --shadow:0 8px 26px rgba(20,42,31,.055);
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:18px;
+  --font-ui:'Space Grotesk',Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-data:'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+html.dark {
+  color-scheme:dark;
+  --bg:#0B1512; --surface:#191E1C; --surface-2:#131A16; --surface-raised:#234237;
+  --text:#F4F7F5; --muted:#9BAAA3; --border:#293630; --accent:#43F6AB;
+  --accent-strong:#049157; --accent-soft:#E5FEC9; --success:#43F6AB;
+  --warning:#F5C451; --danger:#FF647C; --info:#79B8FF;
+  --shadow:0 12px 34px rgba(0,0,0,.20);
+}
+html,body{background:var(--bg)!important;color:var(--text)!important;font-family:var(--font-ui)!important}
+body{letter-spacing:0!important}
+/* Preserve the existing sidebar structure and navigation; only restyle its surfaces. */
+.sidebar{background:var(--surface)!important;color:var(--text)!important;border-right:1px solid var(--border)!important;box-shadow:none!important}
+.sidebar .brand b,.sidebar .profile-mini b{color:var(--text)!important;font-family:var(--font-ui)!important}
+.sidebar .brand small,.sidebar .profile-mini small,.sidebar .nav-section-label{color:var(--muted)!important}
+.sidebar .brand-mark{background:var(--accent)!important;color:#0B1512!important;border-radius:8px!important}
+.sidebar .nav-item{color:var(--muted)!important;border:1px solid transparent!important;transition:background .16s ease,color .16s ease,border-color .16s ease!important}
+.sidebar .nav-item:hover{background:var(--surface-2)!important;color:var(--text)!important}
+.sidebar .nav-item.active{background:var(--accent-soft)!important;color:#123226!important;border-color:rgba(67,246,171,.18)!important}
+html.dark .sidebar .nav-item.active{background:rgba(67,246,171,.12)!important;color:var(--accent)!important;border-color:rgba(67,246,171,.2)!important}
+.sidebar .nav-icon,.sidebar .nav-item svg{stroke:currentColor!important}
+.sidebar .sidebar-bottom{border-top:1px solid var(--border)!important}
+.sidebar .avatar{background:var(--surface-raised)!important;color:var(--accent)!important}
+/* Main layout surfaces */
+.app-shell,.container{background:transparent!important;color:var(--text)!important}
+.desktop-topbar,.mobile-topbar{background:color-mix(in srgb,var(--surface) 92%,transparent)!important;border-color:var(--border)!important;color:var(--text)!important;box-shadow:none!important}
+.breadcrumb,.desktop-topbar .breadcrumb{color:var(--muted)!important}
+.user-chip{background:var(--surface-2)!important;border:1px solid var(--border)!important;color:var(--text)!important}
+/* Cards and panels */
+.card,.unit-card,.unit-summary>div,.stat,.attendance-panel,.unit-overview-panel,.activity-panel,.form-card,.filter-card,.settings-row,.modal-content,.report-card,.document-card{
+ background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:var(--radius-lg)!important;box-shadow:var(--shadow)!important
+}
+.card{padding:22px!important}
+.card h1,.card h2,.card h3,.material-section-title,.unit-card h3{color:var(--text)!important;font-family:var(--font-ui)!important;letter-spacing:-.025em!important}
+.card p,.muted,.help-text,.field-hint{color:var(--muted)!important}
+#dashboardHero,.hero{background:var(--surface)!important;border-color:var(--border)!important}
+.hero>div>span,.section-kicker,.eyebrow{color:var(--accent)!important;font-family:var(--font-data)!important;letter-spacing:.08em!important}
+/* Remove legacy rainbow dashboard cards; use consistent terminal panels. */
+#dashboardGrid>.card,#dashboardGrid>.card:nth-child(4n+1),#dashboardGrid>.card:nth-child(4n+2),#dashboardGrid>.card:nth-child(4n+3),#dashboardGrid>.card:nth-child(4n+4){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
+#dashboardGrid>.card p,#dashboardGrid>.card h2,#dashboardGrid>.card small{color:var(--text)!important}
+/* KPI numbers and data labels */
+.stat b,.attendance-kpi-value,.kpi-value,.unit-summary strong,.metric-value{font-family:var(--font-data)!important;font-variant-numeric:tabular-nums!important;color:var(--accent)!important;letter-spacing:-.04em!important}
+.stat,.attendance-kpis>div{background:var(--surface-2)!important;border-color:var(--border)!important}
+/* Buttons */
+.btn,.icon-btn,.theme-toggle{font-family:var(--font-ui)!important;transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease!important}
+.btn{border-radius:var(--radius-md)!important;min-height:40px;box-shadow:none!important;font-weight:650!important}
+.btn.primary,.btn.primary.full{background:var(--accent)!important;color:#0B1512!important;border:1px solid var(--accent)!important}
+html.dark .btn.primary,html.dark .btn.primary.full{color:#082117!important}
+.btn.primary:hover{filter:brightness(1.04)!important;transform:translateY(-1px)}
+.btn.secondary,.btn:not(.primary):not(.danger){background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important}
+.btn.secondary:hover,.btn:not(.primary):not(.danger):hover{background:var(--surface-2)!important;border-color:var(--accent)!important}
+.btn.danger,.danger-btn{background:color-mix(in srgb,var(--danger) 12%,var(--surface))!important;color:var(--danger)!important;border:1px solid color-mix(in srgb,var(--danger) 38%,var(--border))!important}
+.icon-btn,.theme-toggle{background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:var(--radius-md)!important}
+/* Form controls */
+input,select,textarea,.form-control,.search-input{background:var(--surface-2)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:var(--radius-md)!important;box-shadow:none!important}
+input::placeholder,textarea::placeholder{color:var(--muted)!important;opacity:.8}
+input:focus,select:focus,textarea:focus,.form-control:focus{border-color:var(--accent)!important;outline:2px solid color-mix(in srgb,var(--accent) 22%,transparent)!important;outline-offset:1px!important}
+label,.form-label{color:var(--text)!important;font-weight:600!important}
+/* Tables */
+.table-wrap,.table-container,.table-responsive{border:1px solid var(--border)!important;border-radius:var(--radius-md)!important;background:var(--surface)!important;overflow:auto}
+table,.table-wrap table{background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
+thead,th{background:var(--surface-2)!important;color:var(--muted)!important;font-family:var(--font-data)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.035em!important;text-transform:uppercase}
+th,td{border-bottom:1px solid var(--border)!important}
+td{color:var(--text)!important}
+tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,var(--surface))!important}
+/* Status chips */
+.status,.badge,.chip{border-radius:999px!important;font-family:var(--font-data)!important;font-size:11px!important;font-weight:600!important}
+.ok,.success,.status.success{background:color-mix(in srgb,var(--success) 14%,var(--surface))!important;color:var(--success)!important}
+.pending,.status.pending{background:var(--surface-2)!important;color:var(--muted)!important}
+.loading,.warning,.status.warning{background:color-mix(in srgb,var(--warning) 15%,var(--surface))!important;color:var(--warning)!important}
+.error,.danger,.status.error{background:color-mix(in srgb,var(--danger) 13%,var(--surface))!important;color:var(--danger)!important}
+/* Modals, dropdowns and feedback */
+.modal,.dialog,.activity-dialog,.dropdown-menu,.popover{background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:var(--radius-xl)!important;box-shadow:0 24px 70px rgba(0,0,0,.28)!important}
+.result,.empty,.toast,.notice,.alert{border-radius:var(--radius-md)!important}
+.result,.empty{background:var(--surface-2)!important;color:var(--muted)!important;border:1px solid var(--border)!important}
+.toast{background:var(--surface-raised)!important;color:var(--text)!important;border:1px solid var(--border)!important}
+/* Charts and decorative data */
+.chart-card,.chart-panel,.analytics-panel{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:var(--radius-lg)!important}
+code,.mono,.timestamp,.record-id,.data-value{font-family:var(--font-data)!important;font-variant-numeric:tabular-nums!important}
+hr,.divider{border-color:var(--border)!important}
+:focus-visible{outline:2px solid var(--accent)!important;outline-offset:3px!important}
+::selection{background:var(--accent-soft);color:#10271D}
+/* Keep mobile layout behavior; restyle its existing navigation only. */
+.mobile-nav{background:var(--surface)!important;border-color:var(--border)!important}
+.mobile-nav .nav-item.active{background:var(--accent-soft)!important;color:#123226!important}
+html.dark .mobile-nav .nav-item.active{background:rgba(67,246,171,.12)!important;color:var(--accent)!important}
+@media(max-width:768px){.card{padding:16px!important;border-radius:var(--radius-md)!important}.app-shell .container{padding-bottom:12px}.desktop-topbar{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

@@ -1,0 +1,30 @@
+{
+  "name": "e-KOSSTA UI Materials V2",
+  "version": "2.0.0",
+  "fontFamily": "Roboto, Arial, sans-serif",
+  "radius": {"sm": "12px", "md": "18px", "pill": "999px"},
+  "core": {
+    "cream": {"label": "Krim", "value": "#FCFAEE", "usage": "Latar utama Light Mode"},
+    "teal": {"label": "Teal", "value": "#035A52", "usage": "Identiti, CTA utama, fokus"},
+    "limeSoft": {"label": "Lime lembut", "value": "#D8E267", "usage": "Kad statistik dan sorotan sekunder"},
+    "limeBright": {"label": "Lime terang", "value": "#BDF806", "usage": "Menu aktif dan aksen utama"}
+  },
+  "extended": {
+    "charcoal": {"label": "Charcoal", "value": "#151313", "usage": "Sidebar dan permukaan gelap"},
+    "coral": {"label": "Coral", "value": "#FF5734", "usage": "Tindakan sekunder dan amaran"},
+    "lavender": {"label": "Lavender", "value": "#BE94F5", "usage": "Kategori, makluman dan variasi kad"},
+    "yellow": {"label": "Kuning", "value": "#FCCC42", "usage": "Perhatian dan statistik"},
+    "whiteSoft": {"label": "Putih lembut", "value": "#F7F7F5", "usage": "Permukaan kad dan teks atas gelap"}
+  },
+  "semantic": {
+    "success": {"background": "#E6F1C8", "foreground": "#36551A", "border": "#C7DD94"},
+    "warning": {"background": "#FFF1C4", "foreground": "#775100", "border": "#F0D97A"},
+    "danger": {"background": "#FFE0D8", "foreground": "#8E2E19", "border": "#FFB6A4"},
+    "info": {"background": "#EEE2FF", "foreground": "#57368C", "border": "#D5B8FF"}
+  },
+  "themes": {
+    "light": {"background": "#FCFAEE", "surface": "#F7F7F5", "surfaceRaised": "#FFFFFF", "text": "#151E1C", "muted": "#69716E", "border": "#D6DBD5", "sidebar": "#151313"},
+    "dark": {"background": "#151313", "surface": "#232322", "surfaceRaised": "#2C2C2A", "text": "#F7F7F5", "muted": "#B4B7B3", "border": "#494947", "sidebar": "#0C0C0C"}
+  },
+  "components": ["button", "icon-button", "input", "search", "select", "textarea", "checkbox", "radio", "switch", "badge", "alert", "toast", "dialog", "progress", "skeleton", "tabs", "segmented-control", "breadcrumb", "pagination", "stat-card", "table", "avatar", "tooltip", "empty-state"]
+}

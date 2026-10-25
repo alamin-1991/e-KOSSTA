@@ -1,0 +1,105 @@
+{
+  "core_colors": {
+    "cream": {
+      "label": "Krim",
+      "base": "#FCFAEE"
+    },
+    "teal": {
+      "label": "Teal",
+      "base": "#035A52"
+    },
+    "lime-soft": {
+      "label": "Lime lembut",
+      "base": "#D8E267"
+    },
+    "lime-bright": {
+      "label": "Lime terang",
+      "base": "#BDF806"
+    }
+  },
+  "scales": {
+    "cream": {
+      "50": "#FFFFFE",
+      "100": "#FFFEFD",
+      "200": "#FEFEFB",
+      "300": "#FEFDF7",
+      "400": "#FDFCF3",
+      "500": "#FCFAEE",
+      "600": "#E3E1D6",
+      "700": "#C5C3BA",
+      "800": "#9C9B94",
+      "900": "#71706B",
+      "950": "#4C4B47"
+    },
+    "teal": {
+      "50": "#F2F7F6",
+      "100": "#E6EEEE",
+      "200": "#C0D6D4",
+      "300": "#8EB5B1",
+      "400": "#4F8C86",
+      "500": "#035A52",
+      "600": "#03514A",
+      "700": "#024640",
+      "800": "#023833",
+      "900": "#012825",
+      "950": "#011B19"
+    },
+    "lime-soft": {
+      "50": "#FDFEF7",
+      "100": "#FBFCF0",
+      "200": "#F5F8D9",
+      "300": "#EDF2BB",
+      "400": "#E4EB95",
+      "500": "#D8E267",
+      "600": "#C2CB5D",
+      "700": "#A8B050",
+      "800": "#868C40",
+      "900": "#61662E",
+      "950": "#41441F"
+    },
+    "lime-bright": {
+      "50": "#FCFFF3",
+      "100": "#F8FEE6",
+      "200": "#EEFDC1",
+      "300": "#E1FC8F",
+      "400": "#D1FA51",
+      "500": "#BDF806",
+      "600": "#AADF05",
+      "700": "#93C105",
+      "800": "#759A04",
+      "900": "#557003",
+      "950": "#394A02"
+    }
+  },
+  "supporting_colors": {
+    "charcoal": {
+      "label": "Charcoal",
+      "base": "#151313",
+      "usage": "Sidebar gelap, teks berkontras tinggi dan panel gelap"
+    },
+    "coral": {
+      "label": "Coral",
+      "base": "#FF5734",
+      "usage": "CTA sekunder, status tindakan dan penegasan visual"
+    },
+    "lavender": {
+      "label": "Lavender",
+      "base": "#BE94F5",
+      "usage": "Kad kategori atau seksyen sekunder"
+    },
+    "yellow": {
+      "label": "Kuning",
+      "base": "#FCCC42",
+      "usage": "Kad sorotan, label dan statistik"
+    },
+    "off-white": {
+      "label": "Putih lembut",
+      "base": "#F7F7F5",
+      "usage": "Permukaan kad dan panel cerah"
+    }
+  },
+  "palette_version": "1.1",
+  "notes": [
+    "Warna asas rasmi e-KOSSTA dikekalkan di bawah core_colors. supporting_colors ialah warna tambahan pilihan untuk mempelbagaikan kad, label dan elemen UI tanpa menggantikan warna identiti."
+  ]
+}
