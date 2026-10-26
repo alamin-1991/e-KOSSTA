@@ -953,3 +953,437 @@
     white-space: nowrap !important;
   }
 }
+
+
+/* V4: one compact horizontal row per unit on narrow screens.
+   Scope is mobile-only; desktop layout is unchanged. */
+@media screen and (max-width: 768px) {
+  #unitCards .unit-data-table,
+  #unitCards .unit-data-table tbody {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #unitCards .unit-data-table tbody {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 7px !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row {
+    display: grid !important;
+    grid-template-columns: minmax(76px, 1.35fr) repeat(3, minmax(38px, .72fr)) 29px !important;
+    align-items: center !important;
+    justify-content: stretch !important;
+    gap: 4px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    position: relative !important;
+    padding: 8px 7px !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid var(--border, #35564a) !important;
+    border-radius: 8px !important;
+    background: var(--surface, #151f1b) !important;
+    box-sizing: border-box !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row > td {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: stretch !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 4px 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Unit name stays in the same row as the three statistics. */
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-name-cell {
+    grid-column: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+    padding: 3px 3px 3px 1px !important;
+    border: 0 !important;
+    min-height: 34px !important;
+  }
+
+  #unitCards .unit-data-table td.unit-name-cell > span {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden !important;
+    max-height: 2.5em !important;
+  }
+
+  #unitCards .unit-data-table td.unit-name-cell .unit-row-status {
+    display: none !important;
+  }
+
+  /* Compact inline labels: Jml 49 | L 31 | P 18 (no second metric row). */
+  #unitCards .unit-data-table td.unit-number-cell {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 3px 0 !important;
+  }
+  #unitCards .unit-data-table td.unit-number-cell::before {
+    display: inline !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    color: var(--muted, #a9b9ae) !important;
+    overflow: visible !important;
+  }
+  #unitCards .unit-data-table td:nth-child(2)::before { content: "Jml" !important; }
+  #unitCards .unit-data-table td:nth-child(3)::before { content: "L" !important; }
+  #unitCards .unit-data-table td:nth-child(4)::before { content: "P" !important; }
+
+  #unitCards .unit-data-table td.unit-percent-cell {
+    display: none !important;
+  }
+
+  #unitCards .unit-data-table td.unit-action-cell {
+    grid-column: 5 !important;
+    display: flex !important;
+    position: static !important;
+    inset: auto !important;
+    width: 29px !important;
+    min-width: 29px !important;
+    max-width: 29px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #unitCards .unit-data-table td.unit-action-cell .unit-row-open {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    box-sizing: border-box !important;
+  }
+  #unitCards .unit-data-table td.unit-action-cell .unit-row-open svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Slightly tighter grid on very narrow phones. */
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-name-cell { min-width: 0 !important; }
+}
+@media screen and (max-width: 360px) {
+  #unitCards .unit-data-table tr.unit-data-row {
+    grid-template-columns: minmax(68px, 1.2fr) repeat(3, minmax(34px, .65fr)) 27px !important;
+    gap: 3px !important;
+    padding: 7px 5px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td { font-size: 10px !important; }
+  #unitCards .unit-data-table td.unit-name-cell { font-size: 10px !important; }
+  #unitCards .unit-data-table td.unit-number-cell { gap: 2px !important; font-size: 10px !important; }
+  #unitCards .unit-data-table td.unit-number-cell::before { font-size: 7px !important; }
+  #unitCards .unit-data-table td.unit-action-cell { width: 27px !important; min-width: 27px !important; max-width: 27px !important; }
+  #unitCards .unit-data-table td.unit-action-cell .unit-row-open { width: 26px !important; min-width: 26px !important; max-width: 26px !important; height: 26px !important; min-height: 26px !important; max-height: 26px !important; }
+}
+
+/* V5 FIX: tightly packed, single-line unit row on phones.
+   The unit name, Jml, L, P and details action stay on one horizontal line.
+   Only applies to screen widths <= 768px; desktop/print layouts are untouched. */
+@media screen and (max-width: 768px) {
+  #unitCards .unit-data-table tr.unit-data-row {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    padding: 6px 7px !important;
+    min-height: 46px !important;
+    overflow: hidden !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row > td {
+    flex-shrink: 0 !important;
+    align-self: center !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 2px 1px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    line-height: 1.15 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Name uses the remaining width, never wraps into a second line. */
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-name-cell {
+    display: block !important;
+    flex: 1 1 0% !important;
+    min-width: 56px !important;
+    max-width: none !important;
+    overflow: hidden !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    padding: 2px 3px 2px 1px !important;
+  }
+  #unitCards .unit-data-table td.unit-name-cell > span {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: initial !important;
+    max-height: none !important;
+  }
+  #unitCards .unit-data-table td.unit-name-cell .unit-row-status {
+    display: none !important;
+  }
+
+  /* Inline compact statistics prevent large empty tracks between numbers. */
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-number-cell {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: baseline !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(2).unit-number-cell { width: 44px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(3).unit-number-cell { width: 30px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(4).unit-number-cell { width: 33px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-number-cell::before {
+    display: inline !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--muted, #a9b9ae) !important;
+    font-size: 8px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(2)::before { content: "Jml" !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(3)::before { content: "L" !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(4)::before { content: "P" !important; }
+
+  /* Percentage is omitted on phone to make room for the full name and 3 values. */
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-percent-cell {
+    display: none !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell {
+    display: flex !important;
+    flex: 0 0 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: static !important;
+    inset: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell .unit-row-open {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    margin: 0 !important;
+    padding: 3px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell .unit-row-open svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  #unitCards .unit-data-table tr.unit-data-row { gap: 2px !important; padding-inline: 5px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-name-cell { font-size: 9px !important; min-width: 48px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(2).unit-number-cell { width: 41px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(3).unit-number-cell { width: 27px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(4).unit-number-cell { width: 30px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-number-cell { font-size: 9px !important; gap: 2px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-number-cell::before { font-size: 7px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell,
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell .unit-row-open { width: 24px !important; min-width: 24px !important; max-width: 24px !important; }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell .unit-row-open { flex-basis: 24px !important; height: 24px !important; min-height: 24px !important; max-height: 24px !important; }
+}
+
+/* V6: mobile unit rows packed to the width needed by the longest unit name.
+   Keep the name, Jml, L, P and details control close together on one line. */
+@media screen and (max-width: 768px) {
+  #unitCards .unit-data-table tr.unit-data-row {
+    justify-content: flex-start !important;
+    gap: 3px !important;
+    padding: 6px 7px !important;
+    overflow: hidden !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-name-cell {
+    flex: 0 1 142px !important;
+    width: 142px !important;
+    min-width: 0 !important;
+    max-width: 142px !important;
+    overflow: hidden !important;
+    padding-right: 2px !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-name-cell > span {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(2).unit-number-cell {
+    flex: 0 0 41px !important;
+    width: 41px !important;
+    min-width: 41px !important;
+    max-width: 41px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(3).unit-number-cell {
+    flex: 0 0 29px !important;
+    width: 29px !important;
+    min-width: 29px !important;
+    max-width: 29px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td:nth-child(4).unit-number-cell {
+    flex: 0 0 35px !important;
+    width: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-number-cell {
+    gap: 2px !important;
+    padding-inline: 0 !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-number-cell::before {
+    font-size: 7px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell {
+    flex: 0 0 25px !important;
+    width: 25px !important;
+    min-width: 25px !important;
+    max-width: 25px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row > td.unit-action-cell .unit-row-open {
+    flex-basis: 24px !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+  }
+}
+
+/* V6: full-bleed mobile navigation, flush to left/right/bottom edges.
+   Include the device safe area and reserve room below the page content. */
+@media screen and (max-width: 768px) {
+  .mobile-nav,
+  #mobileNav.mobile-nav {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+    padding: 5px 6px calc(5px + env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 14px 14px 0 0 !important;
+    gap: 2px !important;
+    z-index: 100 !important;
+  }
+
+  .mobile-nav .nav-item {
+    min-width: 0 !important;
+    flex: 1 1 0 !important;
+    padding: 5px 1px !important;
+    margin: 0 !important;
+  }
+
+  .app-shell {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
