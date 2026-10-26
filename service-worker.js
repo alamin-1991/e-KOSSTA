@@ -1,8 +1,9 @@
-const CACHE = 'ekossta-mobile-responsive-20261026-v1';
+const CACHE = 'ekossta-ios-pwa-20261027-v1';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
   './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css',
   './app.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
+  './ekossta-mobile-responsive.css', './apple-touch-icon.png', './icon-192.png', './icon-512.png',
   './assets/dashboard-pixel-art.webp'
 ];
 self.addEventListener('install', event => {
