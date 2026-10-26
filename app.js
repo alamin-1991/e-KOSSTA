@@ -534,7 +534,7 @@ function pajskClassPrintHtml_(dataOverride,kelasOverride){
 function updatePajskPrintScope_(){
   const selected=String($('analysisPajskClassFilter')?.value||'').trim();
   const btn=$('analysisPajskPrintBtn');
-  if(btn)btn.textContent=selected?'▣ Cetak Kelas / PDF':'▣ Cetak Semua Kelas / PDF';
+  if(btn)btn.textContent='▣ Cetak';
   const status=$('analysisPajskStatus');
   if(status&&PAJSK_CACHE_.loaded){
     if(selected){

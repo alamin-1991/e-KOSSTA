@@ -1,7 +1,7 @@
-const CACHE = 'ekossta-report-participant-choice-20261025';
+const CACHE = 'ekossta-mobile-responsive-20261026-v1';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
-  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css',
+  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css',
   './app.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
   './assets/dashboard-pixel-art.webp'
 ];

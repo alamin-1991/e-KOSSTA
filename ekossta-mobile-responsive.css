@@ -1,0 +1,700 @@
+/*
+ * e-KOSSTA Mobile Responsive Patch V1 — 2026-10-26
+ * Scope: smartphone/tablet layout only. Does not change data, API calls,
+ * role/session logic, saving, navigation handlers or print layout.
+ */
+
+@media screen and (max-width: 768px) {
+  :root { --ekm-mobile-nav-height: 76px; }
+
+  html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    scroll-padding-bottom: calc(122px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body, #appView, .app-shell, .app-shell .container,
+  #appView .page-section, #appView .card,
+  #appView .analysis-panel, #appView .analysis-pajsk-view,
+  #appView .page-unit, #appView .page-unit-overview {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .app-shell {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-bottom: calc(124px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-x: clip !important;
+  }
+
+  .app-shell .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 10px 0 0 !important;
+    padding: 0 12px 26px !important;
+    overflow-x: clip !important;
+  }
+
+  #appView .card,
+  #appView .analysis-panel,
+  #appView .analysis-pajsk-table-panel,
+  #appView .page-unit-overview {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* 1. A4 template preview: responsive on-screen only; print CSS remains A4. */
+  #reportsEditSection .editor-page-wrap,
+  #reportsSection .editor-page-wrap,
+  .editor-page-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    padding: 8px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  #docEditor.rich-editor,
+  .editor-page-wrap > .rich-editor {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    overflow-wrap: anywhere !important;
+    box-shadow: none !important;
+  }
+
+  #docEditor img, #docEditor svg, #docEditor video,
+  .editor-page-wrap .rich-editor img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  #docEditor table, #docEditor .letter-table,
+  .editor-page-wrap .rich-editor table {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+
+  #docEditor th, #docEditor td,
+  .editor-page-wrap .rich-editor th,
+  .editor-page-wrap .rich-editor td {
+    min-width: 0 !important;
+    padding: 5px !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    font-size: 11px !important;
+  }
+
+  .reports-module-heading,
+  .editor-heading,
+  .editor-heading-actions,
+  .compact-editor-actions,
+  .report-preview-heading,
+  .report-section-heading,
+  .analysis-heading,
+  .analysis-panel-heading,
+  .unit-overview-head,
+  .unit-overview-actions {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* 2. Unit list: each unit becomes a compact card, not a wide table. */
+  #unitCards .unit-table-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    margin: 8px 0 0 !important;
+  }
+
+  #unitCards .unit-data-table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  #unitCards .unit-data-table thead { display: none !important; }
+  #unitCards .unit-data-table tbody {
+    display: grid !important;
+    width: 100% !important;
+    gap: 9px !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 9px 42px 9px 9px !important;
+    margin: 0 !important;
+    border: 1px solid var(--border, #35564a) !important;
+    border-radius: 12px !important;
+    background: var(--surface2, #192620) !important;
+    box-sizing: border-box !important;
+  }
+
+  #unitCards .unit-data-table tr.unit-data-row td {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    width: auto !important;
+    padding: 5px 2px !important;
+    border: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  #unitCards .unit-data-table td.unit-name-cell {
+    grid-column: 1 / -1 !important;
+    align-items: flex-start !important;
+    padding: 2px 20px 8px 2px !important;
+    text-align: left !important;
+    font-size: 12px !important;
+    font-weight: 750 !important;
+    border-bottom: 1px solid var(--border, #35564a) !important;
+    margin-bottom: 4px !important;
+  }
+
+  #unitCards .unit-data-table .unit-number-cell::before,
+  #unitCards .unit-data-table .unit-percent-cell::before {
+    display: block !important;
+    margin-bottom: 3px !important;
+    color: var(--muted, #a9b9ae) !important;
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: .015em !important;
+    white-space: nowrap !important;
+  }
+  #unitCards .unit-data-table td:nth-child(2)::before { content: "JUMLAH"; }
+  #unitCards .unit-data-table td:nth-child(3)::before { content: "LELAKI"; }
+  #unitCards .unit-data-table td:nth-child(4)::before { content: "PEREMPUAN"; }
+  #unitCards .unit-data-table td:nth-child(5)::before { content: "%"; }
+
+  #unitCards .unit-data-table td.unit-action-cell {
+    position: absolute !important;
+    top: 8px !important;
+    right: 5px !important;
+    display: block !important;
+    width: 32px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+  #unitCards .unit-row-open {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 5px !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+  }
+  #unitCards .unit-row-open svg { width: 18px !important; height: 18px !important; }
+
+  /* 3. Page submenus: wrap into icon-labelled tiles instead of sideways scrolling. */
+  #pageSubnav.page-subnav {
+    position: relative !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 12px !important;
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  #pageSubnav .page-subnav-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 7px !important;
+    overflow: visible !important;
+    flex-wrap: unset !important;
+    scroll-snap-type: none !important;
+  }
+
+  #pageSubnav .subnav-tab {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 44px !important;
+    height: auto !important;
+    padding: 8px 9px !important;
+    margin: 0 !important;
+    white-space: normal !important;
+    text-align: left !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.25 !important;
+    scroll-snap-align: unset !important;
+  }
+
+  #pageSubnav .subnav-tab::before {
+    content: "" !important;
+    display: block !important;
+    flex: 0 0 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: currentColor !important;
+    -webkit-mask-repeat: no-repeat !important;
+    mask-repeat: no-repeat !important;
+    -webkit-mask-position: center !important;
+    mask-position: center !important;
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+  }
+  #pageSubnav [data-subnav-page="unit"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='16' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M8 9h8M8 13h8M8 17h4' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='16' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M8 9h8M8 13h8M8 17h4' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="attendance"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='5' width='18' height='16' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M7 3v4M17 3v4M3 10h18M8 14l2 2 5-4' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='5' width='18' height='16' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M7 3v4M17 3v4M3 10h18M8 14l2 2 5-4' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="activity"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='4' y='3' width='16' height='18' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M8 8h8M8 12h8M8 16h5' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='4' y='3' width='16' height='18' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M8 8h8M8 12h8M8 16h5' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="pencapaian"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="murid"]::before,
+  #pageSubnav [data-subnav-page="guru"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='7' r='4' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M2 21v-2a7 7 0 0 1 14 0v2M17 4a4 4 0 0 1 0 7M19 15a5 5 0 0 1 3 4v2' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='7' r='4' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M2 21v-2a7 7 0 0 1 14 0v2M17 4a4 4 0 0 1 0 7M19 15a5 5 0 0 1 3 4v2' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="users"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='8' r='3' fill='none' stroke='black' stroke-width='2'/%3E%3Ccircle cx='17' cy='9' r='2.5' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M2 21v-2a6 6 0 0 1 12 0v2M15 16a5 5 0 0 1 7 4v1' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='8' r='3' fill='none' stroke='black' stroke-width='2'/%3E%3Ccircle cx='17' cy='9' r='2.5' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M2 21v-2a6 6 0 0 1 12 0v2M15 16a5 5 0 0 1 7 4v1' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="report-templates"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") !important;
+  }
+  #pageSubnav [data-subnav-page="system-settings"]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m19 14 2 1-2 4-2-1-2 1v2H9v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V5h5v2l2 1 2-1 2 4-2 1Z' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m19 14 2 1-2 4-2-1-2 1v2H9v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V5h5v2l2 1 2-1 2 4-2 1Z' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") !important;
+  }
+
+  /* Unit detail tabs: all choices stay on-screen in a two-column grid. */
+  #unitOverviewTabs.unit-overview-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 10px 0 14px !important;
+  }
+  #unitOverviewTabs .unit-overview-tab {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 44px !important;
+    height: auto !important;
+    padding: 8px 9px !important;
+    margin: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: left !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Analysis tabs / inner menus should wrap too. */
+  .analysis-subtabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    gap: 7px !important;
+    overflow: visible !important;
+  }
+  .analysis-subtab {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 44px !important;
+    height: auto !important;
+    padding: 8px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.25 !important;
+  }
+
+  /* 4. Buttons wrap inside their own boxes; long action rows become stacked. */
+  button, .btn, .compact-btn, .icon-btn,
+  .analysis-actions button, .dashboard-hero-actions button,
+  .editor-heading-actions button, .report-form-header-actions button {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    line-height: 1.25 !important;
+  }
+
+  .analysis-actions,
+  .analysis-pajsk-view .analysis-actions,
+  .dashboard-hero-actions,
+  .editor-heading-actions,
+  .compact-editor-actions,
+  .report-standalone-participants-actions,
+  .report-participant-selection-tools,
+  .report-participant-dialog-actions,
+  .unit-overview-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .analysis-actions .btn,
+  .dashboard-hero-actions .btn,
+  .editor-heading-actions .btn,
+  .compact-editor-actions .btn,
+  .report-standalone-participants-actions .btn,
+  .report-participant-dialog-actions .btn,
+  .unit-overview-actions .btn {
+    flex: 1 1 130px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #analysisPajskRefreshBtn { flex: 1 1 100% !important; }
+  #analysisPajskExportBtn, #analysisPajskPrintBtn { flex: 1 1 130px !important; }
+
+  /* 5. PAJSK student list: show each student's information as a readable card. */
+  #analysisPajskTableWrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  #analysisPajskTableWrap .analysis-pajsk-table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border: 0 !important;
+    background: transparent !important;
+    font-size: 11px !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table thead { display: none !important; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody tr {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 8px !important;
+    margin: 0 !important;
+    border: 1px solid var(--border, #35564a) !important;
+    border-radius: 12px !important;
+    background: var(--surface2, #192620) !important;
+    box-sizing: border-box !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td {
+    display: block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 8px 5px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--border, #35564a) !important;
+    background: transparent !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td::before {
+    display: block !important;
+    margin: 0 0 5px !important;
+    color: var(--muted, #a9b9ae) !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    letter-spacing: .04em !important;
+    text-transform: uppercase !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(1) {
+    grid-column: 1 / -1 !important;
+    padding: 8px 5px 10px !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(1)::before { content: "MURID"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(2)::before { content: "KELAB / PERSATUAN"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(3)::before { content: "BADAN BERUNIFORM"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(4)::before { content: "SUKAN / PERMAINAN"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(5) {
+    grid-column: 1 / -1 !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(5)::before { content: "ACARA / PENYERTAAN"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(6)::before { content: "JUMLAH REKOD"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(7)::before { content: "GRED"; }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(8) {
+    grid-column: 1 / -1 !important;
+    padding-top: 9px !important;
+    border-bottom: 0 !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table tbody td:nth-child(8)::before { content: "TINDAKAN"; }
+  #analysisPajskTableWrap .analysis-pajsk-table .analysis-pajsk-student-cell,
+  #analysisPajskTableWrap .analysis-pajsk-table .analysis-pajsk-unit-record,
+  #analysisPajskTableWrap .analysis-pajsk-table .analysis-pajsk-event-record {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+  #analysisPajskTableWrap .analysis-pajsk-table td .btn {
+    width: 100% !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+  }
+
+  /* Analysis unit table: show totals in a three-column stat row for each unit. */
+  #analysisUnitGenderSlide .table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+  }
+  #analysisUnitGenderSlide .analysis-unit-gender-table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+  #analysisUnitGenderSlide .analysis-unit-gender-table thead { display: none !important; }
+  #analysisUnitGenderSlide .analysis-unit-gender-table tbody { display: grid !important; gap: 9px !important; }
+  #analysisUnitGenderSlide .analysis-unit-gender-table tr {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    position: relative !important;
+    min-width: 0 !important;
+    padding: 8px !important;
+    border: 1px solid var(--border, #35564a) !important;
+    border-radius: 11px !important;
+    background: var(--surface2, #192620) !important;
+  }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: 100% !important;
+    padding: 6px 3px !important;
+    border: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+    font-size: 11px !important;
+  }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:first-child {
+    grid-column: 1 / -1 !important;
+    align-items: flex-start !important;
+    border-bottom: 1px solid var(--border, #35564a) !important;
+    margin-bottom: 4px !important;
+    text-align: left !important;
+  }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(2)::before { content: "JUMLAH"; }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(3)::before { content: "LELAKI"; }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(4)::before { content: "PEREMPUAN"; }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(2)::before,
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(3)::before,
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(4)::before {
+    display: block !important;
+    margin-bottom: 4px !important;
+    color: var(--muted, #a9b9ae) !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+  }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(5) { grid-column: 1 / -1 !important; }
+  #analysisUnitGenderSlide .analysis-unit-gender-table td:nth-child(6) { grid-column: 1 / -1 !important; align-items: flex-start !important; }
+
+  /* Modal, filter and form controls fit narrow viewports. */
+  .analysis-pajsk-filterbar,
+  .analysis-filterbar,
+  .analysis-unit-table-filters,
+  .report-participant-toolbar,
+  .report-form-grid,
+  .editor-meta-grid,
+  .system-settings-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  input, select, textarea {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .report-participant-dialog,
+  .analysis-pajsk-detail-dialog,
+  .unit-member-dialog,
+  .activity-dialog {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - 24px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 6. Bottom navigation adapts to narrow widths and safe-area inset. */
+  body:not(.logged-out) #mobileNav,
+  body:not(.logged-out) .mobile-nav {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: var(--ekm-mobile-nav-height) !important;
+    max-width: calc(100vw - 16px) !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+    padding: 5px !important;
+    padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 15px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    z-index: 100 !important;
+  }
+
+  #mobileNav .nav-item {
+    display: flex !important;
+    flex: unset !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 64px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 6px 2px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  #mobileNav .nav-item svg,
+  #mobileNav .nav-item .nav-icon {
+    display: block !important;
+    flex: 0 0 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  #mobileNav .nav-item span:last-child {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 18px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: clamp(7px, 2.25vw, 9px) !important;
+    line-height: 1.15 !important;
+    font-weight: 750 !important;
+    letter-spacing: -.025em !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    text-align: center !important;
+  }
+
+  /* Leave enough scroll area below the final card so the bottom bar never covers it. */
+  #appView, #appView > .container, .page-section:last-child,
+  #analysisPajskTableWrap, #unitCards, #reportsEditSection {
+    scroll-margin-bottom: calc(124px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .app-shell .container { padding-left: 8px !important; padding-right: 8px !important; }
+  #appView .card, #appView .analysis-panel, #appView .page-unit-overview {
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+  }
+  #unitCards .unit-data-table tr.unit-data-row { padding-left: 6px !important; padding-right: 38px !important; }
+  #unitCards .unit-data-table tr.unit-data-row td { font-size: 11px !important; }
+  #unitCards .unit-data-table .unit-number-cell::before,
+  #unitCards .unit-data-table .unit-percent-cell::before { font-size: 7px !important; }
+  #pageSubnav .subnav-tab { gap: 6px !important; padding: 7px !important; font-size: 10px !important; }
+  #pageSubnav .subnav-tab::before { flex-basis: 16px !important; width: 16px !important; height: 16px !important; }
+  #mobileNav,
+  body:not(.logged-out) #mobileNav { left: 5px !important; right: 5px !important; max-width: calc(100vw - 10px) !important; }
+  #mobileNav .nav-item span:last-child { font-size: clamp(7px, 2.15vw, 8px) !important; }
+}
+
+/* Keep the browser's native desktop layout and all print/A4 rules unchanged. */
