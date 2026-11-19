@@ -3057,3 +3057,18 @@ html:not(.dark) .murid-import-progress progress::-webkit-progress-bar { backgrou
 .report-participant-selection-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}.report-participant-selection-tools>span{font-size:12px;font-weight:800}.report-participant-selection-tools>div{display:flex;gap:6px;flex-wrap:wrap}.report-participant-selection-tools .btn{margin:0}
 .report-participant-modal-status{font-size:11px;color:var(--muted);margin:0 0 8px}.report-participant-list-wrap{min-height:160px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:5px}.report-participant-option{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:9px;border-bottom:1px solid color-mix(in srgb,var(--border) 55%,transparent);cursor:pointer;margin:0}.report-participant-option:last-child{border-bottom:0}.report-participant-option:hover{background:var(--primary-soft)}.report-participant-option input{width:17px;height:17px;flex:0 0 17px;accent-color:var(--primary);cursor:pointer}.report-participant-name{display:flex;flex:1;min-width:0;flex-direction:column;font-size:13px;font-weight:750}.report-participant-name small{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}.report-participant-check{display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--primary);color:#fff;font-size:12px;opacity:0}.report-participant-option:has(input:checked) .report-participant-check{opacity:1}.report-participant-empty{padding:28px 12px}.report-participant-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:14px;border-top:1px solid var(--border)}.report-participant-dialog-actions .btn{margin:0;min-width:120px}.report-participant-modal-open{overflow:hidden}
 @media(max-width:600px){.report-participant-dialog{padding:15px;border-radius:16px;max-height:94vh}.report-participant-toolbar{grid-template-columns:1fr;gap:8px}.report-participant-selection-tools{align-items:flex-start;flex-direction:column}.report-participant-selection-tools>div{width:100%}.report-participant-selection-tools .btn{flex:1}.report-participant-dialog-actions{flex-direction:column-reverse}.report-participant-dialog-actions .btn{width:100%}.report-standalone-participants-actions{width:100%}.report-standalone-participants-actions .btn{flex:1}}
+
+
+/* e-KOSSTA Coordinator Account Assignment */
+.coordinator-assignment-dialog{width:min(720px,100%)}
+.coordinator-unit-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-height:min(52vh,480px);overflow:auto;padding:2px 2px 8px}
+.coordinator-unit-group{border:1px solid var(--border);border-radius:12px;padding:11px;background:var(--surface-2,var(--surface))}
+.coordinator-unit-group h4{margin:0 0 8px;font-size:12px;font-weight:850;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.coordinator-unit-option{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:9px;cursor:pointer}
+.coordinator-unit-option:hover{background:var(--surface-hover,rgba(3,90,82,.07))}
+.coordinator-unit-option input{width:18px;height:18px;flex:0 0 auto;accent-color:var(--accent,#035A52)}
+.coordinator-unit-option span{display:grid;gap:2px;min-width:0}
+.coordinator-unit-option b{font-size:13px;overflow-wrap:anywhere}
+.coordinator-unit-option small{font-size:11px;color:var(--muted)}
+.coordinator-unit-empty{grid-column:1/-1;margin:0;padding:14px;border:1px dashed var(--border);border-radius:10px;color:var(--muted);font-size:13px}
+@media(max-width:600px){.coordinator-unit-options{grid-template-columns:1fr;max-height:52vh}.coordinator-assignment-dialog{width:100%}}

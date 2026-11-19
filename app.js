@@ -4,6 +4,8 @@
 window.__EKOSSTA_UNIT_LAYOUT_BUILD__ = "UNIT_TABLE_V7_20261022";
 const $=id=>document.getElementById(id);
 const state={apiUrl:localStorage.getItem('ekossta_model_b_api_url')||'',dark:localStorage.getItem('ekossta_model_b_dark')==='1',token:sessionStorage.getItem('ekossta_v2_token')||'',user:JSON.parse(sessionStorage.getItem('ekossta_v2_user')||'null')};
+let USERS_CACHE_=[];
+let COORDINATOR_ASSIGNMENT_USER_=null;
 let CURRENT_PAGE='dashboard';
 let PENCAPAIAN_RECORD_MODE_=false;
 let PENCAPAIAN_READ_ONLY_=false;
@@ -509,11 +511,27 @@ function openPajskStudentDetail_(noKp){
   modal.dataset.studentKp=String(student.NO_KP);modal.hidden=false;
 }
 function closePajskStudentDetail_(){const modal=$('analysisPajskDetailModal');if(modal)modal.hidden=true;}
+
+function ekosstaPrintBackControlHtml_(){
+  return `<button class="ekossta-print-back" type="button" onclick="(function(){try{if(window.EKOSSTAAndroid&&window.EKOSSTAAndroid.closePrintPreview){window.EKOSSTAAndroid.closePrintPreview();return;}}catch(e){}try{if(window.opener&&!window.opener.closed){window.opener.focus();window.close();return;}}catch(e){}try{if(window.history.length>1){window.history.back();return;}}catch(e){}try{if(document.referrer){window.location.href=document.referrer;return;}}catch(e){}window.location.href='https://alamin-1991.github.io/ekossta-app/';})()">← Kembali ke e-KOSSTA</button>`;
+}
+
+function ekosstaPrintPlatformScript_(){
+  return `<script>try{if(window.EKOSSTAAndroid){document.documentElement.classList.add('ekossta-android-print');}}catch(e){}</script>`;
+}
+function ekosstaPrintActionButtonHtml_(){
+  return `<button type="button" onclick="(function(){try{if(window.EKOSSTAAndroid&&window.EKOSSTAAndroid.printCurrentPage){window.EKOSSTAAndroid.printCurrentPage(String(document.title||'e-KOSSTA'));return;}}catch(e){}window.focus();window.print();})()">Cetak / Simpan PDF</button>`;
+}
+
+function ekosstaPrintToolbarCss_(){
+  return `.ekossta-android-print .ekossta-print-back{display:none!important}.ekossta-print-back{min-height:42px;padding:9px 14px;border:1px solid #d8e267;border-radius:5px;background:#1d3027;color:#edf4e9;font-weight:700;cursor:pointer;white-space:normal}@media(max-width:600px){.print-toolbar,.toolbar,.print-action-bar{position:sticky;top:0;z-index:9999;display:flex;align-items:stretch;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:9px;margin:0 0 12px}.print-toolbar>div:first-child,.toolbar>div:first-child{flex:1 1 100%}.print-toolbar .actions,.print-toolbar-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}.print-toolbar button,.toolbar button,.print-action-bar button{min-height:46px;flex:1 1 auto}.ekossta-print-back{width:100%;min-height:46px;font-size:14px}.sheet,.print-wrap,.print-content{max-width:100%!important;width:100%!important;margin:0!important;padding:12px!important;overflow-wrap:anywhere}}@media print{.ekossta-print-back{display:none!important}}`;
+}
+
 function pajskPrintWindow_(title,content,orientation='landscape'){
   if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
   const win=window.open('','_blank');if(!win){toast('Pelayar menyekat tetingkap cetakan. Benarkan pop-up untuk '+getAppName_()+'.');return null;}
   const css=`@page{size:A4 ${orientation};margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff!important;color:#14211b!important;font:9pt Arial,sans-serif;line-height:1.35}.print-wrap{max-width:100%;margin:0 auto}.print-topline{display:flex;justify-content:space-between;gap:10px;border-bottom:2px solid #035A52;padding-bottom:6px;color:#035A52;font-size:8pt;font-weight:700;letter-spacing:.06em}.print-title{text-align:center;margin:10px 0 8px}.print-title h1{font-size:16pt;margin:0 0 4px}.print-title p{margin:2px 0;font-size:8pt}.print-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 0;margin-bottom:6px;border-bottom:1px solid #b7c7bd;font-size:8pt}.print-section{font-size:10pt;margin:10px 0 4px;padding-bottom:4px;border-bottom:1px solid #83a696}.print-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.5pt} .print-table th{background:#172A22!important;color:#D8E267!important;text-align:left;font-size:7pt;letter-spacing:.03em}.print-table th,.print-table td{border:1px solid #aabbb1;padding:4px 5px;vertical-align:top;overflow-wrap:anywhere}.print-table tr{break-inside:avoid;page-break-inside:avoid}.print-small{font-size:7pt;color:#52655b;display:block;margin-top:2px}.print-list{margin:2px 0 0;padding-left:12px}.print-note{margin-top:8px;padding:7px;border:1px solid #b4c7bd;background:#f2f5e9;font-size:7.5pt}.print-signatures{display:grid;grid-template-columns:1fr 1fr;gap:35mm;margin-top:22mm;font-size:8pt;text-align:center}.print-signatures div{border-top:1px solid #596e63;padding-top:5px}@media screen{body{padding:10mm;background:#eef1e9!important}.print-wrap{background:#fff;padding:10mm;box-shadow:0 0 0 1px #d7ded7}}`;
-  win.document.open();win.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><title>${pajskEsc_(title)}</title><style>${css}</style></head><body><main class="print-wrap">${content}</main><script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print()},450)});<\/script></body></html>`);win.document.close();return win;
+  win.document.open();win.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${pajskEsc_(title)}</title><style>${css}${ekosstaPrintToolbarCss_()}</style></head><body><div class="print-toolbar"><div><strong>${pajskEsc_(getAppName_())} · ${pajskEsc_(title)}</strong><div class="hint">Pratonton cetakan PAJSK. Pilih cetak apabila bersedia.</div></div><div class="actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div><main class="print-wrap">${content}</main></body></html>`);win.document.close();win.focus();return win;
 }
 function pajskClassPrintHtml_(dataOverride,kelasOverride){
   const data=Array.isArray(dataOverride)?dataOverride:(PAJSK_CACHE_.data||[]);const year=PAJSK_CACHE_.year||new Date().getFullYear();const kelas=String(kelasOverride||'').trim()||'Semua Kelas';
@@ -1113,6 +1131,8 @@ function init(){
   bind('systemLogoClearBtn','click',clearSystemLogoDraft_);
   bind('addUserBtn','click',addUser);
   bind('usersRefreshBtn','click',loadUsers);
+  bind('coordinatorAssignmentSaveBtn','click',saveCoordinatorAssignment_);
+  document.querySelectorAll('[data-coordinator-assignment-close]').forEach(el=>el.addEventListener('click',closeCoordinatorAssignment_));
   bind('analysisRefreshBtn','click',()=>loadAnalysisModule_(true));
   bind('analysisYearFilter','change',()=>loadAnalysisModule_());
   bind('analysisCategoryFilter','change',()=>renderAnalysisModule_(String($('analysisYearFilter')?.value||new Date().getFullYear())));
@@ -1133,7 +1153,7 @@ function init(){
   bind('analysisPajskExportBtn','click',exportPajskClassCsv_);
   bind('analysisPajskPrintStudentBtn','click',printPajskStudent_);
   document.querySelectorAll('[data-pajsk-detail-close]').forEach(el=>el.addEventListener('click',closePajskStudentDetail_));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePajskStudentDetail_();closeAddMuridModal_();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePajskStudentDetail_();closeAddMuridModal_();if($('coordinatorAssignmentModal')&&!$('coordinatorAssignmentModal').hidden)closeCoordinatorAssignment_();}});
   bind('guruRefreshBtn','click',loadGuru);
   bind('addGuruBtn','click',saveGuru);
   bind('cancelGuruBtn','click',cancelGuru);
@@ -1246,7 +1266,7 @@ const API_READ_CACHEABLE_ACTIONS_ = new Set([
 ]);
 const API_CACHE_INVALIDATE_ACTIONS_ = new Set([
   'login','logout','registerUser','saveMyUnits','addMurid','bulkAddMurid','bulkDeleteMurid','bulkDeleteAllMurid',
-  'addUser','setUserStatus','resetUserPassword','changeUserRole','logoutUserSessions','deleteUser',
+  'addUser','setUserStatus','resetUserPassword','changeUserRole','assignCoordinatorUnits','logoutUserSessions','deleteUser',
   'addGuru','updateGuru','setGuruStatus','deleteGuru','getGuru','addUnit','updateUnit','setUnitStatus',
   'addUnitMember','removeUnitMember','saveAttendance','saveUnitAjk','saveAktiviti','deleteAktiviti',
   'saveAktivitiPeserta','savePencapaian','setPencapaianStatus','savePencapaianAktivitiBatch',
@@ -1472,7 +1492,7 @@ async function saveMyUnitSelection_(){
 }
 function updateDashboardSessionUi_(){
   const role=String(state.user?.role||'').toUpperCase();
-  const roleLabel=role==='ADMIN'?'ADMINISTRATOR':role==='PENTADBIR'?'PENTADBIR':role==='GURU'?'GURU PENASIHAT':'PENGGUNA';
+  const roleLabel=role==='ADMIN'?'ADMINISTRATOR':role==='PENTADBIR'?'PENTADBIR':role==='PENYELARAS'?'PENYELARAS UNIT':role==='GURU'?'GURU PENASIHAT':'PENGGUNA';
   const r=$('dashboardRole');if(r)r.textContent=roleLabel;
   const y=$('dashboardYear');if(y)y.textContent=String(new Date().getFullYear());
   const date=$('dashboardDate');if(date)date.textContent=new Date().toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
@@ -1605,12 +1625,58 @@ function openAddMuridModal_(){if(state.user?.role!=='ADMIN')return toast('Tambah
 function closeAddMuridModal_(){const modal=$('addMuridModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('unit-member-modal-open');setTimeout(()=>{modal.hidden=true;},160);}
 async function addMurid(){if(state.user?.role!=='ADMIN')return toast('Pengurusan data murid hanya untuk ADMIN.');const b=$('addBtn'),p={token:state.token,nama:$('nama').value.trim(),noKp:$('noKp').value.trim(),jantina:$('jantina').value,tingkatan:$('tingkatan').value.trim(),kelas:$('kelas').value.trim()};if([p.nama,p.noKp,p.jantina,p.tingkatan,p.kelas].some(x=>!String(x||'').trim()))return toast('Lengkapkan semua medan murid.');b.disabled=true;b.textContent='⏳ Menyimpan...';if($('addResult'))$('addResult').textContent='Sedang menyimpan rekod murid...';try{const d=await apiGet('addMurid',p);if($('addResult'))$('addResult').textContent=d.message||'Murid berjaya ditambah.';$('addMuridForm')?.reset();await loadMurid();toast('Murid berjaya ditambah.');closeAddMuridModal_();}catch(e){if($('addResult'))$('addResult').textContent=e.message||'Gagal menambah murid.';toast(e.message||'Gagal menambah murid.');}finally{b.disabled=false;b.textContent='Simpan Murid';}}
 
+function closeCoordinatorAssignment_(){
+  const modal=$('coordinatorAssignmentModal');if(!modal)return;
+  modal.classList.remove('show');document.body.classList.remove('unit-member-modal-open');
+  setTimeout(()=>{modal.hidden=true;COORDINATOR_ASSIGNMENT_USER_=null;},160);
+}
+async function openCoordinatorAssignment_(userId){
+  const row=USERS_CACHE_.find(x=>String(x.USER_ID)===String(userId));
+  if(!row)return toast('Akaun tidak ditemui. Muat semula senarai pengguna.');
+  if(String(row.ROLE||'').toUpperCase()!=='PENYELARAS')return toast('Tukar peranan akaun kepada PENYELARAS UNIT dahulu.');
+  COORDINATOR_ASSIGNMENT_USER_=row;
+  const modal=$('coordinatorAssignmentModal');if(!modal)return;
+  $('coordinatorAssignmentTitle').textContent='Tetapkan Unit Penyelaras';
+  $('coordinatorAssignmentMeta').textContent=`${row.NAMA||row.USERNAME} · ${row.USERNAME}. Pilih satu atau lebih unit yang boleh diurus oleh akaun ini.`;
+  $('coordinatorAssignmentResult').textContent='Memuatkan senarai unit…';
+  $('coordinatorUnitOptions').innerHTML='<p class="coordinator-unit-empty">Memuatkan unit aktif…</p>';
+  modal.hidden=false;document.body.classList.add('unit-member-modal-open');requestAnimationFrame(()=>modal.classList.add('show'));
+  try{
+    const d=await apiGet('getRegistrationOptions',{},20000),units=Array.isArray(d.units)?d.units:[];
+    const selected=new Set(Array.isArray(row.UNIT_IDS)?row.UNIT_IDS.map(String):[]);
+    const host=$('coordinatorUnitOptions');
+    if(!units.length){host.innerHTML='<p class="coordinator-unit-empty">Tiada unit aktif. Sediakan unit dahulu dalam modul Unit Kokurikulum.</p>';const save=$('coordinatorAssignmentSaveBtn');if(save)save.disabled=true;return;}
+    const save=$('coordinatorAssignmentSaveBtn');if(save)save.disabled=false;
+    const byCategory={};units.forEach(u=>{const key=String(u.kategori||'Lain-lain');(byCategory[key]||(byCategory[key]=[])).push(u);});
+    host.innerHTML=Object.entries(byCategory).map(([category,items])=>`<section class="coordinator-unit-group"><h4>${esc(category)}</h4>${items.map(u=>`<label class="coordinator-unit-option"><input type="checkbox" data-coordinator-unit="${escAttr(u.unitId)}" ${selected.has(String(u.unitId))?'checked':''}><span><b>${esc(u.nama||'Unit')}</b><small>${esc(u.tahun||'')}</small></span></label>`).join('')}</section>`).join('');
+    $('coordinatorAssignmentResult').textContent=`${selected.size} unit sedang ditugaskan. Anda boleh memilih lebih daripada satu unit.`;
+  }catch(e){$('coordinatorUnitOptions').innerHTML=`<p class="coordinator-unit-empty">${esc(e.message||'Gagal memuatkan unit.')}</p>`;$('coordinatorAssignmentResult').textContent='';const save=$('coordinatorAssignmentSaveBtn');if(save)save.disabled=true;}
+}
+async function saveCoordinatorAssignment_(){
+  const user=COORDINATOR_ASSIGNMENT_USER_;if(!user)return;
+  const button=$('coordinatorAssignmentSaveBtn'),result=$('coordinatorAssignmentResult');
+  const unitIds=[...document.querySelectorAll('[data-coordinator-unit]:checked')].map(x=>String(x.dataset.coordinatorUnit||'').trim()).filter(Boolean);
+  if(!unitIds.length&&!confirm('Anda tidak memilih sebarang unit. Akaun penyelaras tidak akan dapat log masuk sehingga Admin menetapkan sekurang-kurangnya satu unit. Teruskan?'))return;
+  if(button){button.disabled=true;button.textContent='Menyimpan…';}
+  if(result)result.textContent='Sedang menyimpan penugasan unit…';
+  try{
+    const d=await apiGet('assignCoordinatorUnits',{token:state.token,userId:user.USER_ID,unitIds:JSON.stringify(unitIds)},30000);
+    if(result)result.textContent=d.message||'Penugasan unit berjaya disimpan.';
+    toast(d.message||'Penugasan penyelaras dikemas kini.');
+    await loadUsers();
+    closeCoordinatorAssignment_();
+  }catch(e){if(result)result.textContent=e.message||'Penugasan unit gagal disimpan.';toast(e.message||'Penugasan unit gagal disimpan.');}
+  finally{if(button){button.disabled=false;button.textContent='Simpan Penugasan';if(!document.querySelector('[data-coordinator-unit]'))button.disabled=true;}}
+}
+
 async function loadUsers(){
   if(state.user?.role!=='ADMIN')return;
   try{const d=await apiGet('getUsers',{token:state.token});renderUsers(d.data||[]);}
   catch(e){toast(e.message);}
 }
 function renderUsers(rows){
+  USERS_CACHE_=Array.isArray(rows)?rows:[];
+  rows=USERS_CACHE_;
   const wrap=$('usersTableWrap');
   if(!rows.length){wrap.innerHTML='<div class="empty">Tiada pengguna.</div>';return;}
   const t=document.createElement('table'),thead=document.createElement('thead'),hr=document.createElement('tr');
@@ -1620,7 +1686,7 @@ function renderUsers(rows){
     ['USER_ID','USERNAME','NAMA','ROLE','UNIT_DIPILIH','STATUS','LAST_LOGIN'].forEach(c=>{const td=document.createElement('td');td.textContent=r[c]||'-';tr.appendChild(td)});
     const td=document.createElement('td');td.className='user-actions-cell';
     const actions=document.createElement('div');actions.className='user-actions-grid';
-    const role=document.createElement('select');role.setAttribute('aria-label','Tukar peranan '+String(r.USERNAME||''));['GURU','PENTADBIR','ADMIN'].forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;if(r.ROLE===x)o.selected=true;role.appendChild(o)});role.onchange=()=>changeRole(r.USER_ID,role.value);
+    const role=document.createElement('select');role.setAttribute('aria-label','Tukar peranan '+String(r.USERNAME||''));['GURU','PENYELARAS','PENTADBIR','ADMIN'].forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x==='PENYELARAS'?'PENYELARAS UNIT':x;if(r.ROLE===x)o.selected=true;role.appendChild(o)});role.onchange=()=>changeRole(r.USER_ID,role.value);
     const status=document.createElement('button');status.className='btn secondary small';
     const pending=String(r.STATUS||'').toUpperCase()==='MENUNGGU_KELULUSAN';
     status.textContent=pending?'Luluskan Akaun':r.STATUS==='AKTIF'?'Nyahaktif':'Aktifkan';
@@ -1628,6 +1694,7 @@ function renderUsers(rows){
     const reset=document.createElement('button');reset.className='btn secondary small';reset.textContent='Reset Password';reset.onclick=()=>resetPassword(r.USER_ID,r.USERNAME);
     const kick=document.createElement('button');kick.className='btn secondary small';kick.textContent='Logout Session';kick.onclick=()=>logoutSessions(r.USER_ID);
     const del=document.createElement('button');del.className='btn danger small';del.textContent='Padam';del.title='Padam akaun dan profil Guru yang dipautkan secara kekal';del.onclick=()=>deleteUserPermanently(r.USER_ID,r.USERNAME,r.ROLE);
+    if(String(r.ROLE||'').toUpperCase()==='PENYELARAS'){const assign=document.createElement('button');assign.className='btn secondary small';assign.textContent='Tetapkan Unit';assign.title='Pilih satu atau lebih unit untuk penyelaras ini';assign.onclick=()=>openCoordinatorAssignment_(r.USER_ID);actions.appendChild(assign);}
     actions.append(role,status,reset,kick,del);td.appendChild(actions);tr.appendChild(td);tb.appendChild(tr);
   });t.appendChild(tb);wrap.replaceChildren(t);
 }
@@ -1635,15 +1702,15 @@ async function addUser(){
   const b=$('addUserBtn'),p={token:state.token,username:$('newUsername').value.trim(),nama:$('newUserNama').value.trim(),role:$('newUserRole').value,password:$('newUserPassword').value};
   if(!p.username||!p.nama||!p.password)return toast('Lengkapkan semua medan pengguna.');
   b.disabled=true;b.textContent='⏳ Menyimpan...';
-  try{const d=await apiGet('addUser',p);$('userResult').textContent=d.message||'Berjaya.';['newUsername','newUserNama','newUserPassword'].forEach(id=>$(id).value='');await loadUsers();toast('Pengguna ditambah.');}
+  try{const d=await apiGet('addUser',p);$('userResult').textContent=d.message||'Berjaya.';['newUsername','newUserNama','newUserPassword'].forEach(id=>$(id).value='');await loadUsers();toast('Pengguna ditambah.');if(p.role==='PENYELARAS'&&d.userId){setTimeout(()=>openCoordinatorAssignment_(d.userId),180);}}
   catch(e){$('userResult').textContent=e.message;toast(e.message)}finally{b.disabled=false;b.textContent='+ Tambah Pengguna'}
 }
 async function setStatus(userId,status,isApproval=false){if(isApproval&&!confirm('Luluskan akaun ini? Semak peranan dan unit yang dimohon terlebih dahulu.'))return;try{const d=await apiGet('setUserStatus',{token:state.token,userId,status});toast(d.message);loadUsers();}catch(e){toast(e.message)}}
 async function resetPassword(userId,username){const password=prompt(`Password baharu untuk ${username}:`);if(password===null)return;if(password.length<8)return toast('Password minimum 8 aksara.');try{const d=await apiGet('resetUserPassword',{token:state.token,userId,password});toast(d.message);loadUsers();}catch(e){toast(e.message)}}
-async function changeRole(userId,role){try{const d=await apiGet('changeUserRole',{token:state.token,userId,role});toast(d.message);loadUsers();}catch(e){toast(e.message);loadUsers()}}
+async function changeRole(userId,role){try{const d=await apiGet('changeUserRole',{token:state.token,userId,role});toast(d.message);await loadUsers();if(role==='PENYELARAS')setTimeout(()=>openCoordinatorAssignment_(userId),180);}catch(e){toast(e.message);await loadUsers()}}
 async function logoutSessions(userId){try{const d=await apiGet('logoutUserSessions',{token:state.token,userId});toast(d.message);loadUsers();}catch(e){toast(e.message)}}
 async function deleteUserPermanently(userId,username,role){
-  const note=String(role||'').toUpperCase()==='GURU'?' Profil Guru, sesi dan pilihan unit yang dipautkan turut dipadam.':' Sesi dan pilihan unit akaun turut dipadam.';
+  const note=['GURU','PENYELARAS'].includes(String(role||'').toUpperCase())?' Profil Guru, sesi dan pilihan unit yang dipautkan turut dipadam.':' Sesi dan pilihan unit akaun turut dipadam.';
   if(!confirm(`PADAM KEKAL akaun “${username}” (${role})?${note}\n\nRekod sejarah aktiviti, kehadiran dan pencapaian dikekalkan. Tindakan ini tidak boleh dibatalkan.`))return;
   try{const d=await apiGet('deleteUser',{token:state.token,userId});toast(d.message||'Akaun dipadam.');await Promise.all([loadUsers(),loadGuru()]);}
   catch(e){toast(e.message)}
@@ -2047,7 +2114,7 @@ function showApp(){
 
   $('sideUserName').textContent=state.user?.nama||state.user?.username||'Pengguna';
 
-  $('sideUserRole').textContent=role==='ADMIN'?'ADMINISTRATOR':role==='PENTADBIR'?'PENTADBIR':'GURU PENASIHAT';
+  $('sideUserRole').textContent=role==='ADMIN'?'ADMINISTRATOR':role==='PENTADBIR'?'PENTADBIR':role==='PENYELARAS'?'PENYELARAS UNIT':'GURU PENASIHAT';
   $('desktopUser').textContent=state.user?.nama||state.user?.username||'-';
   updateDashboardSessionUi_();
 
@@ -2224,9 +2291,9 @@ async function openAktivitiPermissionLetter(activityId){
     const sanitizedPages=window.__EKOSSTA_CLEAN_PRIVACY_HTML__?window.__EKOSSTA_CLEAN_PRIVACY_HTML__(brandedPages):brandedPages;
 
     w.document.open();
-    w.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Surat Kebenaran - ${safe(nama)}</title><style>
+    w.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${ekosstaPrintPlatformScript_()}<title>Surat Kebenaran - ${safe(nama)}</title><style>
       @page{size:A4;margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,sans-serif;color:#111;background:#e8ece5}.print-toolbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;margin:-20px -20px 20px;background:#101714;color:#edf2e7;border-bottom:2px solid #d8e267;font:13px Arial,sans-serif}.print-toolbar .actions{display:flex;gap:8px;flex-wrap:wrap}.print-toolbar button{border:1px solid #466053;border-radius:4px;padding:9px 14px;background:#d8e267;color:#102019;font-weight:700;cursor:pointer}.print-toolbar button.secondary{background:#1d3027;color:#edf2e7}.print-toolbar .hint{font-size:12px;color:#c5d0c8}.permission-page{width:100%;min-height:0;padding:0;page-break-after:always;break-after:page;position:relative;background:#fff}.permission-page:last-child{page-break-after:auto;break-after:auto}.letter-header{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:18px}.ekossta-school-doc-brand{display:flex;align-items:center;justify-content:center;width:100%;margin:0 0 10px;padding:0 0 8px;border-bottom:1px solid #aab9af;box-sizing:border-box}.ekossta-school-doc-brand img{display:block;width:auto;height:auto;max-width:76px;max-height:58px;object-fit:contain}.school-name{font-size:18px;font-weight:800}.school-sub{font-size:13px;font-weight:800;margin-top:8px}.permission-page p{font-size:11.5px;line-height:1.55;margin:9px 0}table,.letter-table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:11px}table th,table td,.letter-table th,.letter-table td{border:1px solid #777;padding:7px;text-align:left;vertical-align:top}table th,.letter-table th{width:28%;font-weight:700}table td{overflow-wrap:anywhere}.line{display:inline-block;min-width:0;border:0;height:auto}.line.short,.line.long{min-width:0;width:auto;border:0}.signature-block,.witness-block,.approval{margin-top:18px;font-size:11px;line-height:1.45}.signature-block p,.witness-block p,.approval p{margin:5px 0}.witness-block{margin-top:22px}.section-label{margin-top:0!important}.signature-dots{margin-top:30px!important}.approval{margin-top:28px}.approval-row{display:flex;justify-content:space-between;gap:18px;margin-top:8px}.approval-row span{white-space:nowrap}.page-no{position:absolute;bottom:2mm;right:2mm;font-size:8px;color:#666}@media screen{body{padding:20px}.permission-page{background:#fff;max-width:794px;min-height:1123px;margin:0 auto 20px;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.15)}}@media print{html,body{background:#fff!important}.print-toolbar{display:none!important}.permission-page{max-width:none;min-height:0;margin:0;box-shadow:none}.permission-page{page-break-after:always;break-after:page}.permission-page:last-child{page-break-after:auto;break-after:auto}}
-      </style></head><body><div class="print-toolbar"><div><strong>${activityEsc_(getAppName_())} · SURAT KEBENARAN</strong><div class="hint">${peserta.length} surat untuk aktiviti ${safe(nama)}. Untuk PDF, pilih “Save as PDF” dalam dialog cetakan.</div></div><div class="actions"><button type="button" onclick="window.print()">Cetak / Simpan PDF</button><button class="secondary" type="button" onclick="window.close()">Tutup</button></div></div>${sanitizedPages}</body></html>`);
+      ${ekosstaPrintToolbarCss_()}</style></head><body><div class="print-toolbar"><div><strong>${activityEsc_(getAppName_())} · SURAT KEBENARAN</strong><div class="hint">${peserta.length} surat untuk aktiviti ${safe(nama)}. Untuk PDF, pilih “Save as PDF” dalam dialog cetakan.</div></div><div class="actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div>${sanitizedPages}</body></html>`);
     w.document.close();
     w.focus();
     toast(`${peserta.length} surat kebenaran berjaya disediakan. Pilih Cetak / Simpan PDF pada tab surat.`);
@@ -2326,7 +2393,7 @@ async function loadUnitOverview(){
     const st=d.stats||{};
     UNIT_OVERVIEW_ACTIVE_KP=new Set((d.ahli||[]).map(x=>String(x.NO_KP||'')));
     const addBtn=$('unitAddMemberBtn');if(addBtn)addBtn.hidden=String(state.user?.role||'').toUpperCase()!=='ADMIN';
-    const canManageAjk=['ADMIN','GURU'].includes(String(state.user?.role||'').toUpperCase());
+    const canManageAjk=['ADMIN','GURU','PENYELARAS'].includes(String(state.user?.role||'').toUpperCase());
     ['unitOverviewAjkAddBtn'].forEach(id=>{const b=$(id);if(b)b.hidden=!canManageAjk;});
     $('unitOverviewStats').innerHTML=`<div><b>${st.jumlahAhli||0}</b><small>Jumlah Ahli</small></div><div><b>${st.jumlahAJK||0}</b><small>AJK</small></div><div><b>${st.jumlahMingguDirekodkan||0}</b><small>Minggu Direkodkan</small></div><div><b>${(d.minggu||[]).filter(x=>x.ADA_REKOD).length?Math.round((d.minggu||[]).filter(x=>x.ADA_REKOD).reduce((a,x)=>a+x.PERATUS,0)/(d.minggu||[]).filter(x=>x.ADA_REKOD).length):0}%</b><small>Purata Kehadiran</small></div>`;
     UNIT_OVERVIEW_MEMBER_ROWS_=d.ahli||[];
@@ -2602,9 +2669,9 @@ function unitPrintMemberAttendance_(d){const weeks=Array.from({length:15},(_,i)=
 function openUnitPrintWindow_(title,content,landscape=false){
   if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
   const w=window.open('','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk laman '+getAppName_()+'.');
-  const html=`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${unitPrintEsc_(title)}</title><style>
-  @page{size:A4 ${landscape?'landscape':'portrait'};margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#edf1e8;color:#17251e;font:10pt Arial,sans-serif}.toolbar{position:sticky;top:0;background:#101714;color:#edf4e9;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #d8e267}.toolbar button{padding:9px 14px;border:1px solid #d8e267;background:#d8e267;color:#101714;font-weight:bold;cursor:pointer}.sheet{background:#fff;max-width:1100px;margin:18px auto;padding:24px;box-shadow:0 2px 10px #0002}header{text-align:center;border-bottom:2px solid #035a52;padding-bottom:12px;margin-bottom:18px}.brandline{font-size:9pt;font-weight:700;letter-spacing:.12em;color:#035a52}h1{font-size:18pt;margin:8px 0}header h2{font-size:14pt;margin:0 0 6px}header p{font-size:9pt;margin:0;color:#52645a}section{margin:18px 0 22px}h3{font-size:12pt;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #88a59a;color:#035a52}table{width:100%;border-collapse:collapse;font-size:8.5pt}th,td{border:1px solid #b5c2b9;padding:6px 7px;text-align:left;vertical-align:top}th{background:#163027;color:#d8e267;font-size:8pt;letter-spacing:.04em}tbody tr:nth-child(even){background:#f2f5ef}.table-wrap{overflow:visible}.hint{font-size:9pt;color:#d8e267}@media print{html,body{background:#fff!important}.toolbar{display:none!important}.sheet{max-width:none;margin:0;padding:0;box-shadow:none}section{break-inside:auto}tr{break-inside:avoid}th{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
-  </style></head><body><div class="toolbar"><div><strong>${activityEsc_(getAppName_())} • ${unitPrintEsc_(title)}</strong><div class="hint">Pilih Cetak / Simpan PDF untuk menghasilkan salinan.</div></div><button type="button" onclick="window.print()">Cetak / Simpan PDF</button></div><main class="sheet">${content}</main></body></html>`;
+  const html=`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${unitPrintEsc_(title)}</title><style>
+  @page{size:A4 ${landscape?'landscape':'portrait'};margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#edf1e8;color:#17251e;font:10pt Arial,sans-serif}.toolbar{position:sticky;top:0;background:#101714;color:#edf4e9;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #d8e267}.toolbar button{padding:9px 14px;border:1px solid #d8e267;background:#d8e267;color:#101714;font-weight:bold;cursor:pointer}.sheet{background:#fff;max-width:1100px;margin:18px auto;padding:24px;box-shadow:0 2px 10px #0002}header{text-align:center;border-bottom:2px solid #035a52;padding-bottom:12px;margin-bottom:18px}.brandline{font-size:9pt;font-weight:700;letter-spacing:.12em;color:#035a52}h1{font-size:18pt;margin:8px 0}header h2{font-size:14pt;margin:0 0 6px}header p{font-size:9pt;margin:0;color:#52645a}section{margin:18px 0 22px}h3{font-size:12pt;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #88a59a;color:#035a52}table{width:100%;border-collapse:collapse;font-size:8.5pt}th,td{border:1px solid #b5c2b9;padding:6px 7px;text-align:left;vertical-align:top}th{background:#163027;color:#d8e267;font-size:8pt;letter-spacing:.04em}tbody tr:nth-child(even){background:#f2f5ef}.table-wrap{overflow:visible}.hint{font-size:9pt;color:#d8e267}@media print{html,body{background:#fff!important}.toolbar{display:none!important}.sheet{max-width:none;margin:0;padding:0;box-shadow:none}section{break-inside:auto}tr{break-inside:avoid}th{print-color-adjust:exact;-webkit-print-color-adjust:exact}}${ekosstaPrintToolbarCss_()}
+  </style></head><body><div class="toolbar"><div><strong>${activityEsc_(getAppName_())} • ${unitPrintEsc_(title)}</strong><div class="hint">Pilih Cetak / Simpan PDF untuk menghasilkan salinan.</div></div><div class="print-toolbar-actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div><main class="sheet">${content}</main></body></html>`;
   w.document.open();w.document.write(html);w.document.close();w.focus();
 }
 function printUnitOverview_(kind='unit'){
@@ -3454,7 +3521,7 @@ async function printEditorDocument_(providedWindow=null){
     content=brandDocumentHtml_(content);
     if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
     const css=`@page{size:A4;margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#142033}body{font-family:Arial,sans-serif;font-size:9pt;line-height:1.4}.print-action-bar{position:sticky;top:0;z-index:10;display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;background:#10221b;color:#fff;border-bottom:2px solid #d8e267}.print-action-bar button{padding:8px 12px;border:1px solid #d8e267;background:#d8e267;color:#10221b;font-weight:700;cursor:pointer}.print-content{width:186mm;max-width:186mm;margin:0 auto;overflow-wrap:anywhere}h1{font-size:16pt}h2{font-size:13pt}h3{font-size:9.5pt}table{border-collapse:collapse;width:100%;page-break-inside:auto}thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}td,th{border:1px solid #c6ced8;padding:5px 6px;vertical-align:top}th{background:#f0f4f9;color:#142033}img{max-width:100%;height:auto}.ekossta-school-doc-brand{display:flex;align-items:center;justify-content:center;width:100%;margin:0 0 10px;padding:0 0 8px;border-bottom:1px solid #aab9af;box-sizing:border-box}.ekossta-school-doc-brand img{display:block;width:auto;height:auto;max-width:68px;max-height:48px;object-fit:contain}.ek-report-document{font-family:Arial,sans-serif;color:#172339;font-size:9pt;line-height:1.4}.report-doc-topline{display:flex;justify-content:space-between;gap:8px;padding-bottom:5px;border-bottom:1px solid #c9d3df;color:#65748a;font-size:7pt;font-weight:800;letter-spacing:.05em}.report-doc-header{text-align:center;padding:10px 0 8px;border-bottom:2px solid #1f2d42;margin-bottom:9px}.report-doc-header h1{font-size:16pt;line-height:1.2;margin:0 0 4px;font-weight:800;color:#14213a}.report-doc-header h2{font-size:11pt;line-height:1.25;margin:0 0 7px;font-weight:800;color:#1f2d42}.report-doc-ribbon{display:inline-block;padding:4px 12px;border-radius:3px;background:#123b62;color:#fff;font-size:7pt;font-weight:800;letter-spacing:.05em}.report-meta-table,.report-data-table{width:100%;border-collapse:collapse;margin:7px 0 10px;font-size:8pt;min-width:0;background:#fff;color:#172339}.report-meta-table th,.report-meta-table td,.report-data-table th,.report-data-table td{border:1px solid #cbd4df;padding:5px 6px;text-align:left;vertical-align:top}.report-meta-table th{background:#f1f5f9;font-size:7pt;font-weight:800;color:#43516a;width:17%}.report-meta-table td{width:33%;font-weight:600;overflow-wrap:anywhere}.report-section-heading{display:flex;align-items:center;gap:6px;margin:10px 0 5px;padding:0 0 4px;border-bottom:1px solid #d8e0e9;font-size:8pt;font-weight:800;color:#153d61;letter-spacing:.03em}.report-section-heading>span{display:inline-grid;place-items:center;flex:0 0 17px;height:17px;border-radius:50%;background:#dce9f6;color:#153d61;font-size:7pt}.report-kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0 10px}.report-kpi-row>div{display:flex;min-height:45px;flex-direction:column;justify-content:center;align-items:center;gap:2px;padding:5px;border:1px solid #d0dae6;border-radius:5px;background:#f4f7fb;text-align:center}.report-kpi-row small{font-size:6.5pt;font-weight:800;color:#607087}.report-kpi-row b{font-size:14pt;line-height:1.15;color:#153d61}.report-kpi-row span{font-size:6.5pt;color:#66768b}.report-data-table th{background:#edf2f7;font-size:7pt;font-weight:800;color:#3a4a60}.report-data-table td{font-size:8pt}.report-fill-box{min-height:20px;padding:7px 8px;border:1px solid #d2dbe6;border-radius:4px;background:#fff;overflow-wrap:anywhere}.report-large-fill{min-height:35px}.report-small-fill{min-height:42px}.report-section-hint{font-size:7pt;color:#66768b;margin:0 0 5px}.report-two-columns{display:grid;grid-template-columns:1fr 1fr;gap:9px}.report-photos-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:7px 0 10px}.report-photo-slot{margin:0;min-width:0;border:1px solid #c9d2df;border-radius:5px;padding:4px;background:#fff;color:#182234;break-inside:avoid;page-break-inside:avoid}.report-photo-slot img{display:block;width:100%;height:35mm;object-fit:contain;border-radius:3px;background:#eef2f7}.report-photo-empty{display:grid;place-items:center;height:35mm;padding:8px;text-align:center;border:1px dashed #aab7c7;border-radius:3px;color:#65748a;font-size:8pt;background:#f5f7fa}.report-photo-slot figcaption{padding:4px 2px 1px;text-align:center;font-size:6pt;font-weight:800;letter-spacing:.05em;color:#4b5a6f}.report-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px;padding-top:8px;border-top:1px solid #8b98a9;color:#172339;font-size:7pt;break-inside:avoid;page-break-inside:avoid}.report-signature-grid b{font-size:7pt;letter-spacing:.04em}.report-signature-grid p{margin:5px 0}.report-sign-line{margin-top:14px!important;border-top:1px dotted #9aa6b5;padding-top:4px}.report-doc-footer{margin-top:10px;padding-top:5px;border-top:1px solid #d7dfe8;color:#768397;font-size:6pt;text-align:center}.ekossta-one-page-report{font-size:7pt!important;line-height:1.12!important}.ekossta-one-page-report .report-doc-header{padding:4px 0 5px;margin-bottom:5px}.ekossta-one-page-report .report-doc-header h1{font-size:12pt;margin:0 0 2px}.ekossta-one-page-report .report-doc-header h2{font-size:9pt;margin:0 0 3px}.ekossta-one-page-report .report-doc-ribbon{padding:2px 8px;font-size:6pt}.ekossta-one-page-report .report-meta-table,.ekossta-one-page-report .report-data-table{font-size:6.5pt;margin:4px 0 5px}.ekossta-one-page-report .report-meta-table th,.ekossta-one-page-report .report-meta-table td,.ekossta-one-page-report .report-data-table th,.ekossta-one-page-report .report-data-table td{padding:2px 3px}.ekossta-one-page-report .report-kpi-row{gap:4px;margin:4px 0 5px}.ekossta-one-page-report .report-kpi-row>div{min-height:27px;padding:3px;gap:0}.ekossta-one-page-report .report-kpi-row b{font-size:10pt}.ekossta-one-page-report .report-section-heading{font-size:6.5pt;margin:4px 0 2px;padding-bottom:2px}.ekossta-one-page-report .report-section-heading>span{flex-basis:13px;height:13px;font-size:6pt}.ekossta-one-page-report .report-fill-box{min-height:18px;padding:3px 4px;font-size:7pt}.ekossta-one-page-report .report-two-columns{gap:6px}.ekossta-one-page-report .report-photos-grid{gap:4px;margin:4px 0}.ekossta-one-page-report .report-photo-slot{padding:2px}.ekossta-one-page-report .report-photo-slot img,.ekossta-one-page-report .report-photo-empty{height:16mm;min-height:16mm;font-size:6pt}.ekossta-one-page-report .report-photo-slot figcaption{font-size:5pt;padding:2px}.ekossta-one-page-report .report-signature-grid{gap:12px;margin-top:6px;padding-top:4px;font-size:6pt}.ekossta-one-page-report .report-signature-grid p{margin:2px 0}.ekossta-one-page-report .report-sign-line{margin-top:5px!important;padding-top:2px}.ekossta-one-page-report .report-doc-footer{margin-top:4px;padding-top:3px;font-size:5.5pt}.report-appendix-page{break-before:page;page-break-before:always;margin-top:16mm;padding-top:5mm}.report-appendix-header{text-align:center;margin-bottom:14px}.report-appendix-header h1{font-size:16pt;color:#14213a;margin:14px 0 5px}.report-appendix-header p{font-size:9pt;color:#526175;margin:0}.report-appendix-page .report-data-table{font-size:9pt}.report-appendix-page .report-data-table th,.report-appendix-page .report-data-table td{padding:6px 8px}@media print{.print-action-bar{display:none!important}.print-content{margin:0 auto}.report-appendix-page{break-before:page;page-break-before:always;margin-top:0;padding-top:0}.report-appendix-page thead{display:table-header-group}.report-appendix-page tr{break-inside:avoid;page-break-inside:avoid}.report-doc-header,.report-meta-table,.report-kpi-row,.report-section-heading,.report-signature-grid{break-inside:avoid;page-break-inside:avoid}}`;
-    w.document.open();w.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${activityEsc_($('docTitle')?.value||'Laporan e-KOSSTA')}</title><style>${css}</style></head><body><div class="print-action-bar"><button type="button" onclick="window.focus();window.print()">Cetak / Simpan PDF</button><button type="button" onclick="window.close()">Tutup</button></div><main class="print-content">${content}</main><script>window.addEventListener('load',function(){setTimeout(function(){window.focus();try{window.print()}catch(e){}},500)});<\/script></body></html>`);w.document.close();w.focus();
+    w.document.open();w.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${activityEsc_($('docTitle')?.value||'Laporan e-KOSSTA')}</title><style>${css}${ekosstaPrintToolbarCss_()}</style></head><body><div class="print-action-bar">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div><main class="print-content">${content}</main></body></html>`);w.document.close();w.focus();
   }catch(e){try{w.close()}catch(x){}toast(e.message||'Gagal menyediakan cetakan.');}
 }
 function resetReportPhotoInputs_(){

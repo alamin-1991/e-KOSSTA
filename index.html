@@ -198,13 +198,25 @@
   <div class="form-grid user-form-grid">
     <div><label>Username</label><input id="newUsername" placeholder="contoh: guru2"></div>
     <div><label>Nama</label><input id="newUserNama" placeholder="Nama pengguna"></div>
-    <div><label>Role</label><select id="newUserRole"><option value="GURU">GURU PENASIHAT</option><option value="PENTADBIR">PENTADBIR</option><option value="ADMIN">ADMIN</option></select></div>
+    <div><label>Role</label><select id="newUserRole"><option value="GURU">GURU PENASIHAT</option><option value="PENYELARAS">PENYELARAS UNIT</option><option value="PENTADBIR">PENTADBIR</option><option value="ADMIN">ADMIN</option></select><small class="muted">Penyelaras boleh diberikan beberapa unit oleh ADMIN. Sekurang-kurangnya satu unit diperlukan untuk log masuk.</small></div>
     <div><label>Password</label><input id="newUserPassword" type="password" placeholder="Minimum 8 aksara"></div>
   </div>
   <button id="addUserBtn" class="btn primary">+ Tambah Pengguna</button>
   <div id="userResult" class="result muted"></div>
   <div id="usersTableWrap" class="table-wrap"><div class="empty">Belum dimuatkan.</div></div>
 </section>
+<div id="coordinatorAssignmentModal" class="unit-member-modal coordinator-assignment-modal" hidden>
+  <div class="unit-member-backdrop" data-coordinator-assignment-close></div>
+  <section class="unit-member-dialog coordinator-assignment-dialog" role="dialog" aria-modal="true" aria-labelledby="coordinatorAssignmentTitle">
+    <div class="unit-member-dialog-head">
+      <div><span class="unit-member-kicker">PENGURUSAN PENGGUNA • PENUGASAN</span><h3 id="coordinatorAssignmentTitle">Tetapkan Unit Penyelaras</h3><p id="coordinatorAssignmentMeta" class="muted">Pilih satu atau lebih unit untuk akaun penyelaras.</p></div>
+      <button class="unit-member-close" type="button" data-coordinator-assignment-close aria-label="Tutup">×</button>
+    </div>
+    <div id="coordinatorUnitOptions" class="coordinator-unit-options"><p class="coordinator-unit-empty">Memuatkan unit aktif…</p></div>
+    <div id="coordinatorAssignmentResult" class="unit-member-form-status" role="status" aria-live="polite"></div>
+    <div class="unit-member-dialog-actions"><button class="btn secondary" type="button" data-coordinator-assignment-close>Batal</button><button id="coordinatorAssignmentSaveBtn" class="btn primary" type="button">Simpan Penugasan</button></div>
+  </section>
+</div>
 
 
 <section id="unitSection" class="card page-section page-unit" hidden>
