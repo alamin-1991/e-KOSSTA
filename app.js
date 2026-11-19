@@ -7,6 +7,8 @@ const state={apiUrl:localStorage.getItem('ekossta_model_b_api_url')||'',dark:loc
 let USERS_CACHE_=[];
 let COORDINATOR_ASSIGNMENT_USER_=null;
 let CURRENT_PAGE='dashboard';
+let CURRENT_ANALYSIS_VIEW_='overview';
+let CURRENT_EKSTRA_VIEW_='extra';
 let PENCAPAIAN_RECORD_MODE_=false;
 let PENCAPAIAN_READ_ONLY_=false;
 let ANALYSIS_CACHE_={loaded:false,students:[],units:[],activities:[],achievementActivities:[],reports:[],attendanceByYear:{},errors:[]};
@@ -73,6 +75,10 @@ function setupNavigation(){
   buttons.forEach(btn=>btn.addEventListener('click',()=>{
     showPage(btn.dataset.page);
     if(isDesktopSidebar_())closeSidebarPopups_();
+  }));
+  document.querySelectorAll('#sidebar [data-analysis-route]').forEach(btn=>btn.addEventListener('click',()=>{
+    const route={overview:'analysis-kokurikulum',pajsk:'analysis-kelas',school:'analysis-pajsk'}[btn.dataset.analysisRoute];
+    if(route)showPage(route);
   }));
 
   document.querySelectorAll('[data-page-jump]').forEach(btn=>{
@@ -192,71 +198,41 @@ function setupMobileMenu_(){
 function buildMobileMenu_(preferredGroup=''){
   const content=$('mobileMenuContent');
   if(!content)return;
-  const role=state.user?.role||'';
-  const activePage=CURRENT_PAGE||'dashboard';
-  const canAdmin=role==='ADMIN';
-
+  const role=String(state.user?.role||'').toUpperCase();
+  const canAdmin=['ADMIN','PENTADBIR'].includes(role);
+  const activePage=CURRENT_PAGE==='analysis'?`analysis-${CURRENT_ANALYSIS_VIEW_}`:CURRENT_PAGE;
   const groups=[
     {key:'kokurikulum',label:'Kokurikulum',items:[
-      ['unit','Unit Kokurikulum',''],
-      ['attendance','Kehadiran','V2.4'],
-      ['aktiviti','Aktiviti & Acara',''],
-      ['pencapaian','Pencapaian','']
+      ['unit','Unit Kokurikulum',''],['attendance','Kehadiran',''],['activity','Aktiviti & Acara',''],['pencapaian','Pencapaian','']
     ]},
-    {key:'laporan',label:'Laporan',items:[
-      ['reports','Jana Laporan',''],
+    {key:'analysis',label:'Analisis',items:[
+      ['analysis-kokurikulum','Analisis Kokurikulum',''],['analysis-kelas','Analisis Kelas',''],['analysis-pajsk','Analisis PAJSK','ADMIN']
     ]},
+    {key:'laporan',label:'Laporan',items:[['reports','Jana Laporan','']]},
     {key:'tetapan',label:'Tetapan',items:[
-      ['system-settings','Tetapan Sistem',''],
-      ['guru','Guru',''],
-      ['murid','Murid',''],
-      ['users','Pengurusan Pengguna',''],
-      ['report-templates','Edit Templat','ADMIN']
+      ['system-settings','Tetapan Sistem',''],['guru','Guru',''],['murid','Murid',''],['users','Pengurusan Pengguna',''],['report-templates','Edit Templat','ADMIN']
     ]}
   ];
-
   if(!canAdmin)groups.pop();
   const allowed=page=>{
-    if(['murid','guru','users','system-settings','report-templates','penempatan'].includes(page))return canAdmin;
-    return ['unit','reports','reports-edit','attendance','activity','pencapaian'].includes(page);
+    if(['murid','guru','users','system-settings','report-templates','penempatan','analysis-pajsk'].includes(page))return canAdmin;
+    return ['unit','reports','reports-edit','attendance','activity','pencapaian','ekstra','analysis-kokurikulum','analysis-kelas'].includes(page);
   };
-  const isDisabled=page=>!allowed(page)||['peserta','galeri'].includes(page);
-
-  const groupIsOpen=g=>{
-    if(preferredGroup && g.key===preferredGroup)return true;
-    return g.items.some(x=>x[0]===activePage);
-  };
-
+  const isDisabled=page=>!allowed(page);
+  const groupIsOpen=g=>preferredGroup===g.key||g.items.some(x=>x[0]===activePage);
   const renderItems=(items,indent=0)=>items.map(([page,label,badge])=>{
-    if(page==='report-templates'&&!canAdmin)return '';
-    const disabled=isDisabled(page);
-    return `<button class="mobile-menu-item ${activePage===page?'active':''} ${disabled?'disabled':''} ${indent?'nested':''}" data-mobile-page="${page}" type="button" ${disabled?'disabled':''}><span>${label}</span>${badge?`<em>${badge}</em>`:''}</button>`;
+    if(!allowed(page))return '';
+    return `<button class="mobile-menu-item ${activePage===page?'active':''} ${indent?'nested':''}" data-mobile-page="${page}" type="button"><span>${label}</span>${badge?`<em>${badge}</em>`:''}</button>`;
   }).join('');
-
   content.innerHTML=`
-    <button class="mobile-main-link ${activePage==='dashboard'?'active':''}" data-mobile-page="dashboard" type="button">
-      <b>Dashboard</b>
-    </button>
-    ${groups.map(g=>{
+    <button class="mobile-main-link ${activePage==='dashboard'?'active':''}" data-mobile-page="dashboard" type="button"><b>Dashboard</b></button>
+    ${groups.map((g,index)=>{
       const open=groupIsOpen(g);
-      if(g.key!=='tetapan'){
-        return `<div class="mobile-menu-group ${open?'open':''}">
-          <button class="mobile-group-toggle" type="button" aria-expanded="${open?'true':'false'}"><span>${g.label}</span><b>›</b></button>
-          <div class="mobile-group-items">${renderItems(g.items)}</div>
-        </div>`;
-      }
-      const settingsOpen=open;
-      return `<div class="mobile-menu-group ${settingsOpen?'open':''}">
-        <button class="mobile-group-toggle" type="button" aria-expanded="${settingsOpen?'true':'false'}"><span>${g.label}</span><b>›</b></button>
-        <div class="mobile-group-items">
-          ${renderItems([['system-settings','Tetapan Sistem','']])}
-          <div class="mobile-menu-group mobile-nested-group">
-            <button class="mobile-group-toggle mobile-nested-toggle" type="button" aria-expanded="${activePage==='guru'||activePage==='murid'||activePage==='report-templates'?'true':'false'}"><span>Pengurusan Data</span><b>›</b></button>
-            <div class="mobile-group-items">${renderItems([['guru','Guru',''],['murid','Murid',''],['report-templates','Edit Templat','ADMIN']])}</div>
-          </div>
-          ${renderItems([['users','Pengurusan Pengguna','']])}
-        </div>
-      </div>`
+      let markup='';
+      if(g.key!=='tetapan')markup=`<div class="mobile-menu-group ${open?'open':''}"><button class="mobile-group-toggle" type="button" aria-expanded="${open?'true':'false'}"><span>${g.label}</span><b>›</b></button><div class="mobile-group-items">${renderItems(g.items)}</div></div>`;
+      else markup=`<div class="mobile-menu-group ${open?'open':''}"><button class="mobile-group-toggle" type="button" aria-expanded="${open?'true':'false'}"><span>${g.label}</span><b>›</b></button><div class="mobile-group-items">${renderItems([['system-settings','Tetapan Sistem','']])}<div class="mobile-menu-group mobile-nested-group"><button class="mobile-group-toggle mobile-nested-toggle" type="button" aria-expanded="${['guru','murid','report-templates'].includes(activePage)?'true':'false'}"><span>Pengurusan Data</span><b>›</b></button><div class="mobile-group-items">${renderItems([['guru','Guru',''],['murid','Murid',''],['report-templates','Edit Templat','']])}</div></div>${renderItems([['users','Pengurusan Pengguna','']])}</div></div>`;
+      if(index===0)markup+=`<button class="mobile-menu-item ${activePage==='ekstra'?'active':''}" data-mobile-page="ekstra" type="button"><span>Ekstra Kokurikulum</span></button>`;
+      return markup;
     }).join('')}
     <button class="mobile-logout-btn" data-mobile-logout type="button">Log Keluar</button>`;
 }
@@ -303,6 +279,8 @@ function setPageAccent_(page){
 
 function pageGroupForPage_(page){
   if(['unit','unit-overview','unit-ajk','penempatan','attendance','activity','activity-participants','pencapaian'].includes(page))return 'kokurikulum';
+  if(page==='analysis'||String(page).startsWith('analysis-'))return 'analysis';
+  if(page==='ekstra')return 'ekstra';
   if(['reports','reports-edit'].includes(page))return 'laporan';
   if(['guru','murid','users','system-settings','report-templates'].includes(page))return 'tetapan';
   return '';
@@ -343,13 +321,23 @@ function renderPageSubnav_(page){
   host.querySelectorAll('[data-subnav-page]').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.subnavPage)));
 }
 function switchAnalysisView_(view){
-  const views={overview:'analysisOverviewView',pajsk:'analysisPajskView',extra:'analysisExtraEntryView','class-review':'analysisClassReviewView',school:'analysisSchoolView'};
+  const views={overview:'analysisOverviewView',pajsk:'analysisPajskView',school:'analysisSchoolView'};
+  if(!views[view])view='overview';
+  CURRENT_ANALYSIS_VIEW_=view;
   Object.entries(views).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==view;});
-  const tabs={overview:'analysisOverviewTab',pajsk:'analysisPajskTab',extra:'analysisExtraEntryTab','class-review':'analysisClassReviewTab',school:'analysisSchoolTab'};
-  Object.entries(tabs).forEach(([key,id])=>{const el=$(id);if(el){el.classList.toggle('active',key===view);el.setAttribute('aria-selected',String(key===view));}});
   if(view==='pajsk'&&!PAJSK_CACHE_.loaded)loadPajskClassReport_(false);
-  if(['extra','class-review'].includes(view))loadPajskTeacherWorkspace_(false,view);
   if(view==='school')loadPajskSchoolAnalysis_(false);
+}
+function switchEkstraView_(view='extra',load=true){
+  const views={extra:'analysisExtraEntryView','class-review':'analysisClassReviewView'};
+  if(!views[view])view='extra';
+  if(view==='extra'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length)view='class-review';
+  if(view==='class-review'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.classes.length&&PAJSK_WORKFLOW_CACHE_.assignedElements.length)view='extra';
+  CURRENT_EKSTRA_VIEW_=view;
+  Object.entries(views).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==view;});
+  const tabs={extra:'analysisExtraEntryTab','class-review':'analysisClassReviewTab'};
+  Object.entries(tabs).forEach(([key,id])=>{const el=$(id);if(el){el.classList.toggle('active',key===view);el.setAttribute('aria-selected',String(key===view));}});
+  if(load)loadPajskTeacherWorkspace_(false,view);
 }
 function pajskEsc_(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const PAJSK_EXTRA_ELEMENT_LABELS_={PERKHIDMATAN:'Perkhidmatan',ANUGERAH_KHAS:'Anugerah Khas',KHIDMAT_MASYARAKAT:'Khidmat Masyarakat',NILAM:'NILAM',TIMSS_PISA:'TIMSS dan PISA'};
@@ -360,7 +348,14 @@ function pajskWorkflowReviewMap_(){const map={};(PAJSK_WORKFLOW_CACHE_.reviews||
 async function loadPajskTeacherWorkspace_(force=false,view='extra'){
   if(!$('analysisSection')||!state.token)return;
   const year=String((view==='class-review'?$('pajskReviewYearFilter')?.value:$('pajskExtraYearFilter')?.value)||pajskWorkflowYear_());
-  if(!force&&PAJSK_WORKFLOW_CACHE_.loaded&&PAJSK_WORKFLOW_CACHE_.year===year){applyPajskWorkflowPermissions_();if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();return;}
+  if(!force&&PAJSK_WORKFLOW_CACHE_.loaded&&PAJSK_WORKFLOW_CACHE_.year===year){
+    applyPajskWorkflowPermissions_();
+    if(view==='extra'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length)view='class-review';
+    if(view==='class-review'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.classes.length&&PAJSK_WORKFLOW_CACHE_.assignedElements.length)view='extra';
+    switchEkstraView_(view,false);
+    if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();
+    return;
+  }
   const status=$(view==='extra'?'pajskExtraEntryStatus':'pajskClassReviewStatus');if(status)status.textContent='Memuatkan penugasan dan rekod PAJSK...';
   try{
     const d=await apiGet('getPajskTeacherWorkspace',{token:state.token,tahun:year},30000);if(!d||d.ok===false)throw Error(d?.error||'Rekod PAJSK tidak dapat dimuatkan.');
@@ -369,15 +364,19 @@ async function loadPajskTeacherWorkspace_(force=false,view='extra'){
     const classControls=['pajskExtraClassFilter','pajskReviewClassFilter'];classControls.forEach(id=>{const el=$(id);if(el){const prev=el.value;el.innerHTML='<option value="">'+(id==='pajskReviewClassFilter'?'Pilih kelas':'Semua kelas')+'</option>'+PAJSK_WORKFLOW_CACHE_.classes.map(c=>`<option value="${pajskEsc_(c)}">${pajskEsc_(c)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.classes.includes(prev))el.value=prev;else if(PAJSK_WORKFLOW_CACHE_.classes.length===1)el.value=PAJSK_WORKFLOW_CACHE_.classes[0];}});
     const elementSelect=$('pajskExtraElementFilter');if(elementSelect){const prev=elementSelect.value;elementSelect.innerHTML=PAJSK_WORKFLOW_CACHE_.assignedElements.map(e=>`<option value="${pajskEsc_(e)}">${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[e]||e)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.assignedElements.includes(prev))elementSelect.value=prev;}
     applyPajskWorkflowPermissions_();
+    if(view==='extra'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length)view='class-review';
+    if(view==='class-review'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.classes.length&&PAJSK_WORKFLOW_CACHE_.assignedElements.length)view='extra';
+    switchEkstraView_(view,false);
     if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();
   }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan rekod PAJSK.';toast(e.message||'Gagal memuatkan rekod PAJSK.');}
 }
 function applyPajskWorkflowPermissions_(){
   const role=String(state.user?.role||'').toUpperCase(),admin=['ADMIN','PENTADBIR'].includes(role),teacher=['GURU','PENYELARAS'].includes(role);
-  const entry=$('analysisExtraEntryTab'),review=$('analysisClassReviewTab'),school=$('analysisSchoolTab');
+  const entry=$('analysisExtraEntryTab'),review=$('analysisClassReviewTab'),school=$('sideAnalysisPajsk'),ekstraNav=$('ekstraNavItem');
   if(entry)entry.hidden=!(admin||(teacher&&PAJSK_WORKFLOW_CACHE_.assignedElements.length));
   if(review)review.hidden=!(admin||(teacher&&PAJSK_WORKFLOW_CACHE_.classes.length));
   if(school)school.hidden=!admin;
+  if(ekstraNav)ekstraNav.hidden=!(admin||entry?.hidden===false||review?.hidden===false);
 }
 function renderPajskExtraEntry_(){
   const host=$('pajskExtraEntryTableWrap');if(!host)return;
@@ -425,13 +424,49 @@ async function savePajskClassReview_(kp,status,button){
   catch(e){toast(e.message||'Gagal menyimpan pengesahan.');}
   finally{if(button)button.disabled=false;}
 }
+function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
+  const host=$('pajskSchoolUnitTableWrap');if(!host)return;
+  const categoryOrder=['UNIT BERUNIFORM','KELAB / PERSATUAN','SUKAN / PERMAINAN','RUMAH SUKAN'];
+  const categoryLabels={'UNIT BERUNIFORM':'Unit Beruniform','KELAB / PERSATUAN':'Kelab / Persatuan','SUKAN / PERMAINAN':'Sukan / Permainan','RUMAH SUKAN':'Rumah Sukan'};
+  const groups=new Map();
+  (rows||[]).forEach(row=>{
+    const key=analysisCategoryKey_(row.KATEGORI);
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(row);
+  });
+  const keys=[...categoryOrder.filter(k=>groups.has(k)),...Array.from(groups.keys()).filter(k=>!categoryOrder.includes(k)).sort((a,b)=>a.localeCompare(b,'ms'))];
+  if(!keys.length){host.innerHTML='<div class="analysis-empty">Tiada unit atau rekod pencapaian untuk tahun ini.</div>';return;}
+  const groupsHtml=`<div class="pajsk-unit-groups">${keys.map(key=>{
+    const units=(groups.get(key)||[]).slice().sort((a,b)=>String(a.NAMA_UNIT||'').localeCompare(String(b.NAMA_UNIT||''),'ms'));
+    return `<section class="pajsk-unit-category-group"><header class="pajsk-unit-category-head"><div><span>KATEGORI UNIT</span><h4>${analysisEsc_(categoryLabels[key]||key)}</h4></div><b>${units.length} UNIT</b></header><div class="pajsk-unit-card-grid">${units.map((unit,index)=>{
+      const records=Array.isArray(unit.REKOD)?unit.REKOD:[];
+      const total=analysisNum_(unit.REKOD_PENCAPAIAN);
+      const share=Math.max(0,Math.min(100,analysisNum_(unit.PERATUS_SUMBER_REKOD)));
+      const recordHtml=records.length?`<div class="pajsk-unit-record-list">${records.map(record=>{
+        const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
+        const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
+        const meta=[record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
+        const evidence=String(record.PAUTAN_BUKTI||'').trim();
+        const evidenceLink=/^https?:\/\//i.test(evidence)?`<a href="${analysisEsc_(evidence)}" target="_blank" rel="noopener noreferrer">Bukti ↗</a>`:'';
+        return `<article class="pajsk-unit-record"><div><b>${analysisEsc_(title)}</b><small>${analysisEsc_(person)}${record.KELAS_MURID?' • '+analysisEsc_(record.KELAS_MURID):''}</small>${meta?`<small>${analysisEsc_(meta)}</small>`:''}</div>${evidenceLink}</article>`;
+      }).join('')}</div>`:`<div class="pajsk-unit-no-record">Belum ada rekod pencapaian untuk unit ini.</div>`;
+      return `<article class="pajsk-unit-card"><header><div><span class="pajsk-unit-card-index">UNIT ${String(index+1).padStart(2,'0')}</span><h5>${analysisEsc_(unit.NAMA_UNIT||'-')}</h5><small>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'')}</small></div><span class="pajsk-unit-record-count">${total} REKOD</span></header><div class="pajsk-unit-metrics"><div><small>AHLI AKTIF</small><b>${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</b></div><div><small>REKOD PENCAPAIAN</small><b>${total.toLocaleString('ms-MY')}</b></div><div><small>BAHAGIAN REKOD SEKOLAH</small><b>${share.toFixed(1)}%</b></div></div><div class="pajsk-unit-share-track"><span style="width:${share}%"></span></div>${recordHtml}</article>`;
+    }).join('')}</div></section>`;
+  }).join('')}</div>`;
+  const loose=(unassignedRecords||[]);
+  const looseHtml=loose.length?`<section class="pajsk-unit-unassigned"><header><b>Rekod belum dipautkan kepada unit</b><span>${loose.length} REKOD</span></header><p>Rekod ini tidak mempunyai UNIT_ID yang sepadan dengan unit aktif. Ia diasingkan supaya tidak dimasukkan ke unit yang salah.</p><div class="pajsk-unit-record-list">${loose.map(record=>`<article class="pajsk-unit-record"><div><b>${analysisEsc_(record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian')}</b><small>${analysisEsc_(record.NAMA_MURID||'Rekod unit / pasukan')}</small><small>${analysisEsc_([record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • '))}</small></div></article>`).join('')}</div></section>`:'';
+  host.innerHTML=groupsHtml+looseHtml;
+}
 async function loadPajskSchoolAnalysis_(force=false){
   if(!$('analysisSchoolView')||!state.token)return;
-  const year=String($('pajskSchoolYearFilter')?.value||pajskWorkflowYear_()),status=$('pajskSchoolStatus');if(status)status.textContent='Mengira ringkasan sebenar daripada Google Sheets...';if($('pajskSchoolYearFilter')&&!$('pajskSchoolYearFilter').options.length)$('pajskSchoolYearFilter').innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;
+  const year=String($('pajskSchoolYearFilter')?.value||pajskWorkflowYear_()),status=$('pajskSchoolStatus');
+  if(status)status.textContent='Mengira ringkasan sebenar daripada Google Sheets...';
+  if($('pajskSchoolYearFilter')&&!$('pajskSchoolYearFilter').options.length)$('pajskSchoolYearFilter').innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;
   if(!force&&$('pajskSchoolYearFilter')?.dataset.loadedYear===year)return;
-  ['pajskSchoolExtraTableWrap','pajskSchoolUnitTableWrap','pajskSchoolClassTableWrap'].forEach(id=>{const el=$(id);if(el)el.innerHTML='<div class="analysis-empty">Memuatkan...</div>';});
+  const unitHost=$('pajskSchoolUnitTableWrap');if(unitHost)unitHost.innerHTML='<div class="analysis-empty">Memuatkan rekod mengikut unit...</div>';
   try{
-    const d=await apiGet('getPajskSchoolAnalysis',{token:state.token,tahun:year},30000);if(d.ok===false)throw Error(d.error||'Analisis sekolah gagal dimuatkan.');
+    const d=await apiGet('getPajskSchoolAnalysis',{token:state.token,tahun:year},30000);
+    if(d.ok===false)throw Error(d.error||'Analisis sekolah gagal dimuatkan.');
     $('pajskSchoolYearFilter').dataset.loadedYear=year;
     analysisSetKpi_('pajskSchoolKpiStudents',Number(d.totalStudents||0).toLocaleString('ms-MY'));
     analysisSetKpi_('pajskSchoolKpiExtra',Number(d.extraComplete||0).toLocaleString('ms-MY'));
@@ -439,12 +474,11 @@ async function loadPajskSchoolAnalysis_(force=false){
     analysisSetKpi_('pajskSchoolKpiConfirmed',Number(d.confirmed||0).toLocaleString('ms-MY'));
     analysisSetKpi_('pajskSchoolKpiPct',`${Number(d.confirmationPct||0).toFixed(1)}%`);
     const note=$('pajskSchoolScoreNote');if(note)note.textContent=d.scoreNote||'GPA/CGPA belum tersedia.';
-    const extraHost=$('pajskSchoolExtraTableWrap');if(extraHost){const rows=d.extraStats||[];extraHost.innerHTML=rows.length?`<table class="analysis-table"><thead><tr><th>ELEMEN</th><th>ADA PENGLIBATAN</th><th>TIADA PENGLIBATAN</th><th>BELUM DIISI</th><th>KELENGKAPAN</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${pajskEsc_(r.label)}</b></td><td>${Number(r.ada||0)}</td><td>${Number(r.tiada||0)}</td><td>${Number(r.pending||0)}</td><td><b>${Number(r.completionPct||0).toFixed(1)}%</b></td></tr>`).join('')}</tbody></table>`:'<div class="analysis-empty">Belum ada data.</div>';}
-    const unitHost=$('pajskSchoolUnitTableWrap');if(unitHost){const rows=d.unitStats||[];unitHost.innerHTML=rows.length?`<table class="analysis-table"><thead><tr><th>KEDUDUKAN</th><th>UNIT</th><th>KATEGORI</th><th>AHLI AKTIF</th><th>REKOD PENCAPAIAN</th><th>BAHAGIAN REKOD</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td><b>${i+1}</b></td><td><b>${pajskEsc_(r.NAMA_UNIT)}</b></td><td>${pajskEsc_(r.KATEGORI)}</td><td>${Number(r.AHLI||0)}</td><td>${Number(r.REKOD_PENCAPAIAN||0)}</td><td>${Number(r.PERATUS_SUMBER_REKOD||0).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`:'<div class="analysis-empty">Tiada unit atau rekod pencapaian untuk tahun ini.</div>';}
-    const classHost=$('pajskSchoolClassTableWrap');if(classHost){const rows=d.classStats||[];classHost.innerHTML=rows.length?`<table class="analysis-table"><thead><tr><th>KELAS</th><th>GURU KELAS</th><th>JUMLAH MURID</th><th>DISAHKAN</th><th>BELUM DISAHKAN</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${pajskEsc_(r.KELAS)}</b></td><td>${pajskEsc_(r.GURU_KELAS)}</td><td>${Number(r.MURID||0)}</td><td>${Number(r.DISAHKAN||0)}</td><td>${Number(r.BELUM_DISAHKAN||0)}</td></tr>`).join('')}</tbody></table>`:'<div class="analysis-empty">Tiada rekod kelas untuk tahun ini.</div>';}
-    if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif.`;
+    renderPajskSchoolUnits_(d.unitStats||[],d.unassignedRecords||[]);
+    if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;
   }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan analisis.';toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
 }
+
 async function openPajskAssignmentSetup_(userId,kind){
   const row=USERS_CACHE_.find(x=>String(x.USER_ID)===String(userId));if(!row)return toast('Akaun tidak ditemui.');
   if(!['GURU','PENYELARAS','PENTADBIR'].includes(String(row.ROLE||'').toUpperCase()))return toast('Penugasan Guru Kelas / PAJSK hanya untuk akaun GURU, PENYELARAS atau PENTADBIR.');
@@ -1165,7 +1199,17 @@ function exportAnalysisUnitsCsv_(){
 }
 
 function showPage(page){
+  const analysisRoutes={'analysis-kokurikulum':'overview','analysis-kelas':'pajsk','analysis-pajsk':'school'};
+  if(Object.prototype.hasOwnProperty.call(analysisRoutes,page)){
+    CURRENT_ANALYSIS_VIEW_=analysisRoutes[page];
+    page='analysis';
+  }else if(page==='analysis'){
+    CURRENT_ANALYSIS_VIEW_='overview';
+  }
   const role=state.user?.role||'';
+  const canViewSchoolPajsk=['ADMIN','PENTADBIR'].includes(String(role).toUpperCase());
+  if(page==='analysis'&&CURRENT_ANALYSIS_VIEW_==='school'&&!canViewSchoolPajsk)return toast('Analisis PAJSK hanya untuk ADMIN dan PENTADBIR.');
+  const schoolAnalysisLink=$('sideAnalysisPajsk');if(schoolAnalysisLink)schoolAnalysisLink.hidden=!canViewSchoolPajsk;
   const adminOnlyPages=['murid','guru','users','system-settings','report-templates','penempatan'];
   if(adminOnlyPages.includes(page)&&role!=='ADMIN')return toast('Akses ditolak. Menu Pengurusan Data hanya untuk ADMIN.');
   if(page==='pencapaian'){PENCAPAIAN_RECORD_MODE_=false;if($('pencapaianListView'))$('pencapaianListView').hidden=false;if($('pencapaianRecordView'))$('pencapaianRecordView').hidden=true;}
@@ -1176,37 +1220,43 @@ function showPage(page){
   if(page==='reports-edit')REPORT_WORKFLOW_MODE_='form';
   if(page==='report-templates')REPORT_WORKFLOW_MODE_='template';
 
-  const map={
-    dashboard:'Dashboard',murid:'Murid',guru:'Guru',unit:'Unit Kokurikulum',
-    penempatan:'Penempatan Unit',users:'Pengurusan Pengguna',analysis:'Analisis',
-    reports:'Jana Laporan','reports-edit':'Isi Laporan Aktiviti','report-templates':'Edit Templat',activity:'Aktiviti & Acara','activity-participants':'Daftar Peserta',pencapaian:'Pencapaian Kokurikulum',
-    'system-settings':'Tetapan Sistem',attendance:'Kehadiran','unit-overview':'Ringkasan Unit','unit-ajk':'Pengurusan AJK'
-  };
+  const map={dashboard:'Dashboard',murid:'Murid',guru:'Guru',unit:'Unit Kokurikulum',penempatan:'Penempatan Unit',users:'Pengurusan Pengguna',analysis:'Analisis',ekstra:'Ekstra Kokurikulum',reports:'Jana Laporan','reports-edit':'Isi Laporan Aktiviti','report-templates':'Edit Templat',activity:'Aktiviti & Acara','activity-participants':'Daftar Peserta',pencapaian:'Pencapaian Kokurikulum','system-settings':'Tetapan Sistem',attendance:'Kehadiran','unit-overview':'Ringkasan Unit','unit-ajk':'Pengurusan AJK'};
   CURRENT_PAGE=page;
-  setPageAccent_(page);
+  setPageAccent_(page==='ekstra'?'analysis':page);
   document.querySelectorAll('.page-section').forEach(el=>el.hidden=true);
-  // Set active states deterministically: only the current page or its parent main module is selected.
   const currentGroup=pageGroupForPage_(page);
   document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
     const active=el.dataset.page===page;
     el.classList.toggle('active',active);
-    if(el.closest('#sidebar') && el.classList.contains('main-nav-item')){
-      if(active)el.setAttribute('aria-current','page');
-      else el.removeAttribute('aria-current');
+    if(el.closest('#sidebar')&&el.classList.contains('main-nav-item')){
+      if(active)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');
     }
   });
   document.querySelectorAll('#sidebar .main-nav-item[data-main-group]').forEach(el=>{
-    const active=page!=='dashboard' && !!currentGroup && el.dataset.mainGroup===currentGroup;
+    const active=page!=='dashboard'&&!!currentGroup&&el.dataset.mainGroup===currentGroup;
     el.classList.toggle('active',active);
-    if(active)el.setAttribute('aria-current','page');
-    else el.removeAttribute('aria-current');
+    if(active)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('#sidebar [data-analysis-route]').forEach(el=>{
+    const active=page==='analysis'&&el.dataset.analysisRoute===CURRENT_ANALYSIS_VIEW_;
+    el.classList.toggle('active',active);
+    if(active)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');
   });
   document.querySelectorAll('[data-mobile-open-group]').forEach(el=>el.classList.toggle('active',el.dataset.mobileOpenGroup===currentGroup));
   document.querySelectorAll('.page-'+page).forEach(el=>el.hidden=false);
-  const title=map[page]||'Dashboard';
+  let title=map[page]||'Dashboard';
+  if(page==='analysis')title=({overview:'Analisis Kokurikulum',pajsk:'Analisis Kelas',school:'Analisis PAJSK'})[CURRENT_ANALYSIS_VIEW_]||'Analisis';
   ['desktopPageTitle','mobilePageTitle'].forEach(id=>{const el=$(id);if(el)el.textContent=title;});
   renderPageSubnav_(page);
   if($('mobileMenu')&&!$('mobileMenu').hidden)buildMobileMenu_();
+  if(page==='analysis'){
+    loadAnalysisModule_();
+    switchAnalysisView_(CURRENT_ANALYSIS_VIEW_);
+  }
+  if(page==='ekstra'){
+    const preferred=PAJSK_WORKFLOW_CACHE_.loaded&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length?'class-review':'extra';
+    switchEkstraView_(preferred,true);
+  }
   if(page==='dashboard'){updateDashboardSessionUi_();if(role==='ADMIN')loadMurid(false);loadUnit();loadDashboardAnalytics_();}
   if(page==='reports'||page==='reports-edit'||page==='report-templates'){openDocumentsModule_();updateReportWorkspaceMode_();}
   if(page==='murid')loadMurid();
@@ -1220,7 +1270,6 @@ function showPage(page){
   if(page==='unit-ajk')loadUnitAjkPage_();
   if(page==='users')loadUsers();
   if(page==='system-settings')loadSystemSettings_(true);
-  if(page==='analysis')loadAnalysisModule_();
   if(!$('appView').hidden)applyAppBranding_();
 }
 
@@ -1271,11 +1320,8 @@ function init(){
   bind('analysisUnitTableUnitFilter','change',renderAnalysisUnitTableFromFilters_);
   bind('analysisUnitTableFilterReset','click',()=>{if($('analysisUnitTableCategoryFilter'))$('analysisUnitTableCategoryFilter').value='';if($('analysisUnitTableUnitFilter'))$('analysisUnitTableUnitFilter').value='';renderAnalysisUnitTableFromFilters_();});
   bind('analysisExportBtn','click',exportAnalysisUnitsCsv_);
-  bind('analysisOverviewTab','click',()=>switchAnalysisView_('overview'));
-  bind('analysisPajskTab','click',()=>switchAnalysisView_('pajsk'));
-  bind('analysisExtraEntryTab','click',()=>switchAnalysisView_('extra'));
-  bind('analysisClassReviewTab','click',()=>switchAnalysisView_('class-review'));
-  bind('analysisSchoolTab','click',()=>switchAnalysisView_('school'));
+  bind('analysisExtraEntryTab','click',()=>switchEkstraView_('extra'));
+  bind('analysisClassReviewTab','click',()=>switchEkstraView_('class-review'));
   bind('analysisPajskRefreshBtn','click',()=>loadPajskClassReport_(true));
   bind('pajskExtraRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'extra'));
   bind('pajskClassReviewRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'class-review'));
