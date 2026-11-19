@@ -1,4 +1,4 @@
-const CACHE = 'ekossta-ios-pwa-print-preview-20261119-v2';
+const CACHE = 'ekossta-ios-pwa-20261119-navfix-v2';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
   './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css',
