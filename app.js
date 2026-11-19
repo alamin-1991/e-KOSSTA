@@ -516,6 +516,154 @@ function ekosstaPrintBackControlHtml_(){
   return `<button class="ekossta-print-back" type="button" onclick="(function(){try{if(window.EKOSSTAAndroid&&window.EKOSSTAAndroid.closePrintPreview){window.EKOSSTAAndroid.closePrintPreview();return;}}catch(e){}try{if(window.opener&&!window.opener.closed){window.opener.focus();window.close();return;}}catch(e){}try{if(window.history.length>1){window.history.back();return;}}catch(e){}try{if(document.referrer){window.location.href=document.referrer;return;}}catch(e){}window.location.href='https://alamin-1991.github.io/ekossta-app/';})()">← Kembali ke e-KOSSTA</button>`;
 }
 
+/* ============================================================
+   iOS HOME-SCREEN PRINT PREVIEW
+   On iOS Home Screen web apps, render print documents in the
+   current app document instead of opening a new window. This
+   keeps a visible return control after the system print sheet.
+   ============================================================ */
+function ekosstaIsIOSHomeScreen_(){
+  try{
+    const nav=window.navigator||{};
+    const ua=String(nav.userAgent||'');
+    const appleDevice=/iPhone|iPad|iPod/i.test(ua)||(nav.platform==='MacIntel'&&Number(nav.maxTouchPoints||0)>1);
+    const standalone=nav.standalone===true||!!(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+    return appleDevice&&standalone;
+  }catch(e){return false;}
+}
+function ekosstaCloseIOSPrintPreview_(){
+  try{
+    const overlay=document.getElementById('ekossta-ios-print-preview');
+    if(overlay)overlay.remove();
+    const style=document.getElementById('ekossta-ios-print-style');
+    if(style)style.remove();
+    document.body.classList.remove('ekossta-ios-print-open');
+    const state=window.__EKOSSTA_IOS_PRINT_STATE__;
+    if(state){
+      document.title=state.previousTitle||document.title;
+      if(typeof state.markClosed==='function')state.markClosed();
+      window.__EKOSSTA_IOS_PRINT_STATE__=null;
+      if(Number.isFinite(state.scrollY))window.scrollTo(state.scrollX||0,state.scrollY);
+    }
+  }catch(e){console.warn('Tutup pratonton cetakan iOS:',e);}
+}
+function ekosstaOpenIOSPrintPreviewFromHtml_(html){
+  if(!ekosstaIsIOSHomeScreen_())return false;
+  try{
+    // Re-render updates the same virtual print window. Do not mark that
+    // window closed until the user taps the explicit Back control.
+    const activeState=window.__EKOSSTA_IOS_PRINT_STATE__||null;
+    const oldOverlay=document.getElementById('ekossta-ios-print-preview');if(oldOverlay)oldOverlay.remove();
+    const oldStyle=document.getElementById('ekossta-ios-print-style');if(oldStyle)oldStyle.remove();
+    document.body.classList.remove('ekossta-ios-print-open');
+    const parser=new DOMParser();
+    const parsed=parser.parseFromString(String(html||''),'text/html');
+    const title=String(parsed.querySelector('title')?.textContent||'Cetakan e-KOSSTA').trim();
+    const sourceStyles=[...parsed.querySelectorAll('style')].map(x=>x.textContent||'').join('\n');
+    const body=parsed.body.cloneNode(true);
+    body.querySelectorAll('.print-toolbar,.toolbar,.print-action-bar').forEach(x=>x.remove());
+    const contentHtml=body.innerHTML;
+    const previousTitle=activeState?.previousTitle||document.title;
+    const scrollX=Number.isFinite(activeState?.scrollX)?activeState.scrollX:(window.scrollX||0);
+    const scrollY=Number.isFinite(activeState?.scrollY)?activeState.scrollY:(window.scrollY||0);
+    const overlay=document.createElement('section');
+    overlay.id='ekossta-ios-print-preview';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label','Pratonton cetakan');
+    overlay.innerHTML=`
+      <header class="ekossta-ios-print-toolbar">
+        <div class="ekossta-ios-print-heading">
+          <strong>e-KOSSTA · PRATONTON CETAKAN</strong>
+          <span></span>
+        </div>
+        <div class="ekossta-ios-print-actions">
+          <button type="button" data-ios-print-back>Kembali ke e-KOSSTA</button>
+          <button type="button" data-ios-print-action>Cetak / Simpan PDF</button>
+          <button type="button" data-ios-print-safari>Buka dalam Safari</button>
+        </div>
+        <p class="ekossta-ios-print-help">Selepas dialog cetakan ditutup, pratonton ini kekal di sini. Tekan “Kembali ke e-KOSSTA” untuk menyambung kerja.</p>
+        <p class="ekossta-ios-print-status" role="status" aria-live="polite"></p>
+      </header>
+      <main class="ekossta-ios-print-document">${contentHtml}</main>`;
+    const style=document.createElement('style');
+    style.id='ekossta-ios-print-style';
+    style.textContent=sourceStyles+`\n
+      body.ekossta-ios-print-open{margin:0!important;padding:0!important;overflow:hidden!important}
+      #ekossta-ios-print-preview{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;flex-direction:column!important;width:100vw!important;height:100vh!important;height:100dvh!important;overflow:hidden!important;background:#e8ece5!important;color:#14251d!important;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)!important;font-family:Arial,sans-serif!important;box-sizing:border-box!important}
+      #ekossta-ios-print-preview *{box-sizing:border-box}
+      #ekossta-ios-print-preview .ekossta-ios-print-toolbar{position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;gap:8px!important;flex:0 0 auto!important;padding:12px 14px!important;background:#101714!important;color:#edf2e7!important;border-bottom:2px solid #d8e267!important;margin:0!important;z-index:2!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-heading{display:flex!important;flex-direction:column!important;gap:3px!important;font-size:13px!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-heading span{font-size:12px!important;color:#c5d0c8!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important}
+      #ekossta-ios-print-preview button{appearance:none!important;-webkit-appearance:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:46px!important;padding:10px 12px!important;border:1px solid #d8e267!important;border-radius:6px!important;background:#d8e267!important;color:#101714!important;font:700 14px Arial,sans-serif!important;white-space:normal!important;cursor:pointer!important}
+      #ekossta-ios-print-preview button[data-ios-print-back]{background:#1d3027!important;color:#edf2e7!important}
+      #ekossta-ios-print-preview button[data-ios-print-safari]{grid-column:1 / -1!important;background:#263b32!important;color:#edf2e7!important;border-color:#577064!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-help{margin:0!important;color:#d4ded6!important;font:12px/1.4 Arial,sans-serif!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-status{margin:0!important;color:#d8e267!important;font:12px/1.4 Arial,sans-serif!important;min-height:0!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-document{display:block!important;flex:1 1 auto!important;min-height:0!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;padding:14px!important;background:#e8ece5!important;color:#111!important}
+      #ekossta-ios-print-preview .ekossta-ios-print-document>.print-wrap,
+      #ekossta-ios-print-preview .ekossta-ios-print-document>.sheet,
+      #ekossta-ios-print-preview .ekossta-ios-print-document>.print-content{max-width:100%!important;margin:0 auto!important}
+      @media(max-width:420px){#ekossta-ios-print-preview .ekossta-ios-print-actions{grid-template-columns:1fr!important}#ekossta-ios-print-preview button[data-ios-print-safari]{grid-column:auto!important}}
+      @media print{
+        html,body{width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important}
+        body.ekossta-ios-print-open>*:not(#ekossta-ios-print-preview){display:none!important;visibility:hidden!important}
+        #ekossta-ios-print-preview{position:static!important;inset:auto!important;display:block!important;width:auto!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important}
+        #ekossta-ios-print-preview .ekossta-ios-print-toolbar{display:none!important}
+        #ekossta-ios-print-preview .ekossta-ios-print-document{display:block!important;width:auto!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important}
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.classList.add('ekossta-ios-print-open');
+    document.body.appendChild(overlay);
+    document.title=title;
+    const state=activeState||{previousTitle,scrollX,scrollY,markClosed:()=>{}};
+    if(!state.previousTitle)state.previousTitle=previousTitle;
+    if(typeof state.markClosed!=='function')state.markClosed=()=>{};
+    window.__EKOSSTA_IOS_PRINT_STATE__=state;
+    const back=overlay.querySelector('[data-ios-print-back]');
+    const print=overlay.querySelector('[data-ios-print-action]');
+    const safari=overlay.querySelector('[data-ios-print-safari]');
+    const status=overlay.querySelector('.ekossta-ios-print-status');
+    back.addEventListener('click',ekosstaCloseIOSPrintPreview_);
+    print.addEventListener('click',()=>{
+      status.textContent='Mencuba membuka dialog cetakan iOS… Jika tiada paparan keluar, gunakan “Buka dalam Safari”.';
+      try{window.focus();window.print();}catch(e){status.textContent='iOS tidak membuka dialog cetakan. Gunakan “Buka dalam Safari” untuk mencetak.';}
+    });
+    safari.addEventListener('click',()=>{
+      status.textContent='Membuka e-KOSSTA dalam Safari. Oleh sebab data log masuk PWA dan Safari boleh berasingan, anda mungkin perlu log masuk semula dan ulang cetakan.';
+      const target=window.location.origin+window.location.pathname+window.location.search+window.location.hash;
+      try{window.location.href='x-safari-'+target;}catch(e){status.textContent='Tidak dapat membuka Safari secara automatik. Buka Safari dan lawati alamat e-KOSSTA secara manual.';}
+    });
+    back.focus({preventScroll:true});
+    return true;
+  }catch(e){
+    console.error('Pratonton cetakan iOS gagal:',e);
+    ekosstaCloseIOSPrintPreview_();
+    toast('Tidak dapat membuka pratonton cetakan iOS. '+(e.message||''));
+    return false;
+  }
+}
+function ekosstaOpenPrintWindow_(url='',target='_blank'){
+  if(!ekosstaIsIOSHomeScreen_())return window.open(url,target);
+  let html='';
+  let closed=false;
+  const virtualWindow={
+    get closed(){return closed;},
+    focus(){},
+    close(){closed=true;ekosstaCloseIOSPrintPreview_();},
+    document:{
+      open(){if(!closed)html='';},
+      write(...parts){if(!closed)html+=parts.map(x=>String(x??'')).join('');},
+      close(){if(!closed)ekosstaOpenIOSPrintPreviewFromHtml_(html);}
+    }
+  };
+  const previousState=window.__EKOSSTA_IOS_PRINT_STATE__;
+  window.__EKOSSTA_IOS_PRINT_STATE__={markClosed:()=>{closed=true;},previousTitle:previousState?.previousTitle||document.title,scrollX:window.scrollX||0,scrollY:window.scrollY||0};
+  return virtualWindow;
+}
+
 function ekosstaPrintPlatformScript_(){
   return `<script>try{if(window.EKOSSTAAndroid){document.documentElement.classList.add('ekossta-android-print');}}catch(e){}</script>`;
 }
@@ -529,7 +677,7 @@ function ekosstaPrintToolbarCss_(){
 
 function pajskPrintWindow_(title,content,orientation='landscape'){
   if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
-  const win=window.open('','_blank');if(!win){toast('Pelayar menyekat tetingkap cetakan. Benarkan pop-up untuk '+getAppName_()+'.');return null;}
+  const win=ekosstaOpenPrintWindow_('','_blank');if(!win){toast('Pelayar menyekat tetingkap cetakan. Benarkan pop-up untuk '+getAppName_()+'.');return null;}
   const css=`@page{size:A4 ${orientation};margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff!important;color:#14211b!important;font:9pt Arial,sans-serif;line-height:1.35}.print-wrap{max-width:100%;margin:0 auto}.print-topline{display:flex;justify-content:space-between;gap:10px;border-bottom:2px solid #035A52;padding-bottom:6px;color:#035A52;font-size:8pt;font-weight:700;letter-spacing:.06em}.print-title{text-align:center;margin:10px 0 8px}.print-title h1{font-size:16pt;margin:0 0 4px}.print-title p{margin:2px 0;font-size:8pt}.print-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 0;margin-bottom:6px;border-bottom:1px solid #b7c7bd;font-size:8pt}.print-section{font-size:10pt;margin:10px 0 4px;padding-bottom:4px;border-bottom:1px solid #83a696}.print-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.5pt} .print-table th{background:#172A22!important;color:#D8E267!important;text-align:left;font-size:7pt;letter-spacing:.03em}.print-table th,.print-table td{border:1px solid #aabbb1;padding:4px 5px;vertical-align:top;overflow-wrap:anywhere}.print-table tr{break-inside:avoid;page-break-inside:avoid}.print-small{font-size:7pt;color:#52655b;display:block;margin-top:2px}.print-list{margin:2px 0 0;padding-left:12px}.print-note{margin-top:8px;padding:7px;border:1px solid #b4c7bd;background:#f2f5e9;font-size:7.5pt}.print-signatures{display:grid;grid-template-columns:1fr 1fr;gap:35mm;margin-top:22mm;font-size:8pt;text-align:center}.print-signatures div{border-top:1px solid #596e63;padding-top:5px}@media screen{body{padding:10mm;background:#eef1e9!important}.print-wrap{background:#fff;padding:10mm;box-shadow:0 0 0 1px #d7ded7}}`;
   win.document.open();win.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${pajskEsc_(title)}</title><style>${css}${ekosstaPrintToolbarCss_()}</style></head><body><div class="print-toolbar"><div><strong>${pajskEsc_(getAppName_())} · ${pajskEsc_(title)}</strong><div class="hint">Pratonton cetakan PAJSK. Pilih cetak apabila bersedia.</div></div><div class="actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div><main class="print-wrap">${content}</main></body></html>`);win.document.close();win.focus();return win;
 }
@@ -2248,7 +2396,7 @@ async function openAktivitiPermissionLetter(activityId){
     if(!activityId){toast('ID aktiviti tidak sah.');return;}
     // Buka popup sejurus klik supaya Chrome tidak menyekatnya. Jangan gunakan
     // window.confirm selepas await kerana dialog boleh tersembunyi pada tab asal.
-    w=window.open('','_blank');
+    w=ekosstaOpenPrintWindow_('','_blank');
     if(!w){toast('Popup disekat. Benarkan pop-up untuk e-KOSSTA.');return;}
     popupMessage_('Sedang menjana surat kebenaran','Sedang mengambil maklumat aktiviti dan senarai peserta. Sila tunggu.');
 
@@ -2668,7 +2816,7 @@ function unitPrintMembers_(d){const genderRank=v=>{const g=String(v||'').trim().
 function unitPrintMemberAttendance_(d){const weeks=Array.from({length:15},(_,i)=>i+1);const rows=(d.ahli||[]).map(r=>[unitPrintEsc_(r.NAMA),unitPrintEsc_(r.KELAS),...weeks.map(w=>unitPrintEsc_(unitPrintStatus_((r.MINGGU||{})[w]?.STATUS)))]);return rows.length?unitPrintTable_(['Murid','Kelas',...weeks.map(w=>'M'+w)],rows):'<p>Tiada data kehadiran ahli.</p>';}
 function openUnitPrintWindow_(title,content,landscape=false){
   if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
-  const w=window.open('','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk laman '+getAppName_()+'.');
+  const w=ekosstaOpenPrintWindow_('','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk laman '+getAppName_()+'.');
   const html=`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${unitPrintEsc_(title)}</title><style>
   @page{size:A4 ${landscape?'landscape':'portrait'};margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#edf1e8;color:#17251e;font:10pt Arial,sans-serif}.toolbar{position:sticky;top:0;background:#101714;color:#edf4e9;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #d8e267}.toolbar button{padding:9px 14px;border:1px solid #d8e267;background:#d8e267;color:#101714;font-weight:bold;cursor:pointer}.sheet{background:#fff;max-width:1100px;margin:18px auto;padding:24px;box-shadow:0 2px 10px #0002}header{text-align:center;border-bottom:2px solid #035a52;padding-bottom:12px;margin-bottom:18px}.brandline{font-size:9pt;font-weight:700;letter-spacing:.12em;color:#035a52}h1{font-size:18pt;margin:8px 0}header h2{font-size:14pt;margin:0 0 6px}header p{font-size:9pt;margin:0;color:#52645a}section{margin:18px 0 22px}h3{font-size:12pt;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #88a59a;color:#035a52}table{width:100%;border-collapse:collapse;font-size:8.5pt}th,td{border:1px solid #b5c2b9;padding:6px 7px;text-align:left;vertical-align:top}th{background:#163027;color:#d8e267;font-size:8pt;letter-spacing:.04em}tbody tr:nth-child(even){background:#f2f5ef}.table-wrap{overflow:visible}.hint{font-size:9pt;color:#d8e267}@media print{html,body{background:#fff!important}.toolbar{display:none!important}.sheet{max-width:none;margin:0;padding:0;box-shadow:none}section{break-inside:auto}tr{break-inside:avoid}th{print-color-adjust:exact;-webkit-print-color-adjust:exact}}${ekosstaPrintToolbarCss_()}
   </style></head><body><div class="toolbar"><div><strong>${activityEsc_(getAppName_())} • ${unitPrintEsc_(title)}</strong><div class="hint">Pilih Cetak / Simpan PDF untuk menghasilkan salinan.</div></div><div class="print-toolbar-actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div><main class="sheet">${content}</main></body></html>`;
@@ -3300,7 +3448,7 @@ async function editSavedReport_(id){
   await openSavedDocument_(id);
 }
 async function printSavedReport_(id){
-  const printWindow=window.open('about:blank','_blank');if(!printWindow)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
+  const printWindow=ekosstaOpenPrintWindow_('about:blank','_blank');if(!printWindow)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
   try{printWindow.document.open();printWindow.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Menyediakan cetakan...</title></head><body style="font:16px Arial;padding:24px">Menyediakan laporan untuk dicetak...</body></html>');printWindow.document.close();}catch(e){}
   const loaded=await openSavedDocument_(id);if(!loaded){try{printWindow.close()}catch(e){}return;}
   await printEditorDocument_(printWindow);
@@ -3511,7 +3659,7 @@ async function openSavedDocument_(id){
 }
 async function printEditorDocument_(providedWindow=null){
   if(isStandaloneMeetingReport_()){if(REPORT_STANDALONE_PARTICIPANT_MODE_==='unset')return toast('Pilih + Peserta atau Tiada Peserta sebelum mencetak laporan.');renderStandaloneParticipantsAppendix_();}
-  const w=providedWindow||window.open('about:blank','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
+  const w=providedWindow||ekosstaOpenPrintWindow_('about:blank','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
   try{
     if(REPORT_WORKFLOW_MODE_==='form')updateReportPreviewFromForm_();
     const ed=editorEl_();if(!ed)throw new Error('Pratonton laporan tidak ditemui.');
