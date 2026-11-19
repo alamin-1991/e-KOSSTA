@@ -1,0 +1,75 @@
+/* e-KOSSTA UI STANDARD v2 — responsive sizing + compact mobile navigation */
+:root {
+  --ek-font-body: 1rem;
+  --ek-font-small: .75rem;
+  --ek-font-heading: 1.5rem;
+  --ek-border-thin: 1px;
+  --ek-mobile-nav-height: 4.1rem;
+  --ek-mobile-nav-icon: 1.3rem;
+  --ek-mobile-nav-label: .68rem;
+  --ek-mobile-nav-gap: .25rem;
+  --ek-mobile-nav-pad: .35rem;
+}
+html { font-size: 100%; }
+body { font-size: var(--ek-font-body); }
+/* Category switcher: arrows only, no slider track or category badge */
+.dashboard-slider-header {
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:.75rem !important; flex-wrap:wrap !important; margin:.8rem 0 1rem !important;
+}
+.dashboard-category-controls { display:flex; align-items:center; justify-content:flex-end; gap:.65rem; margin-left:auto; }
+.dashboard-slider-header > span:first-child { font-size:1rem; font-weight:750; min-width:0; }
+.dashboard-slider-header > span:nth-child(2), .dashboard-category-controls > span {
+  color:var(--muted,#8a9b92); font-size:.78rem; font-weight:750; white-space:nowrap; font-variant-numeric:tabular-nums;
+}
+.dashboard-slider-actions { display:flex !important; align-items:center; gap:.45rem !important; margin:0 !important; }
+.dashboard-slider-actions button {
+  width:2.35rem !important; height:2.35rem !important; min-width:2.35rem !important; min-height:2.35rem !important;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  border:1px solid var(--ui-outline,var(--border,#41584e)) !important; border-radius:.35rem !important;
+  background:var(--surface2,#14221c) !important; color:var(--page-accent,#d9ee63) !important;
+  font-size:1.35rem !important; line-height:1 !important; font-weight:800 !important; cursor:pointer;
+}
+.dashboard-slider-actions button:active { transform:scale(.96); }
+.dashboard-category-slider, .dashboard-analysis-chip { display:none !important; }
+/* Compact fixed mobile navigation with iOS safe-area support */
+@media (max-width: 48rem) {
+  .app-shell { padding-bottom:calc(var(--ek-mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 1rem) !important; }
+  .mobile-nav {
+    position:fixed !important; left:.55rem !important; right:.55rem !important; bottom:0 !important;
+    height:calc(var(--ek-mobile-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+    min-height:calc(var(--ek-mobile-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+    padding:.3rem .35rem calc(.3rem + env(safe-area-inset-bottom, 0px)) !important;
+    display:flex !important; align-items:center !important; justify-content:space-around !important;
+    gap:.2rem !important; border:1px solid var(--ui-outline,#334b42) !important;
+    border-radius:1.05rem 1.05rem .75rem .75rem !important;
+    background:var(--surface2,#101914) !important; box-shadow:0 -.25rem 1.25rem rgba(0,0,0,.18) !important;
+    z-index:100 !important; box-sizing:border-box !important;
+  }
+  .mobile-nav .nav-item {
+    flex:1 1 0 !important; min-width:0 !important; min-height:3.25rem !important; height:3.25rem !important;
+    margin:0 !important; padding:.3rem .15rem !important; border:0 !important; border-radius:.8rem !important;
+    display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important;
+    gap:var(--ek-mobile-nav-gap) !important; background:transparent !important; color:var(--muted,#aab7af) !important;
+    font-size:var(--ek-mobile-nav-label) !important; line-height:1.05 !important; font-weight:700 !important;
+  }
+  .mobile-nav .nav-item .nav-icon { width:var(--ek-mobile-nav-icon) !important; height:var(--ek-mobile-nav-icon) !important; flex:0 0 var(--ek-mobile-nav-icon) !important; }
+  .mobile-nav .nav-item span { display:block !important; width:auto !important; flex:0 0 auto !important; font-size:var(--ek-mobile-nav-label) !important; line-height:1.05 !important; white-space:nowrap !important; }
+  .mobile-nav .nav-item.active {
+    min-height:3.25rem !important; height:3.25rem !important; padding:.3rem .15rem !important;
+    border-radius:.8rem !important; background:var(--page-accent,#b8f500) !important;
+    color:var(--page-accent-ink,#101914) !important; box-shadow:none !important;
+  }
+  .mobile-nav .nav-item.active .nav-icon { color:inherit !important; }
+}
+@media (max-width: 23rem) {
+  :root { --ek-mobile-nav-label:.62rem; --ek-mobile-nav-icon:1.15rem; }
+  .mobile-nav { left:.3rem !important; right:.3rem !important; gap:.1rem !important; }
+  .mobile-nav .nav-item { padding-inline:.05rem !important; }
+}
+/* Fluid layout primitives: avoid fixed viewport widths on content cards */
+.dashboard-analytics-grid, .dashboard-metrics-grid, .dashboard-quick-access { max-width:100%; }
+.dashboard-analysis-card, .dashboard-metric { min-width:0; }
+@media (min-width:48.01rem) {
+  .mobile-nav { display:none !important; }
+}

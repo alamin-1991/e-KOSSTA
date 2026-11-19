@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-title" content="e-KOSSTA">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css">  <link rel="stylesheet" href="ekossta-mobile-responsive.css"><title>e-KOSSTA | Pengurusan Kokurikulum</title></head>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css">  <link rel="stylesheet" href="ekossta-mobile-responsive.css"><link rel="stylesheet" href="ekossta-ui-standard-v2.css"><title>e-KOSSTA | Pengurusan Kokurikulum</title></head>
 <body>
 <header class="mobile-topbar">
   <div class="mobile-brand-cluster"><img id="mobileBrandLogo" class="mobile-brand-logo" alt="Logo sekolah" hidden><div class="mobile-brand-text"><b>e-KOSSTA</b><small id="mobilePageTitle">Dashboard</small></div></div>
@@ -150,7 +150,7 @@
     <button type="button" class="dashboard-quick-link" data-page-jump="activity"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M7 2v4M17 2v4M3 9h18M7 13h4M7 17h8"/></svg></span><span>Aktiviti / Acara</span><b aria-hidden="true">↗</b></button>
     <button type="button" class="dashboard-quick-link" data-page-jump="pencapaian"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4M12 13v5M8 21h8M9 18h6"/></svg></span><span>Pencapaian</span><b aria-hidden="true">↗</b></button>
     <button type="button" class="dashboard-quick-link" data-page-jump="reports"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></svg></span><span>Laporan</span><b aria-hidden="true">↗</b></button>
-    <button type="button" class="dashboard-quick-link" data-page-jump="analysis"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h17M7 16l4-5 3 2 5-7"/><circle cx="7" cy="16" r="1"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="6" r="1"/></svg></span><span>Analisis PAJSK</span><b aria-hidden="true">↗</b></button>
+    <button type="button" class="dashboard-quick-link" data-page-jump="analysis"><span class="dashboard-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h17M7 16l4-5 3 2 5-7"/><circle cx="7" cy="16" r="1"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="6" r="1"/></svg></span><span>Analisis Kokurikulum</span><b aria-hidden="true">↗</b></button>
   </nav>
   <div class="dashboard-section-heading dashboard-analytics-heading"><div><span>03 / ANALITIK KOKURIKULUM</span><h2>Prestasi &amp; Ringkasan Data</h2></div><small id="dashboardAnalyticsNote">Memuatkan data menyeluruh...</small></div>
   <div class="dashboard-analytics-grid" id="dashboardAnalyticsGrid">
@@ -164,17 +164,13 @@
       <div id="dashboardEventsTableWrap" class="dashboard-events-table-wrap"><div class="dashboard-analytics-empty">Memuatkan ringkasan acara...</div></div>
     </article>
     <article class="dashboard-analysis-card dashboard-attendance-card">
-      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">KEHADIRAN UNIT</span><h3>Analisis Peratus Kehadiran</h3></div><span class="dashboard-analysis-chip">SLIDER KATEGORI</span></div>
-      <div class="dashboard-slider-header"><span id="dashboardAttendanceCategoryLabel">Unit Beruniform</span><span id="dashboardAttendanceSlideMeta">1 / 4</span></div>
-      <input id="dashboardAttendanceSlider" class="dashboard-category-slider" type="range" min="0" max="3" step="1" value="0" aria-label="Pilih kategori unit untuk analisis kehadiran">
-      <div class="dashboard-slider-actions"><button id="dashboardAttendancePrev" type="button" aria-label="Kategori sebelumnya">‹</button><button id="dashboardAttendanceNext" type="button" aria-label="Kategori seterusnya">›</button></div>
+      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">KEHADIRAN UNIT</span><h3>Analisis Peratus Kehadiran</h3></div></div>
+      <div class="dashboard-slider-header"><span id="dashboardAttendanceCategoryLabel">Unit Beruniform</span><div class="dashboard-category-controls"><span id="dashboardAttendanceSlideMeta">1 / 4</span><div class="dashboard-slider-actions"><button id="dashboardAttendancePrev" type="button" aria-label="Kategori sebelumnya">‹</button><button id="dashboardAttendanceNext" type="button" aria-label="Kategori seterusnya">›</button></div></div></div>
       <div id="dashboardAttendanceChart" class="dashboard-analytics-bars"><div class="dashboard-analytics-empty">Memuatkan peratus kehadiran...</div></div>
     </article>
     <article class="dashboard-analysis-card dashboard-members-card">
-      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">KEAHLIAN UNIT</span><h3>Ahli Lelaki &amp; Perempuan</h3></div><span class="dashboard-analysis-chip">SLIDER KATEGORI</span></div>
-      <div class="dashboard-slider-header"><span id="dashboardMembersCategoryLabel">Unit Beruniform</span><span id="dashboardMembersSlideMeta">1 / 4</span></div>
-      <input id="dashboardMembersSlider" class="dashboard-category-slider" type="range" min="0" max="3" step="1" value="0" aria-label="Pilih kategori unit untuk analisis ahli">
-      <div class="dashboard-slider-actions"><button id="dashboardMembersPrev" type="button" aria-label="Kategori sebelumnya">‹</button><button id="dashboardMembersNext" type="button" aria-label="Kategori seterusnya">›</button></div>
+      <div class="dashboard-analysis-head"><div><span class="dashboard-analysis-eyebrow">KEAHLIAN UNIT</span><h3>Ahli Lelaki &amp; Perempuan</h3></div></div>
+      <div class="dashboard-slider-header"><span id="dashboardMembersCategoryLabel">Unit Beruniform</span><div class="dashboard-category-controls"><span id="dashboardMembersSlideMeta">1 / 4</span><div class="dashboard-slider-actions"><button id="dashboardMembersPrev" type="button" aria-label="Kategori sebelumnya">‹</button><button id="dashboardMembersNext" type="button" aria-label="Kategori seterusnya">›</button></div></div></div>
       <div id="dashboardMembersChart" class="dashboard-member-bars"><div class="dashboard-analytics-empty">Memuatkan bilangan ahli...</div></div>
       <div class="dashboard-gender-legend"><span><i class="legend-male"></i>Lelaki</span><span><i class="legend-female"></i>Perempuan</span></div>
     </article>
@@ -506,10 +502,10 @@
 <section id="analysisSection" class="page-section page-analysis" hidden>
   <div class="analysis-subtabs" role="tablist" aria-label="Submenu Analisis">
     <button id="analysisOverviewTab" class="analysis-subtab active" type="button" role="tab" aria-selected="true" data-analysis-view="overview"><span>[</span> ANALISIS KOKURIKULUM <span>]</span></button>
-    <button id="analysisPajskTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="pajsk"><span>[</span> ANALISIS PAJSK <span>]</span></button>
+    <button id="analysisPajskTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="pajsk"><span>[</span> ANALISIS KELAS <span>]</span></button>
     <button id="analysisExtraEntryTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="extra">REKOD EKSTRA</button>
     <button id="analysisClassReviewTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="class-review">PENGESAHAN GURU KELAS</button>
-    <button id="analysisSchoolTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="school">ANALISIS SEKOLAH</button>
+    <button id="analysisSchoolTab" class="analysis-subtab" type="button" role="tab" aria-selected="false" data-analysis-view="school">ANALISIS PAJSK</button>
   </div>
   <div id="analysisOverviewView" class="analysis-overview-view">
   <div class="analysis-heading">
@@ -595,7 +591,7 @@
     <div class="analysis-heading">
       <div>
         <span class="analysis-kicker">ANALISIS • PAJSK / DATA PENYERTAAN</span>
-        <h2><span class="analysis-prompt">&gt;_</span> Pemarkahan PAJSK Murid</h2>
+        <h2><span class="analysis-prompt">&gt;_</span> Analisis Kelas</h2>
         <p>Paparan keseluruhan murid aktif daripada semua kelas. Pilihan kelas digunakan hanya untuk mencetak laporan kelas ke PDF.</p>
       </div>
       <div class="analysis-actions">
@@ -618,7 +614,7 @@
     </div>
     <div class="analysis-pajsk-note"><b>NOTA DATA</b><span>CSV terperinci menyusun medan Kelab/Persatuan, Badan Beruniform, Sukan/Permainan dan Ekstra Kokurikulum mengikut struktur borang extension. Penglibatan, peringkat pencapaian, jawatan, aktiviti dan kehadiran diisi daripada rekod e-KOSSTA; komitmen, khidmat sumbangan, NILAM, TIMSS/PISA serta markah rasmi dibiarkan kosong jika belum direkod, bukan direka.</span></div>
     <section class="analysis-panel analysis-table-panel analysis-pajsk-table-panel">
-      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Senarai Pemarkahan PAJSK Murid</h3><p>Senarai dipaparkan mengikut kelas yang dipilih. Pilih Semua Kelas untuk melihat keseluruhan sekolah.</p></div><span id="analysisPajskStudentCount" class="analysis-count">0 MURID</span></div>
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Senarai Rekod Murid Mengikut Kelas</h3><p>Senarai dipaparkan mengikut kelas yang dipilih. Pilih Semua Kelas untuk melihat keseluruhan sekolah.</p></div><span id="analysisPajskStudentCount" class="analysis-count">0 MURID</span></div>
       <div id="analysisPajskTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan rekod PAJSK...</div></div>
     </section>
     <div id="analysisPajskUpdatedAt" class="analysis-updated">Belum dikemas kini.</div>
@@ -645,7 +641,7 @@
     <div id="pajskClassReviewTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan kelas yang ditugaskan...</div></div>
   </div>
   <div id="analysisSchoolView" class="analysis-pajsk-workflow-view" hidden>
-    <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • PEMANTAUAN SEKOLAH</span><h2>Analisis PAJSK Sekolah</h2><p>Memantau kelengkapan rekod, pengesahan kelas dan sumbangan rekod pencapaian unit.</p></div><div class="analysis-actions"><button id="pajskSchoolRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
+    <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • PEMANTAUAN SEKOLAH</span><h2>Analisis PAJSK</h2><p>Memantau kelengkapan rekod, pengesahan kelas dan sumbangan rekod pencapaian unit.</p></div><div class="analysis-actions"><button id="pajskSchoolRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
     <div class="analysis-filterbar"><div><label for="pajskSchoolYearFilter">Tahun</label><select id="pajskSchoolYearFilter"></select></div></div>
     <div id="pajskSchoolStatus" class="analysis-status" role="status" aria-live="polite">Memuatkan analisis sekolah...</div>
     <div class="analysis-pajsk-kpi-grid">

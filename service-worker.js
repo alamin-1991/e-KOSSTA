@@ -1,9 +1,9 @@
-const CACHE = 'ekossta-pajsk-gurukelas-analysis-v1b-20261119';
+const CACHE = 'ekossta-full-ui-v3-20261119';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
-  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css',
+  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css',
   './app.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
-  './ekossta-mobile-responsive.css', './apple-touch-icon.png', './icon-192.png', './icon-512.png',
+  './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './apple-touch-icon.png', './icon-192.png', './icon-512.png',
   './assets/dashboard-pixel-art.webp'
 ];
 self.addEventListener('install', event => {

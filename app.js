@@ -1238,8 +1238,6 @@ function init(){
   bind('saveApiUrlBtn','click',saveLoginApiUrl_);
   bind('passwordRevealBtn','click',toggleLoginPassword_);
   bind('dashboardRefreshBtn','click',refreshDashboardData_);
-  bind('dashboardAttendanceSlider','input',e=>{DASHBOARD_ATTENDANCE_SLIDE_=Number(e.target.value)||0;renderDashboardUnitSlider_('attendance');});
-  bind('dashboardMembersSlider','input',e=>{DASHBOARD_MEMBERS_SLIDE_=Number(e.target.value)||0;renderDashboardUnitSlider_('members');});
   bind('dashboardAttendancePrev','click',()=>{DASHBOARD_ATTENDANCE_SLIDE_=(DASHBOARD_ATTENDANCE_SLIDE_+DASHBOARD_UNIT_CATEGORIES_.length-1)%DASHBOARD_UNIT_CATEGORIES_.length;renderDashboardUnitSlider_('attendance');});
   bind('dashboardAttendanceNext','click',()=>{DASHBOARD_ATTENDANCE_SLIDE_=(DASHBOARD_ATTENDANCE_SLIDE_+1)%DASHBOARD_UNIT_CATEGORIES_.length;renderDashboardUnitSlider_('attendance');});
   bind('dashboardMembersPrev','click',()=>{DASHBOARD_MEMBERS_SLIDE_=(DASHBOARD_MEMBERS_SLIDE_+DASHBOARD_UNIT_CATEGORIES_.length-1)%DASHBOARD_UNIT_CATEGORIES_.length;renderDashboardUnitSlider_('members');});
@@ -1720,7 +1718,6 @@ function renderDashboardUnitSlider_(type){
   const isAttendance=type==='attendance';
   const slide=isAttendance?DASHBOARD_ATTENDANCE_SLIDE_:DASHBOARD_MEMBERS_SLIDE_;
   const category=DASHBOARD_UNIT_CATEGORIES_[Math.max(0,Math.min(DASHBOARD_UNIT_CATEGORIES_.length-1,slide))];
-  const slider=$(isAttendance?'dashboardAttendanceSlider':'dashboardMembersSlider');if(slider){slider.value=String(slide);slider.max=String(DASHBOARD_UNIT_CATEGORIES_.length-1);slider.setAttribute('aria-valuetext',category.label);}
   const label=$(isAttendance?'dashboardAttendanceCategoryLabel':'dashboardMembersCategoryLabel');if(label)label.textContent=category.label;
   const meta=$(isAttendance?'dashboardAttendanceSlideMeta':'dashboardMembersSlideMeta');if(meta)meta.textContent=`${slide+1} / ${DASHBOARD_UNIT_CATEGORIES_.length}`;
   const container=$(isAttendance?'dashboardAttendanceChart':'dashboardMembersChart');if(!container)return;
