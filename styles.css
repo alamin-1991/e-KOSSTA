@@ -3072,3 +3072,43 @@ html:not(.dark) .murid-import-progress progress::-webkit-progress-bar { backgrou
 .coordinator-unit-option small{font-size:11px;color:var(--muted)}
 .coordinator-unit-empty{grid-column:1/-1;margin:0;padding:14px;border:1px dashed var(--border);border-radius:10px;color:var(--muted);font-size:13px}
 @media(max-width:600px){.coordinator-unit-options{grid-template-columns:1fr;max-height:52vh}.coordinator-assignment-dialog{width:100%}}
+
+/* PAJSK workflow: teacher evidence entry, class verification and school analysis */
+.analysis-pajsk-workflow-view{display:grid;gap:16px;min-width:0}
+.analysis-pajsk-workflow-view[hidden]{display:none!important}
+.analysis-subtabs .analysis-subtab[hidden]{display:none!important}
+.pajsk-assignment-year{display:grid;gap:6px;max-width:240px;margin:10px 0 14px}
+.pajsk-assignment-year label{font-size:12px;font-weight:800;color:var(--muted)}
+.pajsk-assignment-year select{min-height:40px;padding:8px 11px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text)}
+.pajsk-workflow-table{min-width:980px}
+.pajsk-workflow-table select,.pajsk-workflow-table input,.pajsk-workflow-table textarea{width:100%;min-width:130px;max-width:320px;padding:8px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:12px}
+.pajsk-workflow-table textarea{min-width:220px;min-height:62px;resize:vertical;line-height:1.45}
+.pajsk-workflow-table td small{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.35}
+.pajsk-review-table{min-width:1120px}
+.pajsk-mini-status{display:inline-flex;align-items:center;justify-content:center;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:850;white-space:nowrap;border:1px solid var(--border)}
+.pajsk-mini-status.is-done{background:rgba(11,128,94,.12);color:#087b5c;border-color:rgba(11,128,94,.25)}
+.pajsk-mini-status.is-none{background:rgba(95,110,103,.12);color:var(--muted)}
+.pajsk-mini-status.is-pending{background:rgba(220,164,35,.12);color:#9b6a00;border-color:rgba(220,164,35,.28)}
+.pajsk-review-actions{display:flex;flex-direction:column;gap:5px;min-width:115px}
+.pajsk-review-actions .btn{margin:0;white-space:nowrap}
+.analysis-school-unit-table{min-width:800px}
+@media(max-width:720px){
+  .analysis-pajsk-workflow-view .analysis-heading{align-items:flex-start;flex-direction:column}
+  .analysis-pajsk-workflow-view .analysis-actions{width:100%}
+  .analysis-pajsk-workflow-view .analysis-actions .btn{flex:1}
+  .pajsk-assignment-year{max-width:none}
+  .pajsk-workflow-table select,.pajsk-workflow-table input,.pajsk-workflow-table textarea{max-width:none}
+}
+
+
+/* PAJSK: detail panel for Guru Kelas verification */
+.pajsk-review-details{min-width:190px}
+.pajsk-review-details>summary{cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--accent,#00695c);padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+.pajsk-review-detail-list{display:grid;gap:9px;min-width:250px;max-width:420px;margin-top:9px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.pajsk-review-detail-item{display:grid;gap:5px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pajsk-review-detail-item:last-child{border-bottom:0}
+.pajsk-review-detail-item>div{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pajsk-review-detail-item p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.5}
+.pajsk-review-detail-item small{color:var(--muted);font-size:10px}
+.pajsk-review-detail-item a{font-size:12px;font-weight:700}
+@media(max-width:700px){.pajsk-review-details{min-width:150px}.pajsk-review-detail-list{max-width:min(78vw,360px)}}

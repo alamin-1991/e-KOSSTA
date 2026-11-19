@@ -14,6 +14,8 @@ let ANALYSIS_LAST_VIEW_={year:'',units:[],attendance:[],activityRows:[]};
 let ANALYSIS_UNIT_SLIDER_INDEX_=0;
 const ANALYSIS_UNIT_SLIDER_CATEGORIES_=['UNIT BERUNIFORM','KELAB / PERSATUAN','SUKAN / PERMAINAN','RUMAH SUKAN'];
 let PAJSK_CACHE_={loaded:false,year:'',kelas:'',classes:[],years:[],data:[],scoreNote:''};
+let PAJSK_WORKFLOW_CACHE_={loaded:false,year:'',classes:[],assignedElements:[],students:[],extraRecords:[],reviews:[],isAdmin:false};
+let PAJSK_ASSIGNMENT_USER_=null;
 const PAJSK_CATEGORIES_=['KELAB / PERSATUAN','UNIT BERUNIFORM','SUKAN / PERMAINAN'];
 const PAJSK_CATEGORY_LABELS_={'KELAB / PERSATUAN':'Kelab / Persatuan','UNIT BERUNIFORM':'Badan Beruniform','SUKAN / PERMAINAN':'Sukan / Permainan','RUMAH SUKAN':'Rumah Sukan','ACARA / PENYERTAAN':'Acara / Penyertaan'};
 let DASHBOARD_SUMMARY_CACHE_={murid:null,units:null};
@@ -341,16 +343,141 @@ function renderPageSubnav_(page){
   host.querySelectorAll('[data-subnav-page]').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.subnavPage)));
 }
 function switchAnalysisView_(view){
-  const isPajsk=view==='pajsk';
-  const overview=$('analysisOverviewView'),pajsk=$('analysisPajskView');
-  if(overview)overview.hidden=isPajsk;
-  if(pajsk)pajsk.hidden=!isPajsk;
-  const tabA=$('analysisOverviewTab'),tabB=$('analysisPajskTab');
-  if(tabA){tabA.classList.toggle('active',!isPajsk);tabA.setAttribute('aria-selected',String(!isPajsk));}
-  if(tabB){tabB.classList.toggle('active',isPajsk);tabB.setAttribute('aria-selected',String(isPajsk));}
-  if(isPajsk&&!PAJSK_CACHE_.loaded)loadPajskClassReport_(false);
+  const views={overview:'analysisOverviewView',pajsk:'analysisPajskView',extra:'analysisExtraEntryView','class-review':'analysisClassReviewView',school:'analysisSchoolView'};
+  Object.entries(views).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==view;});
+  const tabs={overview:'analysisOverviewTab',pajsk:'analysisPajskTab',extra:'analysisExtraEntryTab','class-review':'analysisClassReviewTab',school:'analysisSchoolTab'};
+  Object.entries(tabs).forEach(([key,id])=>{const el=$(id);if(el){el.classList.toggle('active',key===view);el.setAttribute('aria-selected',String(key===view));}});
+  if(view==='pajsk'&&!PAJSK_CACHE_.loaded)loadPajskClassReport_(false);
+  if(['extra','class-review'].includes(view))loadPajskTeacherWorkspace_(false,view);
+  if(view==='school')loadPajskSchoolAnalysis_(false);
 }
 function pajskEsc_(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const PAJSK_EXTRA_ELEMENT_LABELS_={PERKHIDMATAN:'Perkhidmatan',ANUGERAH_KHAS:'Anugerah Khas',KHIDMAT_MASYARAKAT:'Khidmat Masyarakat',NILAM:'NILAM',TIMSS_PISA:'TIMSS dan PISA'};
+const PAJSK_EXTRA_PLACEHOLDERS_={PERKHIDMATAN:'Nyatakan jawatan / perkhidmatan murid dan organisasi.',ANUGERAH_KHAS:'Nyatakan nama anugerah, tahap dan pingat jika berkaitan.',KHIDMAT_MASYARAKAT:'Nyatakan aktiviti khidmat masyarakat, bilangan aktiviti dan tempoh jam.',NILAM:'Nyatakan bintang / tahap NILAM serta bukti rekod bacaan.',TIMSS_PISA:'Nyatakan program, peringkat dan status penyertaan / pencapaian.'};
+function pajskWorkflowYear_(){return String(new Date().getFullYear());}
+function pajskWorkflowRecordMap_(){const map={};(PAJSK_WORKFLOW_CACHE_.extraRecords||[]).forEach(r=>{map[String(r.NO_KP||'')+'|'+String(r.ELEMEN||'')]=r;});return map;}
+function pajskWorkflowReviewMap_(){const map={};(PAJSK_WORKFLOW_CACHE_.reviews||[]).forEach(r=>{map[String(r.NO_KP||'')]=r;});return map;}
+async function loadPajskTeacherWorkspace_(force=false,view='extra'){
+  if(!$('analysisSection')||!state.token)return;
+  const year=String((view==='class-review'?$('pajskReviewYearFilter')?.value:$('pajskExtraYearFilter')?.value)||pajskWorkflowYear_());
+  if(!force&&PAJSK_WORKFLOW_CACHE_.loaded&&PAJSK_WORKFLOW_CACHE_.year===year){applyPajskWorkflowPermissions_();if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();return;}
+  const status=$(view==='extra'?'pajskExtraEntryStatus':'pajskClassReviewStatus');if(status)status.textContent='Memuatkan penugasan dan rekod PAJSK...';
+  try{
+    const d=await apiGet('getPajskTeacherWorkspace',{token:state.token,tahun:year},30000);if(!d||d.ok===false)throw Error(d?.error||'Rekod PAJSK tidak dapat dimuatkan.');
+    PAJSK_WORKFLOW_CACHE_={loaded:true,year:String(d.year||year),classes:Array.isArray(d.classes)?d.classes:[],assignedElements:Array.isArray(d.assignedElements)?d.assignedElements:[],students:Array.isArray(d.students)?d.students:[],extraRecords:Array.isArray(d.extraRecords)?d.extraRecords:[],reviews:Array.isArray(d.reviews)?d.reviews:[],isAdmin:!!d.isAdmin};
+    const yearControls=['pajskExtraYearFilter','pajskReviewYearFilter'];yearControls.forEach(id=>{const el=$(id);if(el){const v=el.value||year;el.innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;el.value=year;}});
+    const classControls=['pajskExtraClassFilter','pajskReviewClassFilter'];classControls.forEach(id=>{const el=$(id);if(el){const prev=el.value;el.innerHTML='<option value="">'+(id==='pajskReviewClassFilter'?'Pilih kelas':'Semua kelas')+'</option>'+PAJSK_WORKFLOW_CACHE_.classes.map(c=>`<option value="${pajskEsc_(c)}">${pajskEsc_(c)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.classes.includes(prev))el.value=prev;else if(PAJSK_WORKFLOW_CACHE_.classes.length===1)el.value=PAJSK_WORKFLOW_CACHE_.classes[0];}});
+    const elementSelect=$('pajskExtraElementFilter');if(elementSelect){const prev=elementSelect.value;elementSelect.innerHTML=PAJSK_WORKFLOW_CACHE_.assignedElements.map(e=>`<option value="${pajskEsc_(e)}">${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[e]||e)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.assignedElements.includes(prev))elementSelect.value=prev;}
+    applyPajskWorkflowPermissions_();
+    if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();
+  }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan rekod PAJSK.';toast(e.message||'Gagal memuatkan rekod PAJSK.');}
+}
+function applyPajskWorkflowPermissions_(){
+  const role=String(state.user?.role||'').toUpperCase(),admin=['ADMIN','PENTADBIR'].includes(role),teacher=['GURU','PENYELARAS'].includes(role);
+  const entry=$('analysisExtraEntryTab'),review=$('analysisClassReviewTab'),school=$('analysisSchoolTab');
+  if(entry)entry.hidden=!(admin||(teacher&&PAJSK_WORKFLOW_CACHE_.assignedElements.length));
+  if(review)review.hidden=!(admin||(teacher&&PAJSK_WORKFLOW_CACHE_.classes.length));
+  if(school)school.hidden=!admin;
+}
+function renderPajskExtraEntry_(){
+  const host=$('pajskExtraEntryTableWrap');if(!host)return;
+  const elements=PAJSK_WORKFLOW_CACHE_.assignedElements||[],element=String($('pajskExtraElementFilter')?.value||elements[0]||''),kelas=String($('pajskExtraClassFilter')?.value||''),q=String($('pajskExtraSearch')?.value||'').trim().toLocaleLowerCase('ms');
+  if(!elements.length){host.innerHTML='<div class="analysis-empty">Tiada elemen Ekstra ditugaskan kepada akaun ini. Hubungi ADMIN untuk penugasan.</div>';const st=$('pajskExtraEntryStatus');if(st)st.textContent='Tiada akses merekod elemen Ekstra.';return;}
+  const records=pajskWorkflowRecordMap_();
+  const rows=(PAJSK_WORKFLOW_CACHE_.students||[]).filter(m=>(!kelas||String(m.KELAS||'')===kelas)&&(!q||String(m.NAMA||'').toLocaleLowerCase('ms').includes(q)||String(m.NO_KP||'').toLowerCase().includes(q))).sort((a,b)=>String(a.KELAS||'').localeCompare(String(b.KELAS||''),'ms',{numeric:true})||String(a.NAMA||'').localeCompare(String(b.NAMA||''),'ms'));
+  host.innerHTML=rows.length?`<table class="analysis-table pajsk-workflow-table"><thead><tr><th>MURID</th><th>KELAS</th><th>STATUS PENGLIBATAN</th><th>BUTIRAN / MAKLUMAT SOKONGAN</th><th>PAUTAN BUKTI</th><th>TINDAKAN</th></tr></thead><tbody>${rows.map(m=>{const kp=String(m.NO_KP||''),r=records[kp+'|'+element]||{},status=String(r.STATUS_PENGLIBATAN||'');return `<tr data-extra-row="${pajskEsc_(kp)}"><td><b>${pajskEsc_(m.NAMA||'-')}</b><small>${pajskEsc_(kp)}</small></td><td>${pajskEsc_(m.KELAS||'-')}</td><td><select data-extra-status="${pajskEsc_(kp)}"><option value="">Belum diisi</option><option value="ADA_PENGLIBATAN" ${status==='ADA_PENGLIBATAN'?'selected':''}>Ada penglibatan</option><option value="TIADA_PENGLIBATAN" ${status==='TIADA_PENGLIBATAN'?'selected':''}>Tiada penglibatan</option></select></td><td><textarea data-extra-details="${pajskEsc_(kp)}" rows="2" maxlength="3000" placeholder="${pajskEsc_(PAJSK_EXTRA_PLACEHOLDERS_[element]||'Nyatakan butiran penglibatan.')}">${pajskEsc_(r.BUTIRAN||'')}</textarea><small>Direkod oleh: ${pajskEsc_(r.DIREKOD_OLEH||'Belum direkod')}</small></td><td><input data-extra-evidence="${pajskEsc_(kp)}" type="url" value="${pajskEsc_(r.PAUTAN_BUKTI||'')}" placeholder="https://..." aria-label="Pautan bukti"></td><td><button class="btn primary small" type="button" data-extra-save="${pajskEsc_(kp)}">Simpan</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="analysis-empty">Tiada murid sepadan dengan penapis.</div>';
+  host.querySelectorAll('[data-extra-save]').forEach(btn=>btn.addEventListener('click',()=>savePajskExtraFromRow_(btn.dataset.extraSave,element,btn)));
+  const st=$('pajskExtraEntryStatus');if(st)st.textContent=`Elemen: ${PAJSK_EXTRA_ELEMENT_LABELS_[element]||element} • ${rows.length} murid • Tahun ${PAJSK_WORKFLOW_CACHE_.year}. Status TIADA PENGLIBATAN perlu dipilih secara sengaja; medan kosong bermaksud belum diisi.`;
+}
+async function savePajskExtraFromRow_(kp,element,button){
+  const status=String(document.querySelector(`[data-extra-status="${CSS.escape(kp)}"]`)?.value||'');
+  const details=String(document.querySelector(`[data-extra-details="${CSS.escape(kp)}"]`)?.value||'').trim();
+  const evidence=String(document.querySelector(`[data-extra-evidence="${CSS.escape(kp)}"]`)?.value||'').trim();
+  if(!status)return toast('Pilih Ada Penglibatan atau Tiada Penglibatan.');
+  if(status==='ADA_PENGLIBATAN'&&!details)return toast('Masukkan butiran penglibatan murid.');
+  if(button){button.disabled=true;button.textContent='Simpan...';}
+  try{const d=await apiGet('savePajskExtraRecord',{token:state.token,tahun:PAJSK_WORKFLOW_CACHE_.year,noKp:kp,element,status,details,evidence},30000);if(d.ok===false)throw Error(d.error||'Gagal menyimpan.');toast(d.message||'Rekod disimpan.');PAJSK_WORKFLOW_CACHE_.loaded=false;await loadPajskTeacherWorkspace_(true,'extra');}
+  catch(e){toast(e.message||'Gagal menyimpan rekod.');}
+  finally{if(button){button.disabled=false;button.textContent='Simpan';}}
+}
+function renderPajskClassReview_(){
+  const host=$('pajskClassReviewTableWrap');if(!host)return;
+  const kelas=String($('pajskReviewClassFilter')?.value||''),q=String($('pajskReviewSearch')?.value||'').trim().toLocaleLowerCase('ms');
+  if(!PAJSK_WORKFLOW_CACHE_.classes.length){host.innerHTML='<div class="analysis-empty">Tiada kelas ditugaskan kepada akaun ini. Hubungi ADMIN untuk menetapkan kelas.</div>';const st=$('pajskClassReviewStatus');if(st)st.textContent='Tiada penugasan Guru Kelas.';return;}
+  if(!kelas){host.innerHTML='<div class="analysis-empty">Pilih kelas yang ditugaskan untuk menyemak murid.</div>';return;}
+  const records=pajskWorkflowRecordMap_(),reviews=pajskWorkflowReviewMap_();
+  const rows=(PAJSK_WORKFLOW_CACHE_.students||[]).filter(m=>String(m.KELAS||'')===kelas&&(!q||String(m.NAMA||'').toLocaleLowerCase('ms').includes(q)||String(m.NO_KP||'').toLowerCase().includes(q))).sort((a,b)=>String(a.NAMA||'').localeCompare(String(b.NAMA||''),'ms'));
+  const elements=Object.keys(PAJSK_EXTRA_ELEMENT_LABELS_);
+  const statusBadge=x=>x==='ADA_PENGLIBATAN'?'<span class="pajsk-mini-status is-done">ADA</span>':x==='TIADA_PENGLIBATAN'?'<span class="pajsk-mini-status is-none">TIADA</span>':'<span class="pajsk-mini-status is-pending">BELUM</span>';
+  host.innerHTML=rows.length?`<table class="analysis-table pajsk-review-table"><thead><tr><th>MURID</th>${elements.map(e=>`<th>${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[e])}</th>`).join('')}<th>BUTIRAN UNTUK SEMAKAN</th><th>PENGESAHAN</th><th>TINDAKAN</th></tr></thead><tbody>${rows.map(m=>{
+    const kp=String(m.NO_KP||''),r=reviews[kp]||{},states=elements.map(e=>String(records[kp+'|'+e]?.STATUS_PENGLIBATAN||'')),complete=states.every(x=>x==='ADA_PENGLIBATAN'||x==='TIADA_PENGLIBATAN'),reviewed=String(r.STATUS||'')==='DISAHKAN';
+    const detailItems=elements.map(e=>{const item=records[kp+'|'+e]||{},st=String(item.STATUS_PENGLIBATAN||''),detail=String(item.BUTIRAN||'').trim(),url=String(item.PAUTAN_BUKTI||'').trim(),proof=/^https:\/\//i.test(url)?`<a href="${pajskEsc_(url)}" target="_blank" rel="noopener noreferrer">Buka bukti</a>`:'';return `<div class="pajsk-review-detail-item"><div><b>${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[e])}</b>${statusBadge(st)}</div><p>${st==='TIADA_PENGLIBATAN'?'Guru berkaitan mengesahkan tiada penglibatan.':st==='ADA_PENGLIBATAN'?(detail?pajskEsc_(detail):'Butiran tidak dinyatakan.'):'Belum diisi.'}</p><small>Direkod oleh: ${pajskEsc_(item.DIREKOD_OLEH||'—')}${item.UPDATED_AT?' • '+pajskEsc_(item.UPDATED_AT):''}</small>${proof}</div>`;}).join('');
+    return `<tr><td><b>${pajskEsc_(m.NAMA||'-')}</b><small>${pajskEsc_(kp)} • ${pajskEsc_(m.KELAS||'')}</small></td>${states.map(x=>`<td>${statusBadge(x)}</td>`).join('')}<td><details class="pajsk-review-details"><summary>Semak 5 elemen</summary><div class="pajsk-review-detail-list">${detailItems}</div></details></td><td>${reviewed?`<span class="pajsk-mini-status is-done">DISAHKAN</span><small>${pajskEsc_(r.DISAHKAN_OLEH||'')}</small>`:`<span class="pajsk-mini-status is-pending">${pajskEsc_(r.STATUS||'BELUM SEMAK')}</span>`}</td><td><div class="pajsk-review-actions"><button class="btn primary small" type="button" data-review-approve="${pajskEsc_(kp)}" ${complete&&!reviewed?'':'disabled'}>Sahkan</button><button class="btn secondary small" type="button" data-review-correction="${pajskEsc_(kp)}">Perlu pembetulan</button></div></td></tr>`;
+  }).join('')}</tbody></table>`:'<div class="analysis-empty">Tiada murid dalam kelas ini.</div>';
+  host.querySelectorAll('[data-review-approve]').forEach(btn=>btn.addEventListener('click',()=>savePajskClassReview_(btn.dataset.reviewApprove,'DISAHKAN',btn)));
+  host.querySelectorAll('[data-review-correction]').forEach(btn=>btn.addEventListener('click',()=>savePajskClassReview_(btn.dataset.reviewCorrection,'PERLU_PEMBETULAN',btn)));
+  const confirmed=rows.filter(m=>String(reviews[String(m.NO_KP||'')]?.STATUS||'')==='DISAHKAN').length;const st=$('pajskClassReviewStatus');if(st)st.textContent=`Kelas ${kelas} • ${rows.length} murid • ${confirmed} telah disahkan • Buka “Semak 5 elemen” untuk membaca butiran dan bukti sebelum mengesahkan.`;
+}
+async function savePajskClassReview_(kp,status,button){
+  let note='';if(status==='PERLU_PEMBETULAN'){note=prompt('Catatan pembetulan (contoh: semak semula butiran anugerah):')||'';if(!note.trim())return toast('Masukkan catatan supaya guru berkaitan tahu perkara yang perlu dibetulkan.');}
+  if(button){button.disabled=true;}
+  try{const d=await apiGet('savePajskClassReview',{token:state.token,tahun:PAJSK_WORKFLOW_CACHE_.year,noKp:kp,status,note},30000);if(d.ok===false)throw Error(d.error||'Gagal menyimpan pengesahan.');toast(d.message||'Pengesahan disimpan.');PAJSK_WORKFLOW_CACHE_.loaded=false;await loadPajskTeacherWorkspace_(true,'class-review');}
+  catch(e){toast(e.message||'Gagal menyimpan pengesahan.');}
+  finally{if(button)button.disabled=false;}
+}
+async function loadPajskSchoolAnalysis_(force=false){
+  if(!$('analysisSchoolView')||!state.token)return;
+  const year=String($('pajskSchoolYearFilter')?.value||pajskWorkflowYear_()),status=$('pajskSchoolStatus');if(status)status.textContent='Mengira ringkasan sebenar daripada Google Sheets...';if($('pajskSchoolYearFilter')&&!$('pajskSchoolYearFilter').options.length)$('pajskSchoolYearFilter').innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;
+  if(!force&&$('pajskSchoolYearFilter')?.dataset.loadedYear===year)return;
+  ['pajskSchoolExtraTableWrap','pajskSchoolUnitTableWrap','pajskSchoolClassTableWrap'].forEach(id=>{const el=$(id);if(el)el.innerHTML='<div class="analysis-empty">Memuatkan...</div>';});
+  try{
+    const d=await apiGet('getPajskSchoolAnalysis',{token:state.token,tahun:year},30000);if(d.ok===false)throw Error(d.error||'Analisis sekolah gagal dimuatkan.');
+    $('pajskSchoolYearFilter').dataset.loadedYear=year;
+    analysisSetKpi_('pajskSchoolKpiStudents',Number(d.totalStudents||0).toLocaleString('ms-MY'));
+    analysisSetKpi_('pajskSchoolKpiExtra',Number(d.extraComplete||0).toLocaleString('ms-MY'));
+    const extraNote=$('pajskSchoolKpiExtraNote');if(extraNote)extraNote.textContent=`Lengkap 5 elemen • ${Number(d.extraCompletePct||0).toFixed(1)}% daripada murid aktif`;
+    analysisSetKpi_('pajskSchoolKpiConfirmed',Number(d.confirmed||0).toLocaleString('ms-MY'));
+    analysisSetKpi_('pajskSchoolKpiPct',`${Number(d.confirmationPct||0).toFixed(1)}%`);
+    const note=$('pajskSchoolScoreNote');if(note)note.textContent=d.scoreNote||'GPA/CGPA belum tersedia.';
+    const extraHost=$('pajskSchoolExtraTableWrap');if(extraHost){const rows=d.extraStats||[];extraHost.innerHTML=rows.length?`<table class="analysis-table"><thead><tr><th>ELEMEN</th><th>ADA PENGLIBATAN</th><th>TIADA PENGLIBATAN</th><th>BELUM DIISI</th><th>KELENGKAPAN</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${pajskEsc_(r.label)}</b></td><td>${Number(r.ada||0)}</td><td>${Number(r.tiada||0)}</td><td>${Number(r.pending||0)}</td><td><b>${Number(r.completionPct||0).toFixed(1)}%</b></td></tr>`).join('')}</tbody></table>`:'<div class="analysis-empty">Belum ada data.</div>';}
+    const unitHost=$('pajskSchoolUnitTableWrap');if(unitHost){const rows=d.unitStats||[];unitHost.innerHTML=rows.length?`<table class="analysis-table"><thead><tr><th>KEDUDUKAN</th><th>UNIT</th><th>KATEGORI</th><th>AHLI AKTIF</th><th>REKOD PENCAPAIAN</th><th>BAHAGIAN REKOD</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td><b>${i+1}</b></td><td><b>${pajskEsc_(r.NAMA_UNIT)}</b></td><td>${pajskEsc_(r.KATEGORI)}</td><td>${Number(r.AHLI||0)}</td><td>${Number(r.REKOD_PENCAPAIAN||0)}</td><td>${Number(r.PERATUS_SUMBER_REKOD||0).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`:'<div class="analysis-empty">Tiada unit atau rekod pencapaian untuk tahun ini.</div>';}
+    const classHost=$('pajskSchoolClassTableWrap');if(classHost){const rows=d.classStats||[];classHost.innerHTML=rows.length?`<table class="analysis-table"><thead><tr><th>KELAS</th><th>GURU KELAS</th><th>JUMLAH MURID</th><th>DISAHKAN</th><th>BELUM DISAHKAN</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${pajskEsc_(r.KELAS)}</b></td><td>${pajskEsc_(r.GURU_KELAS)}</td><td>${Number(r.MURID||0)}</td><td>${Number(r.DISAHKAN||0)}</td><td>${Number(r.BELUM_DISAHKAN||0)}</td></tr>`).join('')}</tbody></table>`:'<div class="analysis-empty">Tiada rekod kelas untuk tahun ini.</div>';}
+    if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif.`;
+  }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan analisis.';toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
+}
+async function openPajskAssignmentSetup_(userId,kind){
+  const row=USERS_CACHE_.find(x=>String(x.USER_ID)===String(userId));if(!row)return toast('Akaun tidak ditemui.');
+  if(!['GURU','PENYELARAS','PENTADBIR'].includes(String(row.ROLE||'').toUpperCase()))return toast('Penugasan Guru Kelas / PAJSK hanya untuk akaun GURU, PENYELARAS atau PENTADBIR.');
+  PAJSK_ASSIGNMENT_USER_=row;
+  try{
+    const year=pajskWorkflowYear_(),d=await apiGet('getPajskAdminSetup',{token:state.token,tahun:year},30000);if(d.ok===false)throw Error(d.error||'Gagal mendapatkan senarai penugasan.');
+    if(kind==='class'){
+      const modal=$('pajskClassAssignModal');$('pajskClassAssignTitle').textContent='Tetapkan Guru Kelas';$('pajskClassAssignMeta').textContent=`${row.NAMA||row.USERNAME} • ${row.USERNAME}. Pilih kelas yang diurus oleh guru ini.`;
+      $('pajskClassAssignYear').innerHTML=`<option value="${pajskEsc_(year)}">${year}</option>`;
+      const selected=new Set((d.classAssignments||[]).filter(a=>String(a.USER_ID)===String(userId)).map(a=>String(a.KELAS||'')));
+      $('pajskClassAssignOptions').innerHTML=(d.classes||[]).length?(d.classes||[]).map(c=>{const other=(d.classAssignments||[]).find(a=>String(a.KELAS)===String(c)&&String(a.USER_ID)!==String(userId));return `<label class="coordinator-unit-option"><input type="checkbox" data-pajsk-class="${pajskEsc_(c)}" ${selected.has(String(c))?'checked':''}><span><b>${pajskEsc_(c)}</b><small>${other?'Sedang ditugaskan kepada '+pajskEsc_(other.USERNAME):'Belum ditugaskan'}</small></span></label>`;}).join(''):'<p class="coordinator-unit-empty">Tiada kelas dalam data murid.</p>';
+      $('pajskClassAssignResult').textContent=`${selected.size} kelas ditugaskan pada masa ini.`;modal.hidden=false;document.body.classList.add('unit-member-modal-open');requestAnimationFrame(()=>modal.classList.add('show'));
+    }else{
+      const modal=$('pajskElementAssignModal');$('pajskElementAssignTitle').textContent='Tetapkan Guru Rekod Ekstra';$('pajskElementAssignMeta').textContent=`${row.NAMA||row.USERNAME} • ${row.USERNAME}. Pilih elemen yang boleh direkod oleh guru ini.`;
+      $('pajskElementAssignYear').innerHTML=`<option value="${pajskEsc_(year)}">${year}</option>`;
+      const selected=new Set((d.elementAssignments||[]).filter(a=>String(a.USER_ID)===String(userId)).map(a=>String(a.ELEMEN||'')));
+      $('pajskElementAssignOptions').innerHTML=(d.elements||[]).map(e=>`<label class="coordinator-unit-option"><input type="checkbox" data-pajsk-element="${pajskEsc_(e.key)}" ${selected.has(String(e.key))?'checked':''}><span><b>${pajskEsc_(e.label)}</b><small>${selected.has(String(e.key))?'Sedang ditugaskan':'Belum ditugaskan'}</small></span></label>`).join('');
+      $('pajskElementAssignResult').textContent=`${selected.size} elemen ditugaskan pada masa ini.`;modal.hidden=false;document.body.classList.add('unit-member-modal-open');requestAnimationFrame(()=>modal.classList.add('show'));
+    }
+  }catch(e){toast(e.message||'Gagal membuka penugasan.');}
+}
+function closePajskAssignmentModal_(kind){const id=kind==='class'?'pajskClassAssignModal':'pajskElementAssignModal',modal=$(id);if(!modal)return;modal.classList.remove('show');document.body.classList.remove('unit-member-modal-open');setTimeout(()=>{modal.hidden=true;PAJSK_ASSIGNMENT_USER_=null;},160);}
+async function savePajskAssignment_(kind){
+  const user=PAJSK_ASSIGNMENT_USER_;if(!user)return;
+  const isClass=kind==='class',year=$(isClass?'pajskClassAssignYear':'pajskElementAssignYear').value;
+  const selector=isClass?'[data-pajsk-class]:checked':'[data-pajsk-element]:checked';
+  const values=[...document.querySelectorAll(selector)].map(el=>isClass?el.dataset.pajskClass:el.dataset.pajskElement).filter(Boolean);
+  const save=$(isClass?'pajskClassAssignSaveBtn':'pajskElementAssignSaveBtn'),result=$(isClass?'pajskClassAssignResult':'pajskElementAssignResult');if(save){save.disabled=true;save.textContent='Menyimpan...';}
+  try{const action=isClass?'savePajskClassAssignments':'savePajskElementAssignments',params={token:state.token,userId:user.USER_ID,tahun:year};params[isClass?'classes':'elements']=JSON.stringify(values);const d=await apiGet(action,params,30000);if(d.ok===false)throw Error(d.error||'Penugasan gagal disimpan.');if(result)result.textContent=d.message||'Penugasan disimpan.';toast(d.message||'Penugasan dikemas kini.');closePajskAssignmentModal_(kind);}
+  catch(e){if(result)result.textContent=e.message||'Gagal menyimpan.';toast(e.message||'Gagal menyimpan.');}
+  finally{if(save){save.disabled=false;save.textContent=isClass?'Simpan Kelas':'Simpan Penugasan';}}
+}
+
 function pajskAchievementLabel_(achievement,fallbackActivity=''){
   const involvement=String(achievement?.TAJUK_PENGLIBATAN??'').trim();
   const name=String(achievement?.NAMA_PENCAPAIAN||fallbackActivity||'Pencapaian').trim();
@@ -516,154 +643,6 @@ function ekosstaPrintBackControlHtml_(){
   return `<button class="ekossta-print-back" type="button" onclick="(function(){try{if(window.EKOSSTAAndroid&&window.EKOSSTAAndroid.closePrintPreview){window.EKOSSTAAndroid.closePrintPreview();return;}}catch(e){}try{if(window.opener&&!window.opener.closed){window.opener.focus();window.close();return;}}catch(e){}try{if(window.history.length>1){window.history.back();return;}}catch(e){}try{if(document.referrer){window.location.href=document.referrer;return;}}catch(e){}window.location.href='https://alamin-1991.github.io/ekossta-app/';})()">← Kembali ke e-KOSSTA</button>`;
 }
 
-/* ============================================================
-   iOS HOME-SCREEN PRINT PREVIEW
-   On iOS Home Screen web apps, render print documents in the
-   current app document instead of opening a new window. This
-   keeps a visible return control after the system print sheet.
-   ============================================================ */
-function ekosstaIsIOSHomeScreen_(){
-  try{
-    const nav=window.navigator||{};
-    const ua=String(nav.userAgent||'');
-    const appleDevice=/iPhone|iPad|iPod/i.test(ua)||(nav.platform==='MacIntel'&&Number(nav.maxTouchPoints||0)>1);
-    const standalone=nav.standalone===true||!!(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
-    return appleDevice&&standalone;
-  }catch(e){return false;}
-}
-function ekosstaCloseIOSPrintPreview_(){
-  try{
-    const overlay=document.getElementById('ekossta-ios-print-preview');
-    if(overlay)overlay.remove();
-    const style=document.getElementById('ekossta-ios-print-style');
-    if(style)style.remove();
-    document.body.classList.remove('ekossta-ios-print-open');
-    const state=window.__EKOSSTA_IOS_PRINT_STATE__;
-    if(state){
-      document.title=state.previousTitle||document.title;
-      if(typeof state.markClosed==='function')state.markClosed();
-      window.__EKOSSTA_IOS_PRINT_STATE__=null;
-      if(Number.isFinite(state.scrollY))window.scrollTo(state.scrollX||0,state.scrollY);
-    }
-  }catch(e){console.warn('Tutup pratonton cetakan iOS:',e);}
-}
-function ekosstaOpenIOSPrintPreviewFromHtml_(html){
-  if(!ekosstaIsIOSHomeScreen_())return false;
-  try{
-    // Re-render updates the same virtual print window. Do not mark that
-    // window closed until the user taps the explicit Back control.
-    const activeState=window.__EKOSSTA_IOS_PRINT_STATE__||null;
-    const oldOverlay=document.getElementById('ekossta-ios-print-preview');if(oldOverlay)oldOverlay.remove();
-    const oldStyle=document.getElementById('ekossta-ios-print-style');if(oldStyle)oldStyle.remove();
-    document.body.classList.remove('ekossta-ios-print-open');
-    const parser=new DOMParser();
-    const parsed=parser.parseFromString(String(html||''),'text/html');
-    const title=String(parsed.querySelector('title')?.textContent||'Cetakan e-KOSSTA').trim();
-    const sourceStyles=[...parsed.querySelectorAll('style')].map(x=>x.textContent||'').join('\n');
-    const body=parsed.body.cloneNode(true);
-    body.querySelectorAll('.print-toolbar,.toolbar,.print-action-bar').forEach(x=>x.remove());
-    const contentHtml=body.innerHTML;
-    const previousTitle=activeState?.previousTitle||document.title;
-    const scrollX=Number.isFinite(activeState?.scrollX)?activeState.scrollX:(window.scrollX||0);
-    const scrollY=Number.isFinite(activeState?.scrollY)?activeState.scrollY:(window.scrollY||0);
-    const overlay=document.createElement('section');
-    overlay.id='ekossta-ios-print-preview';
-    overlay.setAttribute('role','dialog');
-    overlay.setAttribute('aria-modal','true');
-    overlay.setAttribute('aria-label','Pratonton cetakan');
-    overlay.innerHTML=`
-      <header class="ekossta-ios-print-toolbar">
-        <div class="ekossta-ios-print-heading">
-          <strong>e-KOSSTA · PRATONTON CETAKAN</strong>
-          <span></span>
-        </div>
-        <div class="ekossta-ios-print-actions">
-          <button type="button" data-ios-print-back>Kembali ke e-KOSSTA</button>
-          <button type="button" data-ios-print-action>Cetak / Simpan PDF</button>
-          <button type="button" data-ios-print-safari>Buka dalam Safari</button>
-        </div>
-        <p class="ekossta-ios-print-help">Selepas dialog cetakan ditutup, pratonton ini kekal di sini. Tekan “Kembali ke e-KOSSTA” untuk menyambung kerja.</p>
-        <p class="ekossta-ios-print-status" role="status" aria-live="polite"></p>
-      </header>
-      <main class="ekossta-ios-print-document">${contentHtml}</main>`;
-    const style=document.createElement('style');
-    style.id='ekossta-ios-print-style';
-    style.textContent=sourceStyles+`\n
-      body.ekossta-ios-print-open{margin:0!important;padding:0!important;overflow:hidden!important}
-      #ekossta-ios-print-preview{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;flex-direction:column!important;width:100vw!important;height:100vh!important;height:100dvh!important;overflow:hidden!important;background:#e8ece5!important;color:#14251d!important;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)!important;font-family:Arial,sans-serif!important;box-sizing:border-box!important}
-      #ekossta-ios-print-preview *{box-sizing:border-box}
-      #ekossta-ios-print-preview .ekossta-ios-print-toolbar{position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;gap:8px!important;flex:0 0 auto!important;padding:12px 14px!important;background:#101714!important;color:#edf2e7!important;border-bottom:2px solid #d8e267!important;margin:0!important;z-index:2!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-heading{display:flex!important;flex-direction:column!important;gap:3px!important;font-size:13px!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-heading span{font-size:12px!important;color:#c5d0c8!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important}
-      #ekossta-ios-print-preview button{appearance:none!important;-webkit-appearance:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:46px!important;padding:10px 12px!important;border:1px solid #d8e267!important;border-radius:6px!important;background:#d8e267!important;color:#101714!important;font:700 14px Arial,sans-serif!important;white-space:normal!important;cursor:pointer!important}
-      #ekossta-ios-print-preview button[data-ios-print-back]{background:#1d3027!important;color:#edf2e7!important}
-      #ekossta-ios-print-preview button[data-ios-print-safari]{grid-column:1 / -1!important;background:#263b32!important;color:#edf2e7!important;border-color:#577064!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-help{margin:0!important;color:#d4ded6!important;font:12px/1.4 Arial,sans-serif!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-status{margin:0!important;color:#d8e267!important;font:12px/1.4 Arial,sans-serif!important;min-height:0!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-document{display:block!important;flex:1 1 auto!important;min-height:0!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;padding:14px!important;background:#e8ece5!important;color:#111!important}
-      #ekossta-ios-print-preview .ekossta-ios-print-document>.print-wrap,
-      #ekossta-ios-print-preview .ekossta-ios-print-document>.sheet,
-      #ekossta-ios-print-preview .ekossta-ios-print-document>.print-content{max-width:100%!important;margin:0 auto!important}
-      @media(max-width:420px){#ekossta-ios-print-preview .ekossta-ios-print-actions{grid-template-columns:1fr!important}#ekossta-ios-print-preview button[data-ios-print-safari]{grid-column:auto!important}}
-      @media print{
-        html,body{width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important}
-        body.ekossta-ios-print-open>*:not(#ekossta-ios-print-preview){display:none!important;visibility:hidden!important}
-        #ekossta-ios-print-preview{position:static!important;inset:auto!important;display:block!important;width:auto!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important}
-        #ekossta-ios-print-preview .ekossta-ios-print-toolbar{display:none!important}
-        #ekossta-ios-print-preview .ekossta-ios-print-document{display:block!important;width:auto!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important}
-      }
-    `;
-    document.head.appendChild(style);
-    document.body.classList.add('ekossta-ios-print-open');
-    document.body.appendChild(overlay);
-    document.title=title;
-    const state=activeState||{previousTitle,scrollX,scrollY,markClosed:()=>{}};
-    if(!state.previousTitle)state.previousTitle=previousTitle;
-    if(typeof state.markClosed!=='function')state.markClosed=()=>{};
-    window.__EKOSSTA_IOS_PRINT_STATE__=state;
-    const back=overlay.querySelector('[data-ios-print-back]');
-    const print=overlay.querySelector('[data-ios-print-action]');
-    const safari=overlay.querySelector('[data-ios-print-safari]');
-    const status=overlay.querySelector('.ekossta-ios-print-status');
-    back.addEventListener('click',ekosstaCloseIOSPrintPreview_);
-    print.addEventListener('click',()=>{
-      status.textContent='Mencuba membuka dialog cetakan iOS… Jika tiada paparan keluar, gunakan “Buka dalam Safari”.';
-      try{window.focus();window.print();}catch(e){status.textContent='iOS tidak membuka dialog cetakan. Gunakan “Buka dalam Safari” untuk mencetak.';}
-    });
-    safari.addEventListener('click',()=>{
-      status.textContent='Membuka e-KOSSTA dalam Safari. Oleh sebab data log masuk PWA dan Safari boleh berasingan, anda mungkin perlu log masuk semula dan ulang cetakan.';
-      const target=window.location.origin+window.location.pathname+window.location.search+window.location.hash;
-      try{window.location.href='x-safari-'+target;}catch(e){status.textContent='Tidak dapat membuka Safari secara automatik. Buka Safari dan lawati alamat e-KOSSTA secara manual.';}
-    });
-    back.focus({preventScroll:true});
-    return true;
-  }catch(e){
-    console.error('Pratonton cetakan iOS gagal:',e);
-    ekosstaCloseIOSPrintPreview_();
-    toast('Tidak dapat membuka pratonton cetakan iOS. '+(e.message||''));
-    return false;
-  }
-}
-function ekosstaOpenPrintWindow_(url='',target='_blank'){
-  if(!ekosstaIsIOSHomeScreen_())return window.open(url,target);
-  let html='';
-  let closed=false;
-  const virtualWindow={
-    get closed(){return closed;},
-    focus(){},
-    close(){closed=true;ekosstaCloseIOSPrintPreview_();},
-    document:{
-      open(){if(!closed)html='';},
-      write(...parts){if(!closed)html+=parts.map(x=>String(x??'')).join('');},
-      close(){if(!closed)ekosstaOpenIOSPrintPreviewFromHtml_(html);}
-    }
-  };
-  const previousState=window.__EKOSSTA_IOS_PRINT_STATE__;
-  window.__EKOSSTA_IOS_PRINT_STATE__={markClosed:()=>{closed=true;},previousTitle:previousState?.previousTitle||document.title,scrollX:window.scrollX||0,scrollY:window.scrollY||0};
-  return virtualWindow;
-}
-
 function ekosstaPrintPlatformScript_(){
   return `<script>try{if(window.EKOSSTAAndroid){document.documentElement.classList.add('ekossta-android-print');}}catch(e){}</script>`;
 }
@@ -677,7 +656,7 @@ function ekosstaPrintToolbarCss_(){
 
 function pajskPrintWindow_(title,content,orientation='landscape'){
   if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
-  const win=ekosstaOpenPrintWindow_('','_blank');if(!win){toast('Pelayar menyekat tetingkap cetakan. Benarkan pop-up untuk '+getAppName_()+'.');return null;}
+  const win=window.open('','_blank');if(!win){toast('Pelayar menyekat tetingkap cetakan. Benarkan pop-up untuk '+getAppName_()+'.');return null;}
   const css=`@page{size:A4 ${orientation};margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff!important;color:#14211b!important;font:9pt Arial,sans-serif;line-height:1.35}.print-wrap{max-width:100%;margin:0 auto}.print-topline{display:flex;justify-content:space-between;gap:10px;border-bottom:2px solid #035A52;padding-bottom:6px;color:#035A52;font-size:8pt;font-weight:700;letter-spacing:.06em}.print-title{text-align:center;margin:10px 0 8px}.print-title h1{font-size:16pt;margin:0 0 4px}.print-title p{margin:2px 0;font-size:8pt}.print-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 0;margin-bottom:6px;border-bottom:1px solid #b7c7bd;font-size:8pt}.print-section{font-size:10pt;margin:10px 0 4px;padding-bottom:4px;border-bottom:1px solid #83a696}.print-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.5pt} .print-table th{background:#172A22!important;color:#D8E267!important;text-align:left;font-size:7pt;letter-spacing:.03em}.print-table th,.print-table td{border:1px solid #aabbb1;padding:4px 5px;vertical-align:top;overflow-wrap:anywhere}.print-table tr{break-inside:avoid;page-break-inside:avoid}.print-small{font-size:7pt;color:#52655b;display:block;margin-top:2px}.print-list{margin:2px 0 0;padding-left:12px}.print-note{margin-top:8px;padding:7px;border:1px solid #b4c7bd;background:#f2f5e9;font-size:7.5pt}.print-signatures{display:grid;grid-template-columns:1fr 1fr;gap:35mm;margin-top:22mm;font-size:8pt;text-align:center}.print-signatures div{border-top:1px solid #596e63;padding-top:5px}@media screen{body{padding:10mm;background:#eef1e9!important}.print-wrap{background:#fff;padding:10mm;box-shadow:0 0 0 1px #d7ded7}}`;
   win.document.open();win.document.write(`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${pajskEsc_(title)}</title><style>${css}${ekosstaPrintToolbarCss_()}</style></head><body><div class="print-toolbar"><div><strong>${pajskEsc_(getAppName_())} · ${pajskEsc_(title)}</strong><div class="hint">Pratonton cetakan PAJSK. Pilih cetak apabila bersedia.</div></div><div class="actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div><main class="print-wrap">${content}</main></body></html>`);win.document.close();win.focus();return win;
 }
@@ -981,6 +960,9 @@ async function loadAnalysisModule_(force=false){
     }
   }
   renderAnalysisModule_(year);
+  const role=String(state.user?.role||'').toUpperCase();
+  if(['ADMIN','PENTADBIR','GURU','PENYELARAS'].includes(role))loadPajskTeacherWorkspace_(true,'extra');
+  else applyPajskWorkflowPermissions_();
 }
 function analysisAttendanceStats_(rows){
   const stats={meetings:0,records:0,present:0,absent:0,excused:0,leave:0,rate:0};
@@ -1293,7 +1275,24 @@ function init(){
   bind('analysisExportBtn','click',exportAnalysisUnitsCsv_);
   bind('analysisOverviewTab','click',()=>switchAnalysisView_('overview'));
   bind('analysisPajskTab','click',()=>switchAnalysisView_('pajsk'));
+  bind('analysisExtraEntryTab','click',()=>switchAnalysisView_('extra'));
+  bind('analysisClassReviewTab','click',()=>switchAnalysisView_('class-review'));
+  bind('analysisSchoolTab','click',()=>switchAnalysisView_('school'));
   bind('analysisPajskRefreshBtn','click',()=>loadPajskClassReport_(true));
+  bind('pajskExtraRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'extra'));
+  bind('pajskClassReviewRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'class-review'));
+  bind('pajskSchoolRefreshBtn','click',()=>loadPajskSchoolAnalysis_(true));
+  ['pajskExtraYearFilter','pajskReviewYearFilter'].forEach(id=>bind(id,'change',()=>{PAJSK_WORKFLOW_CACHE_.loaded=false;loadPajskTeacherWorkspace_(true,id==='pajskExtraYearFilter'?'extra':'class-review');}));
+  bind('pajskExtraElementFilter','change',renderPajskExtraEntry_);
+  bind('pajskExtraClassFilter','change',renderPajskExtraEntry_);
+  bind('pajskExtraSearch','input',renderPajskExtraEntry_);
+  bind('pajskReviewClassFilter','change',renderPajskClassReview_);
+  bind('pajskReviewSearch','input',renderPajskClassReview_);
+  bind('pajskSchoolYearFilter','change',()=>{if($('pajskSchoolYearFilter'))$('pajskSchoolYearFilter').dataset.loadedYear='';loadPajskSchoolAnalysis_(true);});
+  bind('pajskClassAssignSaveBtn','click',()=>savePajskAssignment_('class'));
+  bind('pajskElementAssignSaveBtn','click',()=>savePajskAssignment_('element'));
+  document.querySelectorAll('[data-pajsk-class-assign-close]').forEach(el=>el.addEventListener('click',()=>closePajskAssignmentModal_('class')));
+  document.querySelectorAll('[data-pajsk-element-assign-close]').forEach(el=>el.addEventListener('click',()=>closePajskAssignmentModal_('element')));
   bind('analysisPajskYearFilter','change',()=>loadPajskClassReport_(true));
   bind('analysisPajskClassFilter','change',()=>{renderPajskClassReport_();updatePajskPrintScope_();});
   bind('analysisPajskSearch','input',renderPajskClassReport_);
@@ -1301,7 +1300,7 @@ function init(){
   bind('analysisPajskExportBtn','click',exportPajskClassCsv_);
   bind('analysisPajskPrintStudentBtn','click',printPajskStudent_);
   document.querySelectorAll('[data-pajsk-detail-close]').forEach(el=>el.addEventListener('click',closePajskStudentDetail_));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePajskStudentDetail_();closeAddMuridModal_();if($('coordinatorAssignmentModal')&&!$('coordinatorAssignmentModal').hidden)closeCoordinatorAssignment_();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePajskStudentDetail_();closeAddMuridModal_();if($('coordinatorAssignmentModal')&&!$('coordinatorAssignmentModal').hidden)closeCoordinatorAssignment_();if($('pajskClassAssignModal')&&!$('pajskClassAssignModal').hidden)closePajskAssignmentModal_('class');if($('pajskElementAssignModal')&&!$('pajskElementAssignModal').hidden)closePajskAssignmentModal_('element');}});
   bind('guruRefreshBtn','click',loadGuru);
   bind('addGuruBtn','click',saveGuru);
   bind('cancelGuruBtn','click',cancelGuru);
@@ -1418,7 +1417,7 @@ const API_CACHE_INVALIDATE_ACTIONS_ = new Set([
   'addGuru','updateGuru','setGuruStatus','deleteGuru','getGuru','addUnit','updateUnit','setUnitStatus',
   'addUnitMember','removeUnitMember','saveAttendance','saveUnitAjk','saveAktiviti','deleteAktiviti',
   'saveAktivitiPeserta','savePencapaian','setPencapaianStatus','savePencapaianAktivitiBatch',
-  'saveDocument','saveSystemLogoChunk','saveAppSettings'
+  'saveDocument','saveSystemLogoChunk','saveAppSettings','savePajskClassAssignments','savePajskElementAssignments','savePajskExtraRecord','savePajskClassReview'
 ]);
 const API_READ_MEMORY_CACHE_ = new Map();
 const API_READ_INFLIGHT_ = new Map();
@@ -1843,6 +1842,7 @@ function renderUsers(rows){
     const kick=document.createElement('button');kick.className='btn secondary small';kick.textContent='Logout Session';kick.onclick=()=>logoutSessions(r.USER_ID);
     const del=document.createElement('button');del.className='btn danger small';del.textContent='Padam';del.title='Padam akaun dan profil Guru yang dipautkan secara kekal';del.onclick=()=>deleteUserPermanently(r.USER_ID,r.USERNAME,r.ROLE);
     if(String(r.ROLE||'').toUpperCase()==='PENYELARAS'){const assign=document.createElement('button');assign.className='btn secondary small';assign.textContent='Tetapkan Unit';assign.title='Pilih satu atau lebih unit untuk penyelaras ini';assign.onclick=()=>openCoordinatorAssignment_(r.USER_ID);actions.appendChild(assign);}
+    if(['GURU','PENYELARAS','PENTADBIR'].includes(String(r.ROLE||'').toUpperCase())){const classAssign=document.createElement('button');classAssign.className='btn secondary small';classAssign.textContent='Tetapkan Kelas';classAssign.title='Tetapkan kelas untuk pengesahan PAJSK';classAssign.onclick=()=>openPajskAssignmentSetup_(r.USER_ID,'class');actions.appendChild(classAssign);const extraAssign=document.createElement('button');extraAssign.className='btn secondary small';extraAssign.textContent='Tugasan Ekstra';extraAssign.title='Tetapkan elemen Ekstra Kurikulum untuk direkod';extraAssign.onclick=()=>openPajskAssignmentSetup_(r.USER_ID,'element');actions.appendChild(extraAssign);}
     actions.append(role,status,reset,kick,del);td.appendChild(actions);tr.appendChild(td);tb.appendChild(tr);
   });t.appendChild(tb);wrap.replaceChildren(t);
 }
@@ -2396,7 +2396,7 @@ async function openAktivitiPermissionLetter(activityId){
     if(!activityId){toast('ID aktiviti tidak sah.');return;}
     // Buka popup sejurus klik supaya Chrome tidak menyekatnya. Jangan gunakan
     // window.confirm selepas await kerana dialog boleh tersembunyi pada tab asal.
-    w=ekosstaOpenPrintWindow_('','_blank');
+    w=window.open('','_blank');
     if(!w){toast('Popup disekat. Benarkan pop-up untuk e-KOSSTA.');return;}
     popupMessage_('Sedang menjana surat kebenaran','Sedang mengambil maklumat aktiviti dan senarai peserta. Sila tunggu.');
 
@@ -2816,7 +2816,7 @@ function unitPrintMembers_(d){const genderRank=v=>{const g=String(v||'').trim().
 function unitPrintMemberAttendance_(d){const weeks=Array.from({length:15},(_,i)=>i+1);const rows=(d.ahli||[]).map(r=>[unitPrintEsc_(r.NAMA),unitPrintEsc_(r.KELAS),...weeks.map(w=>unitPrintEsc_(unitPrintStatus_((r.MINGGU||{})[w]?.STATUS)))]);return rows.length?unitPrintTable_(['Murid','Kelas',...weeks.map(w=>'M'+w)],rows):'<p>Tiada data kehadiran ahli.</p>';}
 function openUnitPrintWindow_(title,content,landscape=false){
   if(window.__EKOSSTA_CLEAN_PRIVACY_HTML__)content=window.__EKOSSTA_CLEAN_PRIVACY_HTML__(content);
-  const w=ekosstaOpenPrintWindow_('','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk laman '+getAppName_()+'.');
+  const w=window.open('','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk laman '+getAppName_()+'.');
   const html=`<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${ekosstaPrintPlatformScript_()}<title>${unitPrintEsc_(title)}</title><style>
   @page{size:A4 ${landscape?'landscape':'portrait'};margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#edf1e8;color:#17251e;font:10pt Arial,sans-serif}.toolbar{position:sticky;top:0;background:#101714;color:#edf4e9;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:2px solid #d8e267}.toolbar button{padding:9px 14px;border:1px solid #d8e267;background:#d8e267;color:#101714;font-weight:bold;cursor:pointer}.sheet{background:#fff;max-width:1100px;margin:18px auto;padding:24px;box-shadow:0 2px 10px #0002}header{text-align:center;border-bottom:2px solid #035a52;padding-bottom:12px;margin-bottom:18px}.brandline{font-size:9pt;font-weight:700;letter-spacing:.12em;color:#035a52}h1{font-size:18pt;margin:8px 0}header h2{font-size:14pt;margin:0 0 6px}header p{font-size:9pt;margin:0;color:#52645a}section{margin:18px 0 22px}h3{font-size:12pt;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #88a59a;color:#035a52}table{width:100%;border-collapse:collapse;font-size:8.5pt}th,td{border:1px solid #b5c2b9;padding:6px 7px;text-align:left;vertical-align:top}th{background:#163027;color:#d8e267;font-size:8pt;letter-spacing:.04em}tbody tr:nth-child(even){background:#f2f5ef}.table-wrap{overflow:visible}.hint{font-size:9pt;color:#d8e267}@media print{html,body{background:#fff!important}.toolbar{display:none!important}.sheet{max-width:none;margin:0;padding:0;box-shadow:none}section{break-inside:auto}tr{break-inside:avoid}th{print-color-adjust:exact;-webkit-print-color-adjust:exact}}${ekosstaPrintToolbarCss_()}
   </style></head><body><div class="toolbar"><div><strong>${activityEsc_(getAppName_())} • ${unitPrintEsc_(title)}</strong><div class="hint">Pilih Cetak / Simpan PDF untuk menghasilkan salinan.</div></div><div class="print-toolbar-actions">${ekosstaPrintBackControlHtml_()}${ekosstaPrintActionButtonHtml_()}</div></div><main class="sheet">${content}</main></body></html>`;
@@ -3448,7 +3448,7 @@ async function editSavedReport_(id){
   await openSavedDocument_(id);
 }
 async function printSavedReport_(id){
-  const printWindow=ekosstaOpenPrintWindow_('about:blank','_blank');if(!printWindow)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
+  const printWindow=window.open('about:blank','_blank');if(!printWindow)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
   try{printWindow.document.open();printWindow.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Menyediakan cetakan...</title></head><body style="font:16px Arial;padding:24px">Menyediakan laporan untuk dicetak...</body></html>');printWindow.document.close();}catch(e){}
   const loaded=await openSavedDocument_(id);if(!loaded){try{printWindow.close()}catch(e){}return;}
   await printEditorDocument_(printWindow);
@@ -3659,7 +3659,7 @@ async function openSavedDocument_(id){
 }
 async function printEditorDocument_(providedWindow=null){
   if(isStandaloneMeetingReport_()){if(REPORT_STANDALONE_PARTICIPANT_MODE_==='unset')return toast('Pilih + Peserta atau Tiada Peserta sebelum mencetak laporan.');renderStandaloneParticipantsAppendix_();}
-  const w=providedWindow||ekosstaOpenPrintWindow_('about:blank','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
+  const w=providedWindow||window.open('about:blank','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
   try{
     if(REPORT_WORKFLOW_MODE_==='form')updateReportPreviewFromForm_();
     const ed=editorEl_();if(!ed)throw new Error('Pratonton laporan tidak ditemui.');
