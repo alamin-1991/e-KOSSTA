@@ -1,0 +1,7 @@
+/* e-KOSSTA Ekstra defaults v10 — inherit terminal tokens */
+.pajsk-grid-saved{display:block;color:var(--muted,#7e8e85);font-size:.72rem;margin-top:.2rem}
+.pajsk-legacy-extra{margin-top:.4rem;font-size:.72rem;max-width:18rem}
+.pajsk-legacy-extra summary{cursor:pointer;color:var(--warning,#bd7c18);font-weight:700}
+.pajsk-legacy-extra small{display:block;margin:.2rem 0}
+.pajsk-legacy-extra label{display:flex;align-items:flex-start;gap:.35rem;margin-top:.35rem;line-height:1.3}
+.pajsk-legacy-extra input{min-height:auto!important;width:auto!important}

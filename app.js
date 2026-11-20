@@ -368,7 +368,12 @@ const PAJSK_EXTRA_OPTIONS_={
   TUGAS_KHAS:[['KEBANGSAAN','Peserta / Atlet persembahan padang, perarakan / perbarisan — Kebangsaan / Sukan SEA / Asia / Bulan Sukan Negara',7],['NEGERI','Peserta persembahan padang / perarakan / perbarisan — Peringkat Negeri',6],['SUKARELAWAN','Sukarelawan program sukan / kokurikulum / seni yang diiktiraf',5],['SOKONGAN','Penonton / penyokong / ahli sorak bagi program yang diiktiraf',3]]
 };
 function pajskExtraScore_(element,key){if(!key)return null;if(key==='TIADA')return 0;const row=(PAJSK_EXTRA_OPTIONS_[element]||[]).find(x=>x[0]===key);return row?Number(row[2]):null;}
-function pajskExtraSelectHtml_(element,selected,kp){const options=PAJSK_EXTRA_OPTIONS_[element]||[];return `<select class="pajsk-extra-choice" data-ekstra-select="${element}" data-kp="${pajskEsc_(kp)}"><option value="">-- Pilih --</option><option value="TIADA" ${selected==='TIADA'?'selected':''}>Tiada (0)</option>${options.map(o=>`<option value="${o[0]}" ${selected===o[0]?'selected':''}>${pajskEsc_(o[1])} (${o[2]})</option>`).join('')}</select>`;}
+function pajskExtraSelectHtml_(element,selected,kp){
+  const options=PAJSK_EXTRA_OPTIONS_[element]||[];
+  const valid=options.some(o=>o[0]===selected);
+  const current=valid?selected:'TIADA';
+  return `<select class="pajsk-extra-choice" data-ekstra-select="${element}" data-kp="${pajskEsc_(kp)}"><option value="TIADA" ${current==='TIADA'?'selected':''}>Tiada (0)</option>${options.map(o=>`<option value="${o[0]}" ${current===o[0]?'selected':''}>${pajskEsc_(o[1])} (${o[2]})</option>`).join('')}</select>`;
+}
 
 const PAJSK_EXTRA_PLACEHOLDERS_={PERKHIDMATAN:'Nyatakan jawatan / perkhidmatan murid dan organisasi.',ANUGERAH_KHAS:'Nyatakan nama anugerah, tahap dan pingat jika berkaitan.',KHIDMAT_MASYARAKAT:'Nyatakan aktiviti khidmat masyarakat, bilangan aktiviti dan tempoh jam.',NILAM:'Nyatakan bintang / tahap NILAM serta bukti rekod bacaan.',TIMSS_PISA:'Nyatakan program, peringkat dan status penyertaan / pencapaian.'};
 function pajskWorkflowYear_(){return String(new Date().getFullYear());}
@@ -388,7 +393,7 @@ async function loadPajskTeacherWorkspace_(force=false,view='extra'){
   const status=$(view==='extra'?'pajskExtraEntryStatus':'pajskClassReviewStatus');if(status)status.textContent='Memuatkan penugasan dan rekod PAJSK...';
   try{
     const d=await apiGet('getPajskTeacherWorkspace',{token:state.token,tahun:year},30000);if(!d||d.ok===false)throw Error(d?.error||'Rekod PAJSK tidak dapat dimuatkan.');
-    PAJSK_WORKFLOW_CACHE_={loaded:true,year:String(d.year||year),classes:Array.isArray(d.classes)?d.classes:[],assignedElements:Array.isArray(d.assignedElements)?d.assignedElements:[],students:Array.isArray(d.students)?d.students:[],extraRecords:Array.isArray(d.extraRecords)?d.extraRecords:[],extraGridRecords:Array.isArray(d.extraGridRecords)?d.extraGridRecords:[],reviews:Array.isArray(d.reviews)?d.reviews:[],isAdmin:!!d.isAdmin};
+    PAJSK_WORKFLOW_CACHE_={loaded:true,year:String(d.year||year),classes:Array.isArray(d.classes)?d.classes:[],assignedElements:Array.isArray(d.assignedElements)?d.assignedElements:[],students:Array.isArray(d.students)?d.students:[],extraRecords:Array.isArray(d.extraRecords)?d.extraRecords:[],extraGridRecords:Array.isArray(d.extraGridRecords)?d.extraGridRecords:[],legacyGridStudents:Array.isArray(d.legacyGridStudents)?d.legacyGridStudents:[],reviews:Array.isArray(d.reviews)?d.reviews:[],isAdmin:!!d.isAdmin};
     const yearControls=['pajskExtraYearFilter','pajskReviewYearFilter'];yearControls.forEach(id=>{const el=$(id);if(el){const v=el.value||year;el.innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;el.value=year;}});
     const classControls=['pajskExtraClassFilter','pajskReviewClassFilter'];classControls.forEach(id=>{const el=$(id);if(el){const prev=el.value;el.innerHTML='<option value="">'+(id==='pajskReviewClassFilter'?'Pilih kelas':'Semua kelas')+'</option>'+PAJSK_WORKFLOW_CACHE_.classes.map(c=>`<option value="${pajskEsc_(c)}">${pajskEsc_(c)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.classes.includes(prev))el.value=prev;else if(PAJSK_WORKFLOW_CACHE_.classes.length===1)el.value=PAJSK_WORKFLOW_CACHE_.classes[0];}});
     const elementSelect=$('pajskExtraElementFilter');if(elementSelect){const prev=elementSelect.value;elementSelect.innerHTML=PAJSK_WORKFLOW_CACHE_.assignedElements.map(e=>`<option value="${pajskEsc_(e)}">${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[e]||e)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.assignedElements.includes(prev))elementSelect.value=prev;}
@@ -437,12 +442,15 @@ function renderPajskExtraEntry_(){
     const kp=String(m.NO_KP||''),r=saved[kp]||{},khidmat={...emptyKhidmat};try{Object.assign(khidmat,JSON.parse(r.KHIDMAT_JSON||'{}'));}catch(e){}
     const khidmatHtml=`<table class="pajsk-khidmat-mini"><thead><tr><th>Aktiviti</th><th>Bil.</th></tr></thead><tbody>${PAJSK_KHIDMAT_ITEMS_.map(([key,label])=>`<tr><td>${pajskEsc_(label)}</td><td><input type="number" min="0" max="5" step="1" inputmode="numeric" value="${Number(khidmat[key]||0)}" data-khidmat-count="${key}" data-kp="${pajskEsc_(kp)}" aria-label="Bilangan ${pajskEsc_(label)}"></td></tr>`).join('')}</tbody></table>`;
     const opts=['PERKHIDMATAN','ANUGERAH_KHAS','NILAM','TIMSS_PISA','TUGAS_KHAS'];
-    const selectCells=opts.map(key=>pajskExtraSelectHtml_(key,r[{PERKHIDMATAN:'PERKHIDMATAN_KEY',ANUGERAH_KHAS:'ANUGERAH_KEY',NILAM:'NILAM_KEY',TIMSS_PISA:'TIMSS_KEY',TUGAS_KHAS:'TUGAS_KHAS_KEY'}[key]]||'',kp));
+    const selectCells=opts.map(key=>pajskExtraSelectHtml_(key,r[{PERKHIDMATAN:'PERKHIDMATAN_KEY',ANUGERAH_KHAS:'ANUGERAH_KEY',NILAM:'NILAM_KEY',TIMSS_PISA:'TIMSS_KEY',TUGAS_KHAS:'TUGAS_KHAS_KEY'}[key]]||'TIADA',kp));
     const mark=pajskExtraScore_('TUGAS_KHAS',r.TUGAS_KHAS_KEY||'')??0;
     const ek=Number(r.EK_SCORE||0);
     const done=!!r.COMPLETED;
-    return `<tr data-ekstra-grid-row="${pajskEsc_(kp)}">
-      <td class="pajsk-grid-student"><b>${pajskEsc_(m.NAMA||'-')}</b><small>${pajskEsc_(kp)} • ${pajskEsc_(m.KELAS||'-')}</small><small class="pajsk-grid-saved">${done?'Direkod: '+pajskEsc_(r.UPDATED_BY||''):'Belum disimpan'}</small></td>
+    const isLegacy=(PAJSK_WORKFLOW_CACHE_.legacyGridStudents||[]).includes(kp);
+    const legacyRecords=(PAJSK_WORKFLOW_CACHE_.extraRecords||[]).filter(x=>String(x.NO_KP||'')===kp&&String(x.STATUS_PENGLIBATAN||'')==='ADA_PENGLIBATAN');
+    const legacyHtml=isLegacy?`<details class="pajsk-legacy-extra"><summary>Rekod lama perlu disemak (${legacyRecords.length})</summary>${legacyRecords.map(x=>`<small>${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[x.ELEMEN]||x.ELEMEN)}: ${pajskEsc_(x.BUTIRAN||'Ada penglibatan')}</small>`).join('')}<label><input type="checkbox" data-legacy-confirm="${pajskEsc_(kp)}"> Saya telah semak dan mahu guna jadual baharu</label></details>`:'';
+    return `<tr data-ekstra-grid-row="${pajskEsc_(kp)}" data-ekstra-legacy="${isLegacy?'true':'false'}">
+      <td class="pajsk-grid-student"><b>${pajskEsc_(m.NAMA||'-')}</b><small>${pajskEsc_(kp)} • ${pajskEsc_(m.KELAS||'-')}</small><small class="pajsk-grid-saved">${done?'Nilai awal / rekod: '+pajskEsc_(r.UPDATED_BY||''):'Nilai awal (0)'}</small>${legacyHtml}</td>
       <td>${selectCells[0]}</td><td>${selectCells[1]}</td><td class="pajsk-grid-khidmat">${khidmatHtml}<small class="pajsk-khidmat-score">Skor: ${Number(r.KHIDMAT_SCORE||0)}/10</small></td>
       <td>${selectCells[2]}</td><td>${selectCells[3]}</td><td>${selectCells[4]}</td>
       <td class="pajsk-grid-markah" data-grid-markah="${pajskEsc_(kp)}">${mark}</td><td class="pajsk-grid-ek" data-grid-ek="${pajskEsc_(kp)}">${ek.toFixed(0)}</td>
@@ -450,14 +458,16 @@ function renderPajskExtraEntry_(){
   }).join('');
   host.innerHTML=rows.length?`<div class="pajsk-grid-scroll"><table class="analysis-table pajsk-ekstra-grid-table"><thead><tr><th>NAMA</th><th>PERKHIDMATAN</th><th>ANUGERAH</th><th>KHIDMAT MASYARAKAT</th><th>NILAM</th><th>TIMSS</th><th>TAMBAHAN</th><th>MARKAH</th><th>EK</th></tr></thead><tbody>${tableRows}</tbody></table></div><div class="pajsk-grid-footnote">Pilih jawatan / anugerah / tahap sebenar. Markah dijana oleh sistem. Khidmat Masyarakat: setiap aktiviti yang layak 3 jam menyumbang 1 markah; ikut borang rujukan yang dibekalkan, maksimum 5 pilihan aktiviti; skor elemen ini maksimum 10. TAMBAHAN ialah Tugas-tugas Khas; MARKAH ialah skornya. EK mengambil markah tertinggi daripada enam elemen sahaja.</div>`:'<div class="analysis-empty">Tiada murid sepadan dengan penapis.</div>';
   host.querySelectorAll('select[data-ekstra-select],input[data-khidmat-count]').forEach(el=>el.addEventListener('change',()=>updatePajskExtraGridPreview_(el.dataset.kp)));
-  const st=$('pajskExtraEntryStatus');if(st)st.textContent=`Jadual Ekstra • ${rows.length} murid • Tahun ${PAJSK_WORKFLOW_CACHE_.year}. Setiap dropdown mesti dipilih; pilih “Tiada (0)” jika tiada pencapaian. Bilangan Khidmat Masyarakat bermula pada 0.`;
+  host.querySelectorAll('[data-legacy-confirm]').forEach(el=>el.addEventListener('change',()=>updatePajskExtraGridPreview_(el.dataset.legacyConfirm)));
+  const st=$('pajskExtraEntryStatus');if(st)st.textContent=`Jadual Ekstra • ${rows.length} murid • Tahun ${PAJSK_WORKFLOW_CACHE_.year}. Semua dropdown bermula dengan Tiada (0), Khidmat Masyarakat bermula dengan semua bilangan 0. Ubah pilihan hanya jika murid mempunyai pencapaian.`;
 }
 function collectPajskExtraGridRow_(kp){
   const row=document.querySelector(`[data-ekstra-grid-row="${CSS.escape(kp)}"]`);if(!row)throw Error('Baris murid tidak ditemui.');
-  const get=element=>String(row.querySelector(`[data-ekstra-select="${element}"]`)?.value||'');
+  const get=element=>String(row.querySelector(`[data-ekstra-select="${element}"]`)?.value||'TIADA');
+  if(row.dataset.ekstraLegacy==='true'&&!row.querySelector(`[data-legacy-confirm="${CSS.escape(kp)}"]`)?.checked){
+    throw Error('Murid ini mempunyai rekod Ekstra versi lama. Semak butiran terdahulu dan tandakan pengesahan sebelum menyimpan jadual baharu.');
+  }
   const khidmat={};PAJSK_KHIDMAT_ITEMS_.forEach(([key])=>{const el=row.querySelector(`[data-khidmat-count="${key}"]`),n=Number(el?.value||0);if(!Number.isInteger(n)||n<0||n>5)throw Error('Bilangan setiap aktiviti Khidmat Masyarakat mesti 0 hingga 5.');khidmat[key]=n;});
-  const missing=[['Perkhidmatan',get('PERKHIDMATAN')],['Anugerah Khas',get('ANUGERAH_KHAS')],['NILAM',get('NILAM')],['TIMSS/PISA',get('TIMSS_PISA')],['Tambahan / Tugas Khas',get('TUGAS_KHAS')]].filter(x=>!x[1]).map(x=>x[0]);
-  if(missing.length)throw Error('Lengkapkan pilihan: '+missing.join(', ')+'. Pilih “Tiada (0)” jika tiada.');
   const types=Object.values(khidmat).filter(n=>n>0).length;if(types>5)throw Error('Khidmat Masyarakat: maksimum lima jenis aktiviti boleh mempunyai bilangan lebih daripada 0.');
   const khidmatScore=Math.min(10,Object.values(khidmat).reduce((a,b)=>a+b,0));
   const scores={PERKHIDMATAN:pajskExtraScore_('PERKHIDMATAN',get('PERKHIDMATAN')),ANUGERAH_KHAS:pajskExtraScore_('ANUGERAH_KHAS',get('ANUGERAH_KHAS')),KHIDMAT_MASYARAKAT:khidmatScore,NILAM:pajskExtraScore_('NILAM',get('NILAM')),TIMSS_PISA:pajskExtraScore_('TIMSS_PISA',get('TIMSS_PISA')),TUGAS_KHAS:pajskExtraScore_('TUGAS_KHAS',get('TUGAS_KHAS'))};
