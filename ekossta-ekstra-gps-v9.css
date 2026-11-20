@@ -1,0 +1,36 @@
+/* e-KOSSTA v9 — Ekstra grid and GPS import */
+.pajsk-ekstra-grid-table{min-width:1380px;width:100%;border-collapse:collapse;table-layout:auto}
+.pajsk-ekstra-grid-table th{position:sticky;top:0;z-index:2;white-space:nowrap}
+.pajsk-ekstra-grid-table th,.pajsk-ekstra-grid-table td{vertical-align:top;padding:.6rem .55rem}
+.pajsk-ekstra-grid-table td:not(.pajsk-grid-khidmat){vertical-align:middle}
+.pajsk-ekstra-grid-table .pajsk-grid-student{min-width:180px;max-width:220px}
+.pajsk-grid-student b{display:block;white-space:normal;line-height:1.35}
+.pajsk-grid-student small,.pajsk-grid-saved{display:block;margin-top:.35rem;color:var(--muted);font-size:.7rem}
+.pajsk-extra-choice{min-width:160px;max-width:220px;width:100%;font-size:.78rem;white-space:normal;min-height:2.4rem}
+.pajsk-grid-khidmat{min-width:310px;width:330px}
+.pajsk-khidmat-mini{width:100%;border-collapse:collapse;font-size:.72rem}
+.pajsk-khidmat-mini th,.pajsk-khidmat-mini td{padding:.2rem .28rem;border-bottom:1px solid var(--border,#9aaba2);background:transparent;color:var(--text);white-space:normal}
+.pajsk-khidmat-mini th{font-size:.65rem;letter-spacing:.04em}
+.pajsk-khidmat-mini th:last-child,.pajsk-khidmat-mini td:last-child{text-align:center;width:66px}
+.pajsk-khidmat-mini input[type=number]{width:3.1rem;min-width:3.1rem;height:1.9rem;min-height:1.9rem;padding:.1rem .25rem;text-align:center;font:inherit}
+.pajsk-khidmat-score{display:block;margin-top:.35rem;color:var(--muted);font-size:.72rem;font-weight:800}
+.pajsk-grid-markah,.pajsk-grid-ek{font-weight:900;text-align:center;font-size:1rem;white-space:nowrap}
+.pajsk-grid-ek{color:var(--primary,#0b6259);font-size:1.2rem}
+.pajsk-grid-footnote{padding:.7rem .8rem;border-left:3px solid var(--page-accent,#d4e75e);background:var(--surface2,#eef1e8);font-size:.76rem;line-height:1.55;color:var(--muted)}
+.pajsk-grid-scroll{width:100%;overflow:auto;overscroll-behavior-x:contain}
+.pajsk-grid-saved{max-width:120px;white-space:normal}
+.pajsk-gps-import-box{display:grid;gap:.7rem;padding:1rem;margin-top:1rem;border:1px solid var(--ui-outline,var(--border));background:var(--surface2);}
+.pajsk-gps-import-box b{font-size:.82rem;letter-spacing:.07em}
+.pajsk-gps-import-box p{margin:.35rem 0 0;color:var(--muted);font-size:.78rem;line-height:1.5}
+.pajsk-gps-import-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem}
+.pajsk-gps-import-actions input[type=file]{max-width:min(100%,360px);min-height:2.3rem;font-size:.75rem}
+.pajsk-gps-import-status,.pajsk-gps-method-note{display:block;color:var(--muted);font-size:.72rem;line-height:1.5}
+.pajsk-gps-number{font-variant-numeric:tabular-nums;font-weight:900;color:var(--primary,#0b6259)}
+@media(max-width:768px){
+ .pajsk-ekstra-grid-table{min-width:1280px}
+ .pajsk-grid-khidmat{width:300px;min-width:300px}
+ .pajsk-gps-import-actions{align-items:stretch;flex-direction:column}
+ .pajsk-gps-import-actions>*{width:100%;max-width:none}
+}
+
+.pajsk-gps-unit-cell small{display:block;margin-top:.22rem;font-size:.65rem;font-weight:500;color:var(--muted);white-space:nowrap}
