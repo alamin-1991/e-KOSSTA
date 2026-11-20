@@ -1,0 +1,174 @@
+/* e-KOSSTA UI corrections v5 — preserve original terminal visual language */
+:root{
+  --ek-mobile-nav-height:3.25rem;
+  --ek-mobile-nav-icon:1.12rem;
+  --ek-mobile-nav-label:.62rem;
+  --ek-mobile-nav-gap:.16rem;
+}
+
+/* The selected sidebar item remains a square-corner terminal block, not a capsule. */
+html:not(.dark) body #sidebar .nav-item.active,
+html.dark body #sidebar .nav-item.active,
+html:not(.dark) body #sidebar .side-nav > .main-nav-item.active,
+html.dark body #sidebar .side-nav > .main-nav-item.active,
+html:not(.dark) body #sidebar .side-nav > .main-nav-item[aria-current="page"],
+html.dark body #sidebar .side-nav > .main-nav-item[aria-current="page"]{
+  border-radius:0 !important;
+  background:#1B2C23 !important;
+  color:var(--ekt-lime,#BDF806) !important;
+  border:0 !important;
+  border-left:3px solid var(--ekt-lime,#BDF806) !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+#sidebar .analysis-side-item,
+#sidebar .analysis-side-item.active,
+#sidebar #ekstraNavItem,
+#sidebar #ekstraNavItem.active{
+  border-radius:0 !important;
+}
+#sidebar .analysis-side-item.active,
+#sidebar .analysis-side-item[aria-current="page"]{
+  background:#1B2C23 !important;
+  color:var(--ekt-lime,#BDF806) !important;
+  border-left:2px solid var(--ekt-lime,#BDF806) !important;
+  box-shadow:none !important;
+}
+
+/* Ekstra tabs are rendered in the same global terminal sub-navigation as other modules. */
+#pageSubnav:has([data-ekstra-view]){
+  display:block !important;
+  margin:0 0 1rem !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+#pageSubnav:has([data-ekstra-view]) .page-subnav-tabs{
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+  flex-wrap:nowrap !important;
+  gap:clamp(1rem,2.2vw,2.3rem) !important;
+  min-height:3.2rem !important;
+  padding:0 .25rem .2rem !important;
+  overflow-x:auto !important;
+  border-bottom:1px solid var(--ekt-line-soft,#35564A) !important;
+  scrollbar-width:none !important;
+}
+#pageSubnav:has([data-ekstra-view]) .page-subnav-tabs::-webkit-scrollbar{display:none}
+#pageSubnav:has([data-ekstra-view]) .subnav-tab{
+  flex:0 0 auto !important;
+  min-height:2.9rem !important;
+  padding:.7rem .2rem .65rem !important;
+  border:0 !important;
+  border-bottom:3px solid transparent !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:var(--ekt-text,#E8F0E9) !important;
+  box-shadow:none !important;
+  font:700 .72rem/1.35 "IBM Plex Mono","JetBrains Mono",monospace !important;
+  text-transform:uppercase !important;
+  white-space:nowrap !important;
+}
+#pageSubnav:has([data-ekstra-view]) .subnav-tab::before{
+  content:"[" !important;
+  color:var(--ekt-muted,#91A69A) !important;
+  margin-right:.45rem !important;
+}
+#pageSubnav:has([data-ekstra-view]) .subnav-tab::after{
+  content:"]" !important;
+  color:var(--ekt-muted,#91A69A) !important;
+  margin-left:.45rem !important;
+}
+#pageSubnav:has([data-ekstra-view]) .subnav-tab.active{
+  color:var(--ekt-lime,#D8E267) !important;
+  border-bottom-color:var(--ekt-lime,#D8E267) !important;
+}
+#pageSubnav:has([data-ekstra-view]) .subnav-tab.active::before{
+  content:">_" !important;
+  color:var(--ekt-lime,#D8E267) !important;
+}
+#pageSubnav:has([data-ekstra-view]) .subnav-tab.active::after{content:"" !important;margin:0 !important}
+
+/* Keep the existing page heading (the inner heading); remove duplicate module title spacing. */
+.page-ekstra .analysis-pajsk-workflow-view{margin-top:0 !important}
+.page-ekstra .analysis-heading{margin-top:0 !important}
+
+/* PAJSK school unit breakdown must be a table, grouped by category, not cards. */
+.pajsk-unit-groups{display:grid !important;gap:1.1rem !important;padding:0 !important}
+.pajsk-unit-category-group{min-width:0 !important}
+.pajsk-unit-category-head{
+  margin:0 0 .5rem !important;
+  padding:.65rem .8rem !important;
+  border:0 !important;
+  border-left:3px solid var(--ekt-lime,#D8E267) !important;
+  border-bottom:1px solid var(--ekt-line-soft,#35564A) !important;
+  border-radius:0 !important;
+  background:transparent !important;
+}
+.pajsk-unit-category-head h4{font:700 .95rem/1.4 "IBM Plex Mono","JetBrains Mono",monospace !important}
+.pajsk-unit-category-head>b{border-radius:0 !important}
+.pajsk-unit-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.pajsk-school-unit-table{width:100%;min-width:980px;border-collapse:collapse}
+.pajsk-school-unit-table th,.pajsk-school-unit-table td{vertical-align:top}
+.pajsk-school-unit-table td.num,.pajsk-school-unit-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pajsk-school-unit-table .pajsk-unit-number{width:3.5rem;text-align:center;font-weight:800}
+.pajsk-table-records{display:grid;gap:.4rem;margin:0;padding:0;list-style:none;min-width:220px}
+.pajsk-table-records li{display:grid;gap:.12rem;padding:.35rem .45rem;border-left:2px solid var(--ekt-line,#35564A);background:color-mix(in srgb,var(--surface2,#101914) 55%,transparent)}
+.pajsk-table-records b{font-size:.72rem;overflow-wrap:anywhere}
+.pajsk-table-records small{font-size:.63rem;color:var(--muted,#91A69A);overflow-wrap:anywhere}
+.pajsk-table-records a{font-size:.65rem;color:var(--ekt-lime,#D8E267);font-weight:700;text-decoration:none}
+.pajsk-table-muted{color:var(--muted,#91A69A);font-size:.7rem}
+.pajsk-unit-unassigned{border-radius:0 !important}
+.pajsk-unit-unassigned .pajsk-unit-table-wrap{margin-top:.5rem}
+
+/* Compact iPhone / Android bottom bar. Safe area is included once, not twice. */
+@media(max-width:48rem){
+  :root{
+    --ek-mobile-nav-height:3.2rem;
+    --ek-mobile-nav-icon:1.08rem;
+    --ek-mobile-nav-label:.60rem;
+    --ek-mobile-nav-gap:.12rem;
+  }
+  .app-shell{
+    padding-bottom:calc(var(--ek-mobile-nav-height) + env(safe-area-inset-bottom,0px) + .45rem) !important;
+  }
+  .mobile-nav{
+    left:.45rem !important;
+    right:.45rem !important;
+    bottom:0 !important;
+    height:calc(var(--ek-mobile-nav-height) + env(safe-area-inset-bottom,0px)) !important;
+    min-height:calc(var(--ek-mobile-nav-height) + env(safe-area-inset-bottom,0px)) !important;
+    padding:.18rem .25rem env(safe-area-inset-bottom,0px) !important;
+    gap:.12rem !important;
+    border-radius:.35rem .35rem 0 0 !important;
+    box-sizing:border-box !important;
+  }
+  .mobile-nav .nav-item,
+  .mobile-nav .nav-item.active{
+    min-height:2.65rem !important;
+    height:2.65rem !important;
+    padding:.18rem .1rem !important;
+    gap:var(--ek-mobile-nav-gap) !important;
+    border-radius:.25rem !important;
+  }
+  .mobile-nav .nav-item .nav-icon{
+    width:var(--ek-mobile-nav-icon) !important;
+    height:var(--ek-mobile-nav-icon) !important;
+    flex-basis:var(--ek-mobile-nav-icon) !important;
+  }
+  .mobile-nav .nav-item span{
+    font-size:var(--ek-mobile-nav-label) !important;
+    line-height:1 !important;
+  }
+  .page-subnav{top:0 !important}
+  #pageSubnav:has([data-ekstra-view]) .page-subnav-tabs{gap:1rem !important;min-height:2.8rem !important}
+  #pageSubnav:has([data-ekstra-view]) .subnav-tab{min-height:2.55rem !important;font-size:.63rem !important}
+  .pajsk-unit-table-wrap{border-radius:0 !important}
+}
+@media(max-width:23rem){
+  :root{--ek-mobile-nav-label:.56rem;--ek-mobile-nav-icon:1rem}
+  .mobile-nav{left:.25rem !important;right:.25rem !important}
+}

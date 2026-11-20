@@ -305,6 +305,16 @@ function renderPageSubnav_(page){
     laporan:{label:'LAPORAN & DOKUMEN',items:[['reports','Jana Laporan']]},
     tetapan:{label:'PENGURUSAN DATA',items:[['murid','Murid'],['guru','Guru'],['users','Pengurusan Pengguna'],['report-templates','Edit Templat'],['system-settings','Tetapan Sistem']]}
   };
+  if(page==='ekstra'){
+    const items=[
+      {id:'analysisExtraEntryTab',view:'extra',label:'Rekod Ekstra'},
+      {id:'analysisClassReviewTab',view:'class-review',label:'Pengesahan Guru Kelas'}
+    ];
+    host.hidden=false;
+    host.innerHTML=`<div class="page-subnav-tabs" role="tablist" aria-label="Ekstra Kokurikulum">${items.map(item=>`<button id="${item.id}" class="subnav-tab ekstra-subnav-tab ${CURRENT_EKSTRA_VIEW_===item.view?'active':''}" type="button" role="tab" aria-selected="${CURRENT_EKSTRA_VIEW_===item.view?'true':'false'}" data-subnav-page="ekstra-${item.view}" data-ekstra-view="${item.view}">${item.label}</button>`).join('')}</div>`;
+    host.querySelectorAll('[data-ekstra-view]').forEach(btn=>btn.addEventListener('click',()=>switchEkstraView_(btn.dataset.ekstraView)));
+    return;
+  }
   const cfg=config[groupKey];
   if(!cfg){host.hidden=true;host.innerHTML='';return;}
   const isAdmin=state.user?.role==='ADMIN';
@@ -318,7 +328,7 @@ function renderPageSubnav_(page){
     const off=!!disabled;
     return `<button class="subnav-tab ${current===p?'active':''} ${off?'disabled':''}" type="button" role="tab" aria-selected="${current===p?'true':'false'}" data-subnav-page="${p}" ${off?'disabled':''}>${label}${off?'<span class="subnav-soon">Akan datang</span>':''}</button>`;
   }).join('')}</div>`;
-  host.querySelectorAll('[data-subnav-page]').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.subnavPage)));
+  host.querySelectorAll('[data-subnav-page]:not([data-ekstra-view])').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.subnavPage)));
 }
 function switchAnalysisView_(view){
   const views={overview:'analysisOverviewView',pajsk:'analysisPajskView',school:'analysisSchoolView'};
@@ -337,6 +347,14 @@ function switchEkstraView_(view='extra',load=true){
   Object.entries(views).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==view;});
   const tabs={extra:'analysisExtraEntryTab','class-review':'analysisClassReviewTab'};
   Object.entries(tabs).forEach(([key,id])=>{const el=$(id);if(el){el.classList.toggle('active',key===view);el.setAttribute('aria-selected',String(key===view));}});
+  const subnav=$('pageSubnav');
+  if(subnav && CURRENT_PAGE==='ekstra'){
+    subnav.querySelectorAll('[data-ekstra-view]').forEach(el=>{
+      const active=el.dataset.ekstraView===view;
+      el.classList.toggle('active',active);
+      el.setAttribute('aria-selected',String(active));
+    });
+  }
   if(load)loadPajskTeacherWorkspace_(false,view);
 }
 function pajskEsc_(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -377,6 +395,11 @@ function applyPajskWorkflowPermissions_(){
   if(review)review.hidden=!(admin||(teacher&&PAJSK_WORKFLOW_CACHE_.classes.length));
   if(school)school.hidden=!admin;
   if(ekstraNav)ekstraNav.hidden=!(admin||entry?.hidden===false||review?.hidden===false);
+  const pageSubnav=$('pageSubnav');
+  if(pageSubnav && CURRENT_PAGE==='ekstra'){
+    const hasVisibleTab=[entry,review].some(el=>el&&!el.hidden);
+    pageSubnav.hidden=!hasVisibleTab;
+  }
 }
 function renderPajskExtraEntry_(){
   const host=$('pajskExtraEntryTableWrap');if(!host)return;
@@ -436,25 +459,50 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
   });
   const keys=[...categoryOrder.filter(k=>groups.has(k)),...Array.from(groups.keys()).filter(k=>!categoryOrder.includes(k)).sort((a,b)=>a.localeCompare(b,'ms'))];
   if(!keys.length){host.innerHTML='<div class="analysis-empty">Tiada unit atau rekod pencapaian untuk tahun ini.</div>';return;}
-  const groupsHtml=`<div class="pajsk-unit-groups">${keys.map(key=>{
+  const recordText=records=>{
+    if(!records.length)return '<span class="pajsk-table-muted">Belum ada rekod pencapaian</span>';
+    return `<ul class="pajsk-table-records">${records.map(record=>{
+      const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
+      const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
+      const meta=[person,record.KELAS_MURID,record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
+      const evidence=String(record.PAUTAN_BUKTI||'').trim();
+      const link=/^https?:\/\//i.test(evidence)?` <a href="${analysisEsc_(evidence)}" target="_blank" rel="noopener noreferrer">Bukti ↗</a>`:'';
+      return `<li><b>${analysisEsc_(title)}</b><small>${analysisEsc_(meta)}</small>${link}</li>`;
+    }).join('')}</ul>`;
+  };
+  const groupsHtml=keys.map(key=>{
     const units=(groups.get(key)||[]).slice().sort((a,b)=>String(a.NAMA_UNIT||'').localeCompare(String(b.NAMA_UNIT||''),'ms'));
-    return `<section class="pajsk-unit-category-group"><header class="pajsk-unit-category-head"><div><span>KATEGORI UNIT</span><h4>${analysisEsc_(categoryLabels[key]||key)}</h4></div><b>${units.length} UNIT</b></header><div class="pajsk-unit-card-grid">${units.map((unit,index)=>{
+    const body=units.map((unit,index)=>{
       const records=Array.isArray(unit.REKOD)?unit.REKOD:[];
       const total=analysisNum_(unit.REKOD_PENCAPAIAN);
       const share=Math.max(0,Math.min(100,analysisNum_(unit.PERATUS_SUMBER_REKOD)));
-      const recordHtml=records.length?`<div class="pajsk-unit-record-list">${records.map(record=>{
-        const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
-        const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
-        const meta=[record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
-        const evidence=String(record.PAUTAN_BUKTI||'').trim();
-        const evidenceLink=/^https?:\/\//i.test(evidence)?`<a href="${analysisEsc_(evidence)}" target="_blank" rel="noopener noreferrer">Bukti ↗</a>`:'';
-        return `<article class="pajsk-unit-record"><div><b>${analysisEsc_(title)}</b><small>${analysisEsc_(person)}${record.KELAS_MURID?' • '+analysisEsc_(record.KELAS_MURID):''}</small>${meta?`<small>${analysisEsc_(meta)}</small>`:''}</div>${evidenceLink}</article>`;
-      }).join('')}</div>`:`<div class="pajsk-unit-no-record">Belum ada rekod pencapaian untuk unit ini.</div>`;
-      return `<article class="pajsk-unit-card"><header><div><span class="pajsk-unit-card-index">UNIT ${String(index+1).padStart(2,'0')}</span><h5>${analysisEsc_(unit.NAMA_UNIT||'-')}</h5><small>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'')}</small></div><span class="pajsk-unit-record-count">${total} REKOD</span></header><div class="pajsk-unit-metrics"><div><small>AHLI AKTIF</small><b>${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</b></div><div><small>REKOD PENCAPAIAN</small><b>${total.toLocaleString('ms-MY')}</b></div><div><small>BAHAGIAN REKOD SEKOLAH</small><b>${share.toFixed(1)}%</b></div></div><div class="pajsk-unit-share-track"><span style="width:${share}%"></span></div>${recordHtml}</article>`;
-    }).join('')}</div></section>`;
-  }).join('')}</div>`;
+      return `<tr>
+        <td class="pajsk-unit-number">${index+1}</td>
+        <td><b>${analysisEsc_(unit.NAMA_UNIT||'-')}</b></td>
+        <td>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'-')}</td>
+        <td class="num">${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</td>
+        <td class="num">${total.toLocaleString('ms-MY')}</td>
+        <td class="num">${share.toFixed(1)}%</td>
+        <td>${recordText(records)}</td>
+      </tr>`;
+    }).join('');
+    return `<section class="pajsk-unit-category-group">
+      <header class="pajsk-unit-category-head"><div><span>KATEGORI UNIT</span><h4>${analysisEsc_(categoryLabels[key]||key)}</h4></div><b>${units.length} UNIT</b></header>
+      <div class="table-wrap pajsk-unit-table-wrap"><table class="analysis-table pajsk-school-unit-table">
+        <thead><tr><th>BIL.</th><th>UNIT</th><th>KATEGORI</th><th>AHLI AKTIF</th><th>REKOD PENCAPAIAN</th><th>BAHAGIAN REKOD</th><th>BUTIRAN PENCAPAIAN</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table></div>
+    </section>`;
+  }).join('');
   const loose=(unassignedRecords||[]);
-  const looseHtml=loose.length?`<section class="pajsk-unit-unassigned"><header><b>Rekod belum dipautkan kepada unit</b><span>${loose.length} REKOD</span></header><p>Rekod ini tidak mempunyai UNIT_ID yang sepadan dengan unit aktif. Ia diasingkan supaya tidak dimasukkan ke unit yang salah.</p><div class="pajsk-unit-record-list">${loose.map(record=>`<article class="pajsk-unit-record"><div><b>${analysisEsc_(record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian')}</b><small>${analysisEsc_(record.NAMA_MURID||'Rekod unit / pasukan')}</small><small>${analysisEsc_([record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • '))}</small></div></article>`).join('')}</div></section>`:'';
+  const looseHtml=loose.length?`<section class="pajsk-unit-unassigned">
+    <header><b>Rekod belum dipautkan kepada unit</b><span>${loose.length} REKOD</span></header>
+    <p>Rekod ini tidak mempunyai UNIT_ID yang sepadan dengan unit aktif. Ia diasingkan supaya tidak dimasukkan ke unit yang salah.</p>
+    <div class="table-wrap pajsk-unit-table-wrap"><table class="analysis-table pajsk-school-unit-table">
+      <thead><tr><th>BIL.</th><th>REKOD PENCAPAIAN</th><th>MURID / PEMILIK</th><th>PERINGKAT</th><th>KEDUDUKAN</th><th>TARIKH</th></tr></thead>
+      <tbody>${loose.map((record,i)=>`<tr><td>${i+1}</td><td><b>${analysisEsc_(record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian')}</b></td><td>${analysisEsc_(record.NAMA_MURID||'Rekod unit / pasukan')}</td><td>${analysisEsc_(record.PERINGKAT||'—')}</td><td>${analysisEsc_(record.KEDUDUKAN||'—')}</td><td>${analysisEsc_(analysisDateLabel_(record.TARIKH))}</td></tr>`).join('')}</tbody>
+    </table></div>
+  </section>`:'';
   host.innerHTML=groupsHtml+looseHtml;
 }
 async function loadPajskSchoolAnalysis_(force=false){
@@ -1320,8 +1368,6 @@ function init(){
   bind('analysisUnitTableUnitFilter','change',renderAnalysisUnitTableFromFilters_);
   bind('analysisUnitTableFilterReset','click',()=>{if($('analysisUnitTableCategoryFilter'))$('analysisUnitTableCategoryFilter').value='';if($('analysisUnitTableUnitFilter'))$('analysisUnitTableUnitFilter').value='';renderAnalysisUnitTableFromFilters_();});
   bind('analysisExportBtn','click',exportAnalysisUnitsCsv_);
-  bind('analysisExtraEntryTab','click',()=>switchEkstraView_('extra'));
-  bind('analysisClassReviewTab','click',()=>switchEkstraView_('class-review'));
   bind('analysisPajskRefreshBtn','click',()=>loadPajskClassReport_(true));
   bind('pajskExtraRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'extra'));
   bind('pajskClassReviewRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'class-review'));

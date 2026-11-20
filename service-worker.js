@@ -1,7 +1,7 @@
-const CACHE = 'ekossta-nav-pajsk-v4-20261119';
+const CACHE = 'ekossta-nav-pajsk-v5-20261120';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
-  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css',
+  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-ui-corrections-v5.css',
   './app.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
   './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-materials.css', './ekossta-materials.js', './ekossta-icons.js', './design-tokens.json', './palette.json', './apple-touch-icon.png', './icon-192.png', './icon-512.png',
   './assets/dashboard-pixel-art.webp'
