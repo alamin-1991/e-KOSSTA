@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-title" content="e-KOSSTA">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css">  <link rel="stylesheet" href="ekossta-mobile-responsive.css"><link rel="stylesheet" href="ekossta-ui-standard-v2.css"><title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"></head>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css">  <link rel="stylesheet" href="ekossta-mobile-responsive.css"><link rel="stylesheet" href="ekossta-ui-standard-v2.css"><title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"></head>
 <body>
 <header class="mobile-topbar">
   <div class="mobile-brand-cluster"><img id="mobileBrandLogo" class="mobile-brand-logo" alt="Logo sekolah" hidden><div class="mobile-brand-text"><b>e-KOSSTA</b><small id="mobilePageTitle">Dashboard</small></div></div>
@@ -206,7 +206,7 @@
   <div class="form-grid user-form-grid">
     <div><label>Username</label><input id="newUsername" placeholder="contoh: guru2"></div>
     <div><label>Nama</label><input id="newUserNama" placeholder="Nama pengguna"></div>
-    <div><label>Role</label><select id="newUserRole"><option value="GURU">GURU PENASIHAT</option><option value="PENYELARAS">PENYELARAS UNIT</option><option value="PENTADBIR">PENTADBIR</option><option value="ADMIN">ADMIN</option></select><small class="muted">Penyelaras boleh diberikan beberapa unit oleh ADMIN. Sekurang-kurangnya satu unit diperlukan untuk log masuk.</small></div>
+    <div><label>Role</label><select id="newUserRole"><option value="GURU">GURU PENASIHAT</option><option value="GURU_KELAS">GURU KELAS</option><option value="PENYELARAS">PENYELARAS UNIT</option><option value="PENTADBIR">PENTADBIR</option><option value="ADMIN">ADMIN</option></select></div>
     <div><label>Password</label><input id="newUserPassword" type="password" placeholder="Minimum 8 aksara"></div>
   </div>
   <button id="addUserBtn" class="btn primary">+ Tambah Pengguna</button>
@@ -635,7 +635,11 @@
       <article class="analysis-kpi"><span class="analysis-kpi-label">PERATUS PENGESAHAN</span><strong id="pajskSchoolKpiPct">—</strong><small>Kadar pengesahan rekod</small><span class="analysis-kpi-index">04</span></article>
     </div>
     <div class="analysis-pajsk-note"><b>NOTA PENGIRAAN</b><span id="pajskSchoolScoreNote">Analisis ini memaparkan status data sebenar. GPA/CGPA rasmi hanya boleh dipaparkan apabila markah SEGAK dan markah rasmi ketiga-tiga komponen kokurikulum tersedia.</span></div>
-    <section class="analysis-panel analysis-table-panel"><div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Rekod Pencapaian Mengikut Unit</h3><p>Setiap unit dipaparkan dalam kumpulan sendiri supaya rekod tidak bercampur. Peratus ialah bahagian rekod sekolah, bukan markah PAJSK.</p></div></div><div id="pajskSchoolUnitTableWrap" class="table-wrap"><div class="analysis-empty">Belum dimuatkan.</div></div></section>
+    <section class="analysis-panel pajsk-gps-summary-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / GPS</span><h3>Statistik GPS Sekolah Keseluruhan</h3><p>Nilai GPS hanya dipaparkan apabila formula pengiraan dan markah sumber disediakan serta disahkan.</p></div><span class="analysis-count">SEKOLAH</span></div>
+      <div class="pajsk-gps-school-value"><div><small>GPS SEKOLAH KESELURUHAN</small><strong id="pajskSchoolGpsOverall">Belum dikira</strong><span id="pajskSchoolGpsNote">Formula GPS dan markah sumber belum tersedia dalam rekod semasa.</span></div></div>
+    </section>
+    <section class="analysis-panel analysis-table-panel"><div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Rekod Pencapaian Mengikut Unit</h3><p>Setiap unit dipaparkan dalam kumpulan sendiri. Jadual turut menyediakan GPS mengikut unit apabila nilai dan formula yang sah tersedia.</p></div></div><div id="pajskSchoolUnitTableWrap" class="table-wrap"><div class="analysis-empty">Belum dimuatkan.</div></div></section>
   </div>
   <div id="analysisPajskDetailModal" class="analysis-pajsk-detail-modal" hidden>
     <div class="analysis-pajsk-detail-backdrop" data-pajsk-detail-close></div>

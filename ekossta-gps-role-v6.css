@@ -1,0 +1,15 @@
+/* e-KOSSTA v6 — Role shortcut and GPS PAJSK indicators; terminal language preserved */
+.user-form-grid select#newUserRole{min-height:2.55rem}
+.pajsk-gps-summary-panel{margin:1rem 0 1.2rem}
+.pajsk-gps-school-value{display:flex;align-items:center;min-height:6rem;padding:1rem 1.15rem;border:1px solid var(--ekt-line-soft,#35564A);border-left:3px solid var(--ekt-lime,#D8E267);background:color-mix(in srgb,var(--surface2,#101914) 62%,transparent)}
+.pajsk-gps-school-value>div{display:grid;gap:.35rem}
+.pajsk-gps-school-value small{font:700 .62rem/1.4 "IBM Plex Mono","JetBrains Mono",monospace;letter-spacing:.08em;color:var(--ekt-muted,#91A69A)}
+.pajsk-gps-school-value strong{font:800 1.45rem/1.25 "IBM Plex Mono","JetBrains Mono",monospace;color:var(--ekt-lime,#D8E267)}
+.pajsk-gps-school-value span{font-size:.72rem;line-height:1.5;color:var(--ekt-muted,#91A69A);max-width:70rem}
+.pajsk-gps-pending{display:inline-block;padding:.18rem .35rem;border:1px dashed var(--ekt-line-soft,#35564A);color:var(--ekt-muted,#91A69A);font-size:.66rem;white-space:nowrap}
+.pajsk-gps-number{color:var(--ekt-lime,#D8E267);font-variant-numeric:tabular-nums}
+@media(max-width:48rem){
+  .pajsk-gps-school-value{min-height:5.2rem;padding:.75rem .85rem}
+  .pajsk-gps-school-value strong{font-size:1.2rem}
+  .pajsk-gps-school-value span{font-size:.66rem}
+}

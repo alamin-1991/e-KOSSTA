@@ -476,11 +476,13 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
       const records=Array.isArray(unit.REKOD)?unit.REKOD:[];
       const total=analysisNum_(unit.REKOD_PENCAPAIAN);
       const share=Math.max(0,Math.min(100,analysisNum_(unit.PERATUS_SUMBER_REKOD)));
+      const gps=unit.GPS_UNIT??unit.GPS??unit.gpsUnit??null;
       return `<tr>
         <td class="pajsk-unit-number">${index+1}</td>
         <td><b>${analysisEsc_(unit.NAMA_UNIT||'-')}</b></td>
         <td>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'-')}</td>
         <td class="num">${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</td>
+        <td class="num">${pajskGpsText_(gps)}</td>
         <td class="num">${total.toLocaleString('ms-MY')}</td>
         <td class="num">${share.toFixed(1)}%</td>
         <td>${recordText(records)}</td>
@@ -489,7 +491,7 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
     return `<section class="pajsk-unit-category-group">
       <header class="pajsk-unit-category-head"><div><span>KATEGORI UNIT</span><h4>${analysisEsc_(categoryLabels[key]||key)}</h4></div><b>${units.length} UNIT</b></header>
       <div class="table-wrap pajsk-unit-table-wrap"><table class="analysis-table pajsk-school-unit-table">
-        <thead><tr><th>BIL.</th><th>UNIT</th><th>KATEGORI</th><th>AHLI AKTIF</th><th>REKOD PENCAPAIAN</th><th>BAHAGIAN REKOD</th><th>BUTIRAN PENCAPAIAN</th></tr></thead>
+        <thead><tr><th>BIL.</th><th>UNIT</th><th>KATEGORI</th><th>AHLI AKTIF</th><th>GPS UNIT</th><th>REKOD PENCAPAIAN</th><th>BAHAGIAN REKOD</th><th>BUTIRAN PENCAPAIAN</th></tr></thead>
         <tbody>${body}</tbody>
       </table></div>
     </section>`;
@@ -505,6 +507,16 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
   </section>`:'';
   host.innerHTML=groupsHtml+looseHtml;
 }
+function pajskGpsValue_(value){
+  if(value===null||value===undefined||String(value).trim()==='')return null;
+  const n=Number(value);
+  return Number.isFinite(n)?n:null;
+}
+function pajskGpsText_(value){
+  const n=pajskGpsValue_(value);
+  return n===null?'<span class="pajsk-gps-pending">Belum dikira</span>':`<strong class="pajsk-gps-number">${n.toFixed(2)}</strong>`;
+}
+
 async function loadPajskSchoolAnalysis_(force=false){
   if(!$('analysisSchoolView')||!state.token)return;
   const year=String($('pajskSchoolYearFilter')?.value||pajskWorkflowYear_()),status=$('pajskSchoolStatus');
@@ -521,7 +533,10 @@ async function loadPajskSchoolAnalysis_(force=false){
     const extraNote=$('pajskSchoolKpiExtraNote');if(extraNote)extraNote.textContent=`Lengkap 5 elemen • ${Number(d.extraCompletePct||0).toFixed(1)}% daripada murid aktif`;
     analysisSetKpi_('pajskSchoolKpiConfirmed',Number(d.confirmed||0).toLocaleString('ms-MY'));
     analysisSetKpi_('pajskSchoolKpiPct',`${Number(d.confirmationPct||0).toFixed(1)}%`);
-    const note=$('pajskSchoolScoreNote');if(note)note.textContent=d.scoreNote||'GPA/CGPA belum tersedia.';
+    const note=$('pajskSchoolScoreNote');if(note)note.textContent=d.scoreNote||'GPA/CGPA PAJSK rasmi belum tersedia.';
+    const gpsOverall=d.GPS_SEKOLAH??d.gpsSekolah??d.gpsOverall??null;
+    const gpsOverallText=$('pajskSchoolGpsOverall');if(gpsOverallText)gpsOverallText.innerHTML=pajskGpsText_(gpsOverall);
+    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent=pajskGpsValue_(gpsOverall)===null?'GPS sekolah belum boleh dikira kerana formula GPS yang digunakan sekolah dan markah sumber belum tersedia dalam sistem.':'Nilai GPS dibekalkan oleh sumber pengiraan sistem.';
     renderPajskSchoolUnits_(d.unitStats||[],d.unassignedRecords||[]);
     if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;
   }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan analisis.';toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
@@ -1922,7 +1937,7 @@ function renderUsers(rows){
     ['USER_ID','USERNAME','NAMA','ROLE','UNIT_DIPILIH','STATUS','LAST_LOGIN'].forEach(c=>{const td=document.createElement('td');td.textContent=r[c]||'-';tr.appendChild(td)});
     const td=document.createElement('td');td.className='user-actions-cell';
     const actions=document.createElement('div');actions.className='user-actions-grid';
-    const role=document.createElement('select');role.setAttribute('aria-label','Tukar peranan '+String(r.USERNAME||''));['GURU','PENYELARAS','PENTADBIR','ADMIN'].forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x==='PENYELARAS'?'PENYELARAS UNIT':x;if(r.ROLE===x)o.selected=true;role.appendChild(o)});role.onchange=()=>changeRole(r.USER_ID,role.value);
+    const role=document.createElement('select');role.setAttribute('aria-label','Tukar peranan '+String(r.USERNAME||''));[['GURU','GURU PENASIHAT'],['GURU_KELAS','GURU KELAS'],['PENYELARAS','PENYELARAS UNIT'],['PENTADBIR','PENTADBIR'],['ADMIN','ADMIN']].forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;if((value==='GURU_KELAS'?false:r.ROLE===value))o.selected=true;role.appendChild(o)});role.onchange=()=>changeRole(r.USER_ID,role.value);
     const status=document.createElement('button');status.className='btn secondary small';
     const pending=String(r.STATUS||'').toUpperCase()==='MENUNGGU_KELULUSAN';
     status.textContent=pending?'Luluskan Akaun':r.STATUS==='AKTIF'?'Nyahaktif':'Aktifkan';
@@ -1936,15 +1951,25 @@ function renderUsers(rows){
   });t.appendChild(tb);wrap.replaceChildren(t);
 }
 async function addUser(){
-  const b=$('addUserBtn'),p={token:state.token,username:$('newUsername').value.trim(),nama:$('newUserNama').value.trim(),role:$('newUserRole').value,password:$('newUserPassword').value};
+  const selectedRole=$('newUserRole').value;
+  const isClassTeacher=selectedRole==='GURU_KELAS';
+  const p={token:state.token,username:$('newUsername').value.trim(),nama:$('newUserNama').value.trim(),role:isClassTeacher?'GURU':selectedRole,password:$('newUserPassword').value};
+  const b=$('addUserBtn');
   if(!p.username||!p.nama||!p.password)return toast('Lengkapkan semua medan pengguna.');
   b.disabled=true;b.textContent='⏳ Menyimpan...';
-  try{const d=await apiGet('addUser',p);$('userResult').textContent=d.message||'Berjaya.';['newUsername','newUserNama','newUserPassword'].forEach(id=>$(id).value='');await loadUsers();toast('Pengguna ditambah.');if(p.role==='PENYELARAS'&&d.userId){setTimeout(()=>openCoordinatorAssignment_(d.userId),180);}}
-  catch(e){$('userResult').textContent=e.message;toast(e.message)}finally{b.disabled=false;b.textContent='+ Tambah Pengguna'}
+  try{
+    const d=await apiGet('addUser',p);
+    $('userResult').textContent=d.message||'Berjaya.';
+    ['newUsername','newUserNama','newUserPassword'].forEach(id=>$(id).value='');
+    await loadUsers();toast('Pengguna ditambah.');
+    if(isClassTeacher&&d.userId){setTimeout(()=>openPajskAssignmentSetup_(d.userId,'class'),180);}
+    else if(p.role==='PENYELARAS'&&d.userId){setTimeout(()=>openCoordinatorAssignment_(d.userId),180);}
+  }catch(e){$('userResult').textContent=e.message;toast(e.message)}
+  finally{b.disabled=false;b.textContent='+ Tambah Pengguna'}
 }
 async function setStatus(userId,status,isApproval=false){if(isApproval&&!confirm('Luluskan akaun ini? Semak peranan dan unit yang dimohon terlebih dahulu.'))return;try{const d=await apiGet('setUserStatus',{token:state.token,userId,status});toast(d.message);loadUsers();}catch(e){toast(e.message)}}
 async function resetPassword(userId,username){const password=prompt(`Password baharu untuk ${username}:`);if(password===null)return;if(password.length<8)return toast('Password minimum 8 aksara.');try{const d=await apiGet('resetUserPassword',{token:state.token,userId,password});toast(d.message);loadUsers();}catch(e){toast(e.message)}}
-async function changeRole(userId,role){try{const d=await apiGet('changeUserRole',{token:state.token,userId,role});toast(d.message);await loadUsers();if(role==='PENYELARAS')setTimeout(()=>openCoordinatorAssignment_(userId),180);}catch(e){toast(e.message);await loadUsers()}}
+async function changeRole(userId,role){const isClassTeacher=role==='GURU_KELAS',backendRole=isClassTeacher?'GURU':role;try{const d=await apiGet('changeUserRole',{token:state.token,userId,role:backendRole});toast(d.message);await loadUsers();if(isClassTeacher)setTimeout(()=>openPajskAssignmentSetup_(userId,'class'),180);else if(role==='PENYELARAS')setTimeout(()=>openCoordinatorAssignment_(userId),180);}catch(e){toast(e.message);await loadUsers()}}
 async function logoutSessions(userId){try{const d=await apiGet('logoutUserSessions',{token:state.token,userId});toast(d.message);loadUsers();}catch(e){toast(e.message)}}
 async function deleteUserPermanently(userId,username,role){
   const note=['GURU','PENYELARAS'].includes(String(role||'').toUpperCase())?' Profil Guru, sesi dan pilihan unit yang dipautkan turut dipadam.':' Sesi dan pilihan unit akaun turut dipadam.';
