@@ -14,7 +14,7 @@
   if(isIPhone && isStandalone)document.documentElement.classList.add('ios-standalone');
 })();
 </script>
-<title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"><link rel="stylesheet" href="ekossta-iphone-v8.css"><link rel="stylesheet" href="ekossta-ekstra-gps-v9.css"><link rel="stylesheet" href="ekossta-ekstra-default-zero-v10.css"></head>
+<title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"><link rel="stylesheet" href="ekossta-iphone-v8.css"><link rel="stylesheet" href="ekossta-ekstra-gps-v9.css"><link rel="stylesheet" href="ekossta-ekstra-default-zero-v10.css"><link rel="stylesheet" href="ekossta-pajsk-school-table-v11.css"></head>
 <body>
 <header class="mobile-topbar">
   <button id="iosSidebarToggle" class="ios-sidebar-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
@@ -629,35 +629,19 @@
       <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">ADA REKOD ACARA</span><strong id="analysisPajskKpiEvents">—</strong><small>Penyertaan acara direkod</small><span class="analysis-kpi-index">03</span></article>
       <article class="analysis-kpi"><span class="analysis-kpi-label">REKOD PERLU SEMAK</span><strong id="analysisPajskKpiIncomplete">—</strong><small>Unit / penyertaan belum lengkap</small><span class="analysis-kpi-index">04</span></article>
     </div>
-    <div class="analysis-pajsk-note"><b>NOTA DATA</b><span>CSV terperinci menyusun medan Kelab/Persatuan, Badan Beruniform, Sukan/Permainan dan Ekstra Kokurikulum mengikut struktur borang extension. Penglibatan, peringkat pencapaian, jawatan, aktiviti dan kehadiran diisi daripada rekod e-KOSSTA; komitmen, khidmat sumbangan, NILAM, TIMSS/PISA serta markah rasmi dibiarkan kosong jika belum direkod, bukan direka.</span></div>
-    <section class="analysis-panel analysis-table-panel analysis-pajsk-table-panel">
-      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Senarai Rekod Murid Mengikut Kelas</h3><p>Senarai dipaparkan mengikut kelas yang dipilih. Pilih Semua Kelas untuk melihat keseluruhan sekolah.</p></div><span id="analysisPajskStudentCount" class="analysis-count">0 MURID</span></div>
-      <div id="analysisPajskTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan rekod PAJSK...</div></div>
-    </section>
-    <div id="analysisPajskUpdatedAt" class="analysis-updated">Belum dikemas kini.</div>
-  </div>
-  <div id="analysisSchoolView" class="analysis-pajsk-workflow-view" hidden>
-    <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • PEMANTAUAN SEKOLAH</span><h2>Analisis PAJSK</h2><p>Ringkasan PAJSK sekolah dan rekod pencapaian yang diasingkan mengikut kategori serta unit masing-masing.</p></div><div class="analysis-actions"><button id="pajskSchoolRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
-    <div class="analysis-filterbar"><div><label for="pajskSchoolYearFilter">Tahun</label><select id="pajskSchoolYearFilter"></select></div></div>
-    <div id="pajskSchoolStatus" class="analysis-status" role="status" aria-live="polite">Memuatkan analisis sekolah...</div>
-    <div class="analysis-pajsk-kpi-grid">
-      <article class="analysis-kpi"><span class="analysis-kpi-label">JUMLAH MURID</span><strong id="pajskSchoolKpiStudents">—</strong><small>Murid aktif dalam tahun dipilih</small><span class="analysis-kpi-index">01</span></article>
-      <article class="analysis-kpi"><span class="analysis-kpi-label">EKSTRA LENGKAP</span><strong id="pajskSchoolKpiExtra">—</strong><small id="pajskSchoolKpiExtraNote">Murid lengkap keenam-enam elemen</small><span class="analysis-kpi-index">02</span></article>
-      <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">DISAHKAN GURU KELAS</span><strong id="pajskSchoolKpiConfirmed">—</strong><small>Murid telah disahkan</small><span class="analysis-kpi-index">03</span></article>
-      <article class="analysis-kpi"><span class="analysis-kpi-label">PERATUS PENGESAHAN</span><strong id="pajskSchoolKpiPct">—</strong><small>Kadar pengesahan rekod</small><span class="analysis-kpi-index">04</span></article>
-    </div>
-    <div class="analysis-pajsk-note"><b>NOTA PENGIRAAN</b><span id="pajskSchoolScoreNote">Analisis ini memaparkan status data sebenar. GPA/CGPA rasmi hanya boleh dipaparkan apabila markah SEGAK dan markah rasmi ketiga-tiga komponen kokurikulum tersedia.</span></div>
     <section class="analysis-panel pajsk-gps-summary-panel">
-      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / GPS</span><h3>Statistik GPS Sekolah Keseluruhan</h3><p>GPS dalaman sekolah berasaskan mata gred daripada markah PAJSK yang diimport. Nilai lebih rendah menunjukkan prestasi lebih baik.</p></div><span class="analysis-count">SEKOLAH</span></div>
-      <div class="pajsk-gps-school-value"><div><small>GPS SEKOLAH KESELURUHAN</small><strong id="pajskSchoolGpsOverall">0.00</strong><span id="pajskSchoolGpsNote">Nilai permulaan 0.00 — belum ada markah PAJSK diimport.</span></div></div>
-      <div class="pajsk-gps-import-box">
-        <div><b>IMPORT MARKAH UNTUK PENGIRAAN GPS</b><p>Muat turun templat, isi markah akhir PAJSK setiap murid (0–100) dan markah setiap unit (0–100), kemudian muat naik semula fail CSV.</p></div>
-        <div class="pajsk-gps-import-actions"><button id="pajskGpsTemplateBtn" class="btn secondary small" type="button">Muat Turun Templat CSV</button><input id="pajskGpsImportFile" type="file" accept=".csv,text/csv"><button id="pajskGpsImportBtn" class="btn primary small" type="button">Import Markah GPS</button></div>
-        <small id="pajskGpsImportStatus" class="pajsk-gps-import-status" role="status">Belum ada fail diimport. Nilai GPS dipaparkan sebagai 0.00 sehingga markah sebenar dimasukkan.</small>
-        <small class="pajsk-gps-method-note">Formula indeks dalaman: purata mata gred A=1, B=2, C=3, D=4, E=5. GPS ini bukan GPA/CGPA rasmi individu PAJSK.</small>
-      </div>
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / GPS</span><h3>Statistik GPS Sekolah Keseluruhan</h3></div><span class="analysis-count">SEKOLAH</span></div>
+      <div class="pajsk-gps-school-value"><div><small>GPS SEKOLAH KESELURUHAN</small><strong id="pajskSchoolGpsOverall">0.00</strong><span id="pajskSchoolGpsNote"></span></div></div>
+      <section class="analysis-panel analysis-table-panel pajsk-school-grade-panel">
+        <div class="analysis-panel-heading">
+          <div><span class="analysis-panel-index">PAJSK / RUMUSAN SEKOLAH</span><h3>GPS Kokurikulum Mengikut Tingkatan</h3></div>
+        </div>
+        <div id="pajskSchoolGradeTableWrap" class="table-wrap">
+          <div class="analysis-empty">Memuatkan statistik murid...</div>
+        </div>
+      </section>
     </section>
-    <section class="analysis-panel analysis-table-panel"><div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Rekod Pencapaian Mengikut Unit</h3><p>Setiap unit dipaparkan dalam kumpulan sendiri. GPS mengikut unit dikira daripada markah unit yang diimport. Nilai awal ialah 0.00.</p></div></div><div id="pajskSchoolUnitTableWrap" class="table-wrap"><div class="analysis-empty">Belum dimuatkan.</div></div></section>
+    <section class="analysis-panel analysis-table-panel"><div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Rekod Pencapaian Mengikut Unit</h3></div></div><div id="pajskSchoolUnitTableWrap" class="table-wrap"><div class="analysis-empty">Belum dimuatkan.</div></div></section>
   </div>
   <div id="analysisPajskDetailModal" class="analysis-pajsk-detail-modal" hidden>
     <div class="analysis-pajsk-detail-backdrop" data-pajsk-detail-close></div>

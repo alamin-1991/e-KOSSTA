@@ -440,7 +440,8 @@ function renderPajskExtraEntry_(){
   const emptyKhidmat={};PAJSK_KHIDMAT_ITEMS_.forEach(([key])=>emptyKhidmat[key]=0);
   const tableRows=rows.map(m=>{
     const kp=String(m.NO_KP||''),r=saved[kp]||{},khidmat={...emptyKhidmat};try{Object.assign(khidmat,JSON.parse(r.KHIDMAT_JSON||'{}'));}catch(e){}
-    const khidmatHtml=`<table class="pajsk-khidmat-mini"><thead><tr><th>Aktiviti</th><th>Bil.</th></tr></thead><tbody>${PAJSK_KHIDMAT_ITEMS_.map(([key,label])=>`<tr><td>${pajskEsc_(label)}</td><td><input type="number" min="0" max="5" step="1" inputmode="numeric" value="${Number(khidmat[key]||0)}" data-khidmat-count="${key}" data-kp="${pajskEsc_(kp)}" aria-label="Bilangan ${pajskEsc_(label)}"></td></tr>`).join('')}</tbody></table>`;
+    const currentKhidmatScore=Number(r.KHIDMAT_SCORE||0);
+    const khidmatHtml=`<details class="pajsk-khidmat-details"><summary><span>Butiran</span><b data-khidmat-score-label>${currentKhidmatScore}/10</b></summary><div class="pajsk-khidmat-details-panel"><table class="pajsk-khidmat-mini"><thead><tr><th>Aktiviti</th><th>Bil.</th></tr></thead><tbody>${PAJSK_KHIDMAT_ITEMS_.map(([key,label])=>`<tr><td>${pajskEsc_(label)}</td><td><input type="number" min="0" max="5" step="1" inputmode="numeric" value="${Number(khidmat[key]||0)}" data-khidmat-count="${key}" data-kp="${pajskEsc_(kp)}" aria-label="Bilangan ${pajskEsc_(label)}"></td></tr>`).join('')}</tbody></table><small>Skor Khidmat Masyarakat: <b data-khidmat-score-value>${currentKhidmatScore}/10</b></small></div></details>`;
     const opts=['PERKHIDMATAN','ANUGERAH_KHAS','NILAM','TIMSS_PISA','TUGAS_KHAS'];
     const selectCells=opts.map(key=>pajskExtraSelectHtml_(key,r[{PERKHIDMATAN:'PERKHIDMATAN_KEY',ANUGERAH_KHAS:'ANUGERAH_KEY',NILAM:'NILAM_KEY',TIMSS_PISA:'TIMSS_KEY',TUGAS_KHAS:'TUGAS_KHAS_KEY'}[key]]||'TIADA',kp));
     const mark=pajskExtraScore_('TUGAS_KHAS',r.TUGAS_KHAS_KEY||'')??0;
@@ -451,13 +452,17 @@ function renderPajskExtraEntry_(){
     const legacyHtml=isLegacy?`<details class="pajsk-legacy-extra"><summary>Rekod lama perlu disemak (${legacyRecords.length})</summary>${legacyRecords.map(x=>`<small>${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[x.ELEMEN]||x.ELEMEN)}: ${pajskEsc_(x.BUTIRAN||'Ada penglibatan')}</small>`).join('')}<label><input type="checkbox" data-legacy-confirm="${pajskEsc_(kp)}"> Saya telah semak dan mahu guna jadual baharu</label></details>`:'';
     return `<tr data-ekstra-grid-row="${pajskEsc_(kp)}" data-ekstra-legacy="${isLegacy?'true':'false'}">
       <td class="pajsk-grid-student"><b>${pajskEsc_(m.NAMA||'-')}</b><small>${pajskEsc_(kp)} • ${pajskEsc_(m.KELAS||'-')}</small><small class="pajsk-grid-saved">${done?'Nilai awal / rekod: '+pajskEsc_(r.UPDATED_BY||''):'Nilai awal (0)'}</small>${legacyHtml}</td>
-      <td>${selectCells[0]}</td><td>${selectCells[1]}</td><td class="pajsk-grid-khidmat">${khidmatHtml}<small class="pajsk-khidmat-score">Skor: ${Number(r.KHIDMAT_SCORE||0)}/10</small></td>
+      <td>${selectCells[0]}</td><td>${selectCells[1]}</td><td class="pajsk-grid-khidmat">${khidmatHtml}</td>
       <td>${selectCells[2]}</td><td>${selectCells[3]}</td><td>${selectCells[4]}</td>
       <td class="pajsk-grid-markah" data-grid-markah="${pajskEsc_(kp)}">${mark}</td><td class="pajsk-grid-ek" data-grid-ek="${pajskEsc_(kp)}">${ek.toFixed(0)}</td>
     </tr>`;
   }).join('');
   host.innerHTML=rows.length?`<div class="pajsk-grid-scroll"><table class="analysis-table pajsk-ekstra-grid-table"><thead><tr><th>NAMA</th><th>PERKHIDMATAN</th><th>ANUGERAH</th><th>KHIDMAT MASYARAKAT</th><th>NILAM</th><th>TIMSS</th><th>TAMBAHAN</th><th>MARKAH</th><th>EK</th></tr></thead><tbody>${tableRows}</tbody></table></div><div class="pajsk-grid-footnote">Pilih jawatan / anugerah / tahap sebenar. Markah dijana oleh sistem. Khidmat Masyarakat: setiap aktiviti yang layak 3 jam menyumbang 1 markah; ikut borang rujukan yang dibekalkan, maksimum 5 pilihan aktiviti; skor elemen ini maksimum 10. TAMBAHAN ialah Tugas-tugas Khas; MARKAH ialah skornya. EK mengambil markah tertinggi daripada enam elemen sahaja.</div>`:'<div class="analysis-empty">Tiada murid sepadan dengan penapis.</div>';
   host.querySelectorAll('select[data-ekstra-select],input[data-khidmat-count]').forEach(el=>el.addEventListener('change',()=>updatePajskExtraGridPreview_(el.dataset.kp)));
+  host.querySelectorAll('.pajsk-khidmat-details').forEach(detail=>detail.addEventListener('toggle',()=>{
+    if(!detail.open)return;
+    host.querySelectorAll('.pajsk-khidmat-details[open]').forEach(other=>{if(other!==detail)other.open=false;});
+  }));
   host.querySelectorAll('[data-legacy-confirm]').forEach(el=>el.addEventListener('change',()=>updatePajskExtraGridPreview_(el.dataset.legacyConfirm)));
   const st=$('pajskExtraEntryStatus');if(st)st.textContent=`Jadual Ekstra • ${rows.length} murid • Tahun ${PAJSK_WORKFLOW_CACHE_.year}. Semua dropdown bermula dengan Tiada (0), Khidmat Masyarakat bermula dengan semua bilangan 0. Ubah pilihan hanya jika murid mempunyai pencapaian.`;
 }
@@ -475,7 +480,16 @@ function collectPajskExtraGridRow_(kp){
   return {perkhidmatan:get('PERKHIDMATAN'),anugerah:get('ANUGERAH_KHAS'),khidmat,nilam:get('NILAM'),timss:get('TIMSS_PISA'),tugasKhas:get('TUGAS_KHAS'),scores,ek:Math.max(...Object.values(scores))};
 }
 function updatePajskExtraGridPreview_(kp){
-  try{const d=collectPajskExtraGridRow_(kp),row=document.querySelector(`[data-ekstra-grid-row="${CSS.escape(kp)}"]`);if(!row)return;const mark=row.querySelector(`[data-grid-markah="${CSS.escape(kp)}"]`),ek=row.querySelector(`[data-grid-ek="${CSS.escape(kp)}"]`),kh=row.querySelector('.pajsk-khidmat-score');if(mark)mark.textContent=String(d.scores.TUGAS_KHAS);if(ek)ek.textContent=String(d.ek);if(kh)kh.textContent=`Skor: ${d.scores.KHIDMAT_MASYARAKAT}/10`;}catch(e){/* incomplete selections are allowed while editing; save validates */}
+  try{
+    const d=collectPajskExtraGridRow_(kp),row=document.querySelector(`[data-ekstra-grid-row="${CSS.escape(kp)}"]`);
+    if(!row)return;
+    const mark=row.querySelector(`[data-grid-markah="${CSS.escape(kp)}"]`),ek=row.querySelector(`[data-grid-ek="${CSS.escape(kp)}"]`);
+    const khLabel=row.querySelector('[data-khidmat-score-label]'),khValue=row.querySelector('[data-khidmat-score-value]');
+    if(mark)mark.textContent=String(d.scores.TUGAS_KHAS);
+    if(ek)ek.textContent=String(d.ek);
+    if(khLabel)khLabel.textContent=`${d.scores.KHIDMAT_MASYARAKAT}/10`;
+    if(khValue)khValue.textContent=`${d.scores.KHIDMAT_MASYARAKAT}/10`;
+  }catch(e){/* incomplete selections are allowed while editing; save validates */}
 }
 async function savePajskExtraGridFromRow_(kp,button){
   let data;try{data=collectPajskExtraGridRow_(kp);}catch(e){toast(e.message||'Semak semula pilihan murid.');return;}
@@ -544,6 +558,46 @@ async function savePajskClassReview_(kp,status,button){
   catch(e){toast(e.message||'Gagal menyimpan pengesahan.');}
   finally{if(button)button.disabled=false;}
 }
+function renderPajskSchoolGradeSummary_(summary){
+  const host=$('pajskSchoolGradeTableWrap');if(!host)return;
+  const rows=Array.isArray(summary?.rows)?summary.rows:[];
+  const total=summary?.total||{};
+  const fmt=v=>Number(v||0).toFixed(2);
+  const count=v=>Number(v||0).toLocaleString('ms-MY');
+  const cells=r=>`<td class="num">${count(r.TL_TD)}</td><td class="num">${count(r.E)}</td><td class="num">${count(r.D)}</td><td class="num">${count(r.C)}</td><td class="num">${count(r.B)}</td><td class="num">${count(r.A)}</td><td class="num">${count(r.JUMLAH_LAKSANA)}</td><td class="num">${count(r.JUMLAH_MURID)}</td><td class="num">${fmt(r.GPS)}</td><td class="num">${fmt(r.PERATUS_GPS)}</td>`;
+  const body=rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>TINGKATAN ${count(r.TINGKATAN)}</b></td>${cells(r)}</tr>`).join('');
+  const pct = key => Number(total.PERATUS_GRED?.[key]||0).toFixed(2);
+  const laksanaPct=Number(total.JUMLAH_LAKSANA||0)>0?100:0;
+  const muridPct=Number(total.JUMLAH_MURID||0)>0?100:0;
+  const below=Number(total.PERATUS_DAN_E||0), good=Number(total.PERATUS_A_B_C||0);
+  host.innerHTML=`
+    <div class="pajsk-school-grade-scroll">
+      <table class="analysis-table pajsk-school-grade-table">
+        <thead>
+          <tr>
+            <th rowspan="2">BIL.</th><th rowspan="2">TINGKATAN / TAHUN</th>
+            <th colspan="6">MARKAH KOKURIKULUM</th>
+            <th rowspan="2">JUMLAH LAKSANA (A-E)</th>
+            <th rowspan="2">JUMLAH MURID</th>
+            <th rowspan="2">GPS</th><th rowspan="2">% GPS</th>
+          </tr>
+          <tr><th>TL/TD</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th></tr>
+        </thead>
+        <tbody>${body}</tbody>
+        <tfoot>
+          <tr class="pajsk-grade-total"><th colspan="2">JUMLAH</th>${cells(total)}</tr>
+          <tr class="pajsk-grade-percent"><th colspan="2">%</th>
+            <td class="num">${pct('TL_TD')}</td><td class="num">${pct('E')}</td><td class="num">${pct('D')}</td><td class="num">${pct('C')}</td><td class="num">${pct('B')}</td><td class="num">${pct('A')}</td>
+            <td class="num">${fmt(laksanaPct)}</td><td class="num">${fmt(muridPct)}</td><td class="num">—</td><td class="num">—</td>
+          </tr>
+          <tr class="pajsk-grade-performance"><th colspan="2">% PENCAPAIAN KESELURUHAN</th><td colspan="2" class="num">${fmt(below)}%</td><td colspan="4" class="num">${fmt(good)}%</td><td colspan="4"></td></tr>
+          <tr class="pajsk-grade-gps"><th colspan="2">GPS KOKURIKULUM</th><td colspan="6" class="num">${fmt(total.GPS)}</td><td colspan="4"></td></tr>
+          <tr class="pajsk-grade-gps-percent"><th colspan="2">% GPS KOKURIKULUM</th><td colspan="6" class="num">${fmt(total.PERATUS_GPS)}%</td><td colspan="4"></td></tr>
+        </tfoot>
+      </table>
+    </div>`;
+}
+
 function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
   const host=$('pajskSchoolUnitTableWrap');if(!host)return;
   const categoryOrder=['UNIT BERUNIFORM','KELAB / PERSATUAN','SUKAN / PERMAINAN','RUMAH SUKAN'];
@@ -675,7 +729,8 @@ async function loadPajskSchoolAnalysis_(force=false){
     const note=$('pajskSchoolScoreNote');if(note)note.textContent=d.scoreNote||'GPA/CGPA PAJSK rasmi belum tersedia.';
     const gpsOverall=d.GPS_SEKOLAH??d.gpsSekolah??d.gpsOverall??null;
     const gpsOverallText=$('pajskSchoolGpsOverall');if(gpsOverallText)gpsOverallText.innerHTML=pajskGpsText_(gpsOverall);
-    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent=Number(d.gpsMarkedStudents||0)===0?'Nilai permulaan 0.00 — belum ada markah PAJSK diimport. Muat naik CSV markah akhir untuk mengira GPS sebenar.':`GPS dalaman dikira daripada ${Number(d.gpsMarkedStudents||0)} murid yang mempunyai markah (${Number(d.gpsUnmarkedStudents||0)} belum mempunyai markah). Nilai lebih rendah lebih baik.`;
+    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent='';
+    renderPajskSchoolGradeSummary_(d.gradeSummary||{rows:[],total:{}});
     renderPajskSchoolUnits_(d.unitStats||[],d.unassignedRecords||[]);
     if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;
   }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan analisis.';toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
@@ -1534,8 +1589,6 @@ function init(){
   bind('pajskReviewClassFilter','change',renderPajskClassReview_);
   bind('pajskReviewSearch','input',renderPajskClassReview_);
   bind('pajskSchoolYearFilter','change',()=>{if($('pajskSchoolYearFilter'))$('pajskSchoolYearFilter').dataset.loadedYear='';loadPajskSchoolAnalysis_(true);});
-  bind('pajskGpsTemplateBtn','click',downloadPajskGpsTemplate_);
-  bind('pajskGpsImportBtn','click',importPajskGpsCsv_);
   bind('pajskClassAssignSaveBtn','click',()=>savePajskAssignment_('class'));
   bind('pajskElementAssignSaveBtn','click',()=>savePajskAssignment_('element'));
   document.querySelectorAll('[data-pajsk-class-assign-close]').forEach(el=>el.addEventListener('click',()=>closePajskAssignmentModal_('class')));

@@ -1,0 +1,49 @@
+/* e-KOSSTA v11 — school PAJSK grade table + compact Khidmat details */
+
+.pajsk-school-grade-panel{margin:1rem 0 1.2rem}
+.pajsk-school-grade-scroll{width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.pajsk-school-grade-table{width:100%;min-width:1050px;border-collapse:collapse;font-size:.78rem}
+.pajsk-school-grade-table th,
+.pajsk-school-grade-table td{padding:.52rem .55rem;border:1px solid var(--border,#9aaba2);vertical-align:middle}
+.pajsk-school-grade-table thead th{background:var(--ekt-panel,#102019);color:var(--ekt-lime,#d8e267);text-align:center;white-space:nowrap;font-size:.68rem;letter-spacing:.04em}
+.pajsk-school-grade-table tbody td{white-space:nowrap}
+.pajsk-school-grade-table td.num,
+.pajsk-school-grade-table th.num{font-variant-numeric:tabular-nums;text-align:center}
+.pajsk-school-grade-table tfoot th,
+.pajsk-school-grade-table tfoot td{font-weight:800;text-align:center;background:var(--surface2,#e8edde)}
+.pajsk-school-grade-table tfoot .pajsk-grade-total th,
+.pajsk-school-grade-table tfoot .pajsk-grade-total td{background:color-mix(in srgb,var(--primary,#c7e4ff) 22%,var(--surface2,#e8edde))}
+.pajsk-school-grade-table tfoot .pajsk-grade-percent th,
+.pajsk-school-grade-table tfoot .pajsk-grade-percent td{font-size:.72rem}
+.pajsk-school-grade-table tfoot .pajsk-grade-performance th,
+.pajsk-school-grade-table tfoot .pajsk-grade-performance td,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps th,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps td,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps-percent th,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps-percent td{background:color-mix(in srgb,var(--primary,#c7e4ff) 24%,var(--surface2,#e8edde))}
+.pajsk-school-grade-table .pajsk-grade-empty{color:var(--muted);font-weight:500}
+
+/* The Khidmat cell stays compact. Seven activity rows open only when Butiran is pressed. */
+.pajsk-grid-khidmat{width:145px;min-width:135px;vertical-align:middle!important}
+.pajsk-khidmat-details{position:relative;display:block;min-width:7.5rem}
+.pajsk-khidmat-details>summary{display:flex;align-items:center;justify-content:space-between;gap:.45rem;list-style:none;cursor:pointer;user-select:none;border:1px solid var(--ui-outline,var(--border));background:var(--surface2,#e8edde);color:var(--text);padding:.42rem .5rem;font-size:.75rem;font-weight:750;white-space:nowrap}
+.pajsk-khidmat-details>summary::-webkit-details-marker{display:none}
+.pajsk-khidmat-details>summary::after{content:"+";font-size:1rem;color:var(--primary,#075e55);font-weight:900}
+.pajsk-khidmat-details[open]>summary::after{content:"−"}
+.pajsk-khidmat-details>summary b{color:var(--primary,#075e55);font-size:.7rem;font-variant-numeric:tabular-nums}
+.pajsk-khidmat-details-panel{margin-top:.35rem;padding:.45rem;border:1px solid var(--ui-outline,var(--border));background:var(--surface2,#e8edde);min-width:220px}
+.pajsk-khidmat-mini{width:100%;border-collapse:collapse;font-size:.72rem}
+.pajsk-khidmat-mini th,.pajsk-khidmat-mini td{padding:.24rem .3rem;border-bottom:1px solid var(--border,#9aaba2);background:transparent;color:var(--text);white-space:normal}
+.pajsk-khidmat-mini th{font-size:.65rem;letter-spacing:.04em;background:var(--ekt-panel,#102019);color:var(--ekt-lime,#d8e267)}
+.pajsk-khidmat-mini th:last-child,.pajsk-khidmat-mini td:last-child{text-align:center;width:62px}
+.pajsk-khidmat-mini input[type=number]{width:3.15rem;min-width:3.15rem;height:1.8rem;min-height:1.8rem;padding:.1rem .25rem;text-align:center;font:inherit}
+.pajsk-khidmat-details-panel>small{display:block;margin-top:.35rem;color:var(--muted);font-size:.7rem}
+.pajsk-khidmat-details-panel>small b{color:var(--primary,#075e55)}
+.pajsk-school-grade-panel .analysis-panel-heading{margin-bottom:.7rem}
+.pajsk-school-grade-panel .analysis-panel-heading p{display:none!important}
+
+@media(max-width:768px){
+  .pajsk-school-grade-table{min-width:1050px}
+  .pajsk-grid-khidmat{width:130px;min-width:125px}
+  .pajsk-khidmat-details-panel{min-width:205px}
+}
