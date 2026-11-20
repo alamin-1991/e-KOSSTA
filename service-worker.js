@@ -1,8 +1,8 @@
-const CACHE = 'ekossta-pajsk-polish-distill-v12-20261120';
+const CACHE = 'ekossta-pajsk-polish-distill-v13-20261121';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
   './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-ui-corrections-v5.css', './ekossta-gps-role-v6.css', './ekossta-iphone-v8.css', './ekossta-ekstra-gps-v9.css',
-  './app.js', './ekossta-pajsk-school-table-v11.css', './ekossta-ekstra-default-zero-v10.css', './ios-mobile-navigation.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
+  './app.js', './ekossta-pajsk-school-table-v11.css', './ekossta-pajsk-school-table-v13.css', './ekossta-ekstra-default-zero-v10.css', './ios-mobile-navigation.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
   './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-materials.css', './ekossta-materials.js', './ekossta-icons.js', './design-tokens.json', './palette.json', './apple-touch-icon.png', './icon-192.png', './icon-512.png'
 ];
 self.addEventListener('install', event => {

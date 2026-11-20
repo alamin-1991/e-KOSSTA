@@ -1,0 +1,101 @@
+/* e-KOSSTA v13 — Polish jadual GPS PAJSK. Paparan sahaja; tiada formula/data diubah. */
+.pajsk-school-grade-panel .pajsk-school-grade-scroll{
+  margin-top:.85rem;
+  border:1px solid var(--border,#35564A);
+  border-radius:13px;
+  background:var(--surface2,#1A2922);
+  box-shadow:0 8px 24px rgba(0,0,0,.07);
+  scrollbar-width:thin;
+  scrollbar-color:var(--primary,#D8E267) transparent;
+}
+.pajsk-school-grade-table{
+  min-width:1110px;
+  border:0;
+  border-collapse:separate;
+  border-spacing:0;
+  background:var(--surface2,#1A2922);
+  color:var(--text,#EDF4EC);
+  font-size:.82rem;
+  line-height:1.35;
+}
+.pajsk-school-grade-table th,
+.pajsk-school-grade-table td{
+  padding:.78rem .72rem;
+  border:0;
+  border-right:1px solid color-mix(in srgb,var(--border,#35564A) 72%,transparent);
+  border-bottom:1px solid var(--border,#35564A);
+  vertical-align:middle;
+}
+.pajsk-school-grade-table tr>*:last-child{border-right:0}
+.pajsk-school-grade-table thead th{
+  background:var(--ekt-panel,#102019);
+  color:var(--ekt-lime,#D8E267);
+  text-align:center;
+  white-space:nowrap;
+  font-size:.7rem;
+  font-weight:850;
+  letter-spacing:.055em;
+  line-height:1.4;
+  padding:.82rem .7rem;
+}
+.pajsk-school-grade-table thead tr:first-child th:nth-child(3){
+  background:color-mix(in srgb,var(--ekt-panel,#102019) 82%,var(--primary,#D8E267) 18%);
+  border-bottom:2px solid var(--primary,#D8E267);
+}
+.pajsk-school-grade-table thead tr:nth-child(2) th{background:color-mix(in srgb,var(--ekt-panel,#102019) 90%,var(--surface2,#1A2922) 10%)}
+.pajsk-school-grade-table tbody td{white-space:nowrap;transition:background-color .15s ease}
+.pajsk-school-grade-table tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface2,#1A2922) 93%,var(--primary,#D8E267) 7%)}
+.pajsk-school-grade-table tbody tr:hover td{background:color-mix(in srgb,var(--surface2,#1A2922) 84%,var(--primary,#D8E267) 16%)}
+.pajsk-school-grade-table tbody td:first-child{width:48px;text-align:center;color:var(--muted,#A9B9AE);font-size:.76rem}
+.pajsk-school-grade-table tbody td:nth-child(2){min-width:175px;text-align:left;font-weight:800;letter-spacing:.015em}
+.pajsk-school-grade-table td.num,
+.pajsk-school-grade-table th.num{font-variant-numeric:tabular-nums;text-align:center;font-weight:700}
+.pajsk-school-grade-table tbody td:nth-child(11),
+.pajsk-school-grade-table tbody td:nth-child(12){
+  background:color-mix(in srgb,var(--surface2,#1A2922) 82%,var(--primary,#D8E267) 18%);
+  font-weight:850;
+}
+.pajsk-school-grade-table tbody tr:nth-child(even) td:nth-child(11),
+.pajsk-school-grade-table tbody tr:nth-child(even) td:nth-child(12){
+  background:color-mix(in srgb,var(--surface2,#1A2922) 76%,var(--primary,#D8E267) 24%);
+}
+.pajsk-school-grade-table tfoot th,
+.pajsk-school-grade-table tfoot td{
+  font-weight:850;
+  text-align:center;
+  padding:.82rem .7rem;
+  background:color-mix(in srgb,var(--surface2,#1A2922) 84%,var(--primary,#D8E267) 16%);
+  border-bottom:1px solid var(--border,#35564A);
+}
+.pajsk-school-grade-table tfoot th[colspan="2"]{
+  text-align:left;
+  padding-left:1rem;
+  color:var(--ekt-lime,#D8E267);
+  background:color-mix(in srgb,var(--ekt-panel,#102019) 86%,var(--primary,#D8E267) 14%);
+  letter-spacing:.045em;
+  font-size:.68rem;
+}
+.pajsk-school-grade-table tfoot .pajsk-grade-total th,
+.pajsk-school-grade-table tfoot .pajsk-grade-total td{
+  background:color-mix(in srgb,var(--primary,#D8E267) 24%,var(--surface2,#1A2922));
+  border-top:2px solid var(--primary,#D8E267);
+}
+.pajsk-school-grade-table tfoot .pajsk-grade-percent th,
+.pajsk-school-grade-table tfoot .pajsk-grade-percent td{font-size:.73rem;color:var(--muted,#A9B9AE)}
+.pajsk-school-grade-table tfoot .pajsk-grade-performance th,
+.pajsk-school-grade-table tfoot .pajsk-grade-performance td,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps th,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps td,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps-percent th,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps-percent td{
+  background:color-mix(in srgb,var(--ekt-panel,#102019) 90%,var(--primary,#D8E267) 10%);
+}
+.pajsk-school-grade-table tfoot .pajsk-grade-gps td,
+.pajsk-school-grade-table tfoot .pajsk-grade-gps-percent td{color:var(--ekt-lime,#D8E267);font-size:.9rem}
+.pajsk-school-grade-table .pajsk-grade-empty{color:var(--muted);font-weight:500}
+@media(max-width:768px){
+  .pajsk-school-grade-panel .pajsk-school-grade-scroll{border-radius:10px}
+  .pajsk-school-grade-table{min-width:1110px;font-size:.78rem}
+  .pajsk-school-grade-table th,.pajsk-school-grade-table td{padding:.68rem .58rem}
+}
+@media(prefers-reduced-motion:reduce){.pajsk-school-grade-table tbody td{transition:none}}
