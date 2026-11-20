@@ -347,7 +347,7 @@ const PAJSK_EXTRA_ELEMENT_LABELS_={PERKHIDMATAN:'Perkhidmatan',ANUGERAH_KHAS:'An
 const PAJSK_KHIDMAT_ITEMS_=[['KEJIRANAN','Kejiranan / Komuniti'],['ALAM_SEKITAR','Alam Sekitar'],['BENCANA','Bencana Alam'],['KHIDMAT_JABATAN','Khidmat Jabatan / Agensi'],['KEBUDAYAAN','Kebudayaan / Kesenian / Integrasi'],['KEROHANIAN','Kerohanian'],['INSANIAH','Insaniah']];
 const PAJSK_EXTRA_OPTIONS_={
   PERKHIDMATAN:[['KETUA_MURID','Ketua Murid',10],['TIMBALAN_KETUA_MURID','Timbalan / Penolong Ketua Murid',8],['PENGURUSAN_UTAMA','Pengawas / Ketua Asrama / Ketua PRS / BADAR / Pengerusi Badan Perkhidmatan Sekolah',7],['PENOLONG_KETUA_ASRAMA','Penolong Ketua Asrama / Pengawas Pusat Sumber / BADAR',6],['AJK_UTAMA','AJK Utama / Bendahari / Setiausaha / Ketua Biro / Ketua Kelas / Ketua Tingkatan',5],['AJK_KECIL','AJK Kecil Biro / Ketua Bilik / Ketua Dorm / Penolong Ketua Kelas',3]],
-  ANUGERAH_KHAS:[['ARP_EMAS','Anugerah Remaja Perdana (ARP) — Emas',10],['ARP_PERAK','Anugerah Remaja Perdana (ARP) — Perak',7],['ARP_GANGSA','Anugerah Remaja Perdana (ARP) — Gangsa',5],['MFLS_TIER3','Malaysia Future Leaders School (MFLS) — Tier 3',7],['MFLS_TIER2','Malaysia Future Leaders School (MFLS) — Tier 2',4],['PENGAKAP_RAJA','Anugerah Pengakap Raja',10],['PANDU_PUTERI_RAJA','Anugerah Pandu Puteri Raja',10],['PUTERI_AZ_ZAHRA','Anugerah Puteri Az-Zahra (PPIM)',10],['GRAND_PRIOR','Anugerah Grand Prior (SJAM)',10],['KHAS_KOKO_KEBANGSAAN','Anugerah Khas Kokurikulum dan Sukan — Kebangsaan',10],['KHAS_KOKO_NEGERI','Anugerah Khas Kokurikulum dan Sukan — Negeri',8],['KHAS_KOKO_DAERAH','Anugerah Khas Kokurikulum dan Sukan — Zon / Daerah / Bahagian',6],['KHAS_KOKO_SEKOLAH','Anugerah Khas Kokurikulum dan Sukan — Sekolah',4],['ANTARABANGSA_EMAS','Penyertaan Antarabangsa (bukan anjuran KPM) — Emas',5],['ANTARABANGSA_PERAK','Penyertaan Antarabangsa (bukan anjuran KPM) — Perak',4],['ANTARABANGSA_GANGSA','Penyertaan Antarabangsa (bukan anjuran KPM) — Gangsa',3],['OLAHRAGAWAN_KEBANGSAAN','Olahragawan / Olahragawati Kebangsaan',10],['OLAHRAGAWAN_NEGERI','Olahragawan / Olahragawati Negeri',7],['OLAHRAGAWAN_DAERAH','Olahragawan / Olahragawati Daerah',5],['SETARA_KEBANGSAAN','Anugerah / Penghargaan Khas Setara — Kebangsaan',10],['SETARA_NEGERI','Anugerah / Penghargaan Khas Setara — Negeri',7],['SETARA_DAERAH','Anugerah / Penghargaan Khas Setara — Zon / Daerah / Bahagian',5],['SETARA_SEKOLAH','Anugerah / Penghargaan Khas Setara — Peringkat Sekolah',2],['SUKAN_TERTINGGI','Mewakili negara — Olimpik / Komanwel / Asia / Asia Tenggara',10]],
+  ANUGERAH_KHAS:[['ARP_EMAS','Anugerah Remaja Perdana (ARP) — Emas',10],['ARP_PERAK','Anugerah Remaja Perdana (ARP) — Perak',7],['ARP_GANGSA','Anugerah Remaja Perdana (ARP) — Gangsa',5],['MFLS_TIER3','Malaysia Future Leaders School (MFLS) — Tier 3',7],['MFLS_TIER2','Malaysia Future Leaders School (MFLS) — Tier 2',4],['PENGAKAP_RAJA','Anugerah Pengakap Raja',10],['PANDU_PUTERI_RAJA','Anugerah Pandu Puteri Raja',10],['PUTERI_AZ_ZAHRA','Anugerah Puteri Az-Zahra (PPIM)',10],['GRAND_PRIOR','Anugerah Grand Prior (SJAM)',10],['KHAS_KOKO_KEBANGSAAN','Anugerah Khas Kokurikulum dan Sukan — Kebangsaan',10],['KHAS_KOKO_NEGERI','Anugerah Khas Kokurikulum dan Sukan — Negeri',8],['KHAS_KOKO_DAERAH','Anugerah Khas Kokurikulum dan Sukan — Zon / Daerah / Bahagian',6],['KHAS_KOKO_SEKOLAH','Anugerah Khas Kokurikulum dan Sukan — Sekolah',4],['ANTARABANGSA_EMAS','Penyertaan Antarabangsa (bukan anjuran KPM) — Emas',5],['ANTARABANGSA_PERAK','Penyertaan Antarabangsa (bukan anjuran KPM) — Perak',4],['ANTARABANGSA_GANGSA','Penyertaan Antarabangsa (bukan anjuran KPM) — Gangsa',3],['OLAHRAGAWAN_KEBANGSAAN','Olahragawan / Olahragawati Kebangsaan',10],['OLAHRAGAWAN_NEGERI','Olahragawan / Olahragawati Negeri',7],['OLAHRAGAWAN_DAERAH','Olahragawan / Olahragawati Daerah',5],['OLAHRAGAWAN_SEKOLAH','Olahragawan / Olahragawati Peringkat Sekolah',2],['SETARA_KEBANGSAAN','Anugerah / Penghargaan Khas Setara — Kebangsaan',10],['SETARA_NEGERI','Anugerah / Penghargaan Khas Setara — Negeri',7],['SETARA_DAERAH','Anugerah / Penghargaan Khas Setara — Zon / Daerah / Bahagian',5],['SETARA_SEKOLAH','Anugerah / Penghargaan Khas Setara — Peringkat Sekolah',2],['SUKAN_TERTINGGI','Mewakili negara — Olimpik / Komanwel / Asia / Asia Tenggara',10]],
   NILAM:[['SEKOLAH_1','Sekolah — 1 Bintang',3],['SEKOLAH_2','Sekolah — 2 Bintang',4],['SEKOLAH_3','Sekolah — 3 Bintang',5],['SEKOLAH_4','Sekolah — 4 Bintang',6],['SEKOLAH_5','Sekolah — 5 Bintang',7],['DAERAH_1','Daerah / Zon / Bahagian — 1 Bintang',4],['DAERAH_2','Daerah / Zon / Bahagian — 2 Bintang',5],['DAERAH_3','Daerah / Zon / Bahagian — 3 Bintang',6],['DAERAH_4','Daerah / Zon / Bahagian — 4 Bintang',7],['DAERAH_5','Daerah / Zon / Bahagian — 5 Bintang',8],['NEGERI_5','Negeri — 5 Bintang',9],['KEBANGSAAN_5','Kebangsaan — 5 Bintang',10]],
   TIMSS_PISA:[['ANTARABANGSA_CEMERLANG','Penyertaan Antarabangsa — Tahap Cemerlang',10],['ANTARABANGSA','Penyertaan Antarabangsa',8],['KEBANGSAAN','Penyertaan Kebangsaan',6]],
   TUGAS_KHAS:[['KEBANGSAAN','Peserta / Atlet persembahan padang, perarakan / perbarisan — Kebangsaan / Sukan SEA / Asia / Bulan Sukan Negara',7],['NEGERI','Peserta persembahan padang / perarakan / perbarisan — Peringkat Negeri',6],['SUKARELAWAN','Sukarelawan program sukan / kokurikulum / seni yang diiktiraf',5],['SOKONGAN','Penonton / penyokong / ahli sorak bagi program yang diiktiraf',3]]
@@ -587,6 +587,44 @@ async function savePajskClassReview_(kp,status,button){
   catch(e){toast(e.message||'Gagal menyimpan pengesahan.');}
   finally{if(button)button.disabled=false;}
 }
+function renderPajskSchoolGradeChart_(summary){
+  const host=$('pajskSchoolGradeChart');if(!host)return;
+  const rows=Array.isArray(summary?.rows)?summary.rows:[];
+  const keys=[
+    {key:'TL_TD',label:'TL/TD',cls:'tltd'},
+    {key:'E',label:'E',cls:'e'},
+    {key:'D',label:'D',cls:'d'},
+    {key:'C',label:'C',cls:'c'},
+    {key:'B',label:'B',cls:'b'},
+    {key:'A',label:'A',cls:'a'}
+  ];
+  const totalStudents=rows.reduce((sum,row)=>sum+Math.max(0,Number(row.JUMLAH_MURID||0)),0);
+  if(!rows.length||!totalStudents){
+    host.innerHTML='<div class="pajsk-grade-chart-empty"><b>Belum ada data murid untuk dipaparkan.</b><span>Graf akan dijana secara automatik apabila rekod murid bagi tahun dipilih tersedia.</span></div>';
+    return;
+  }
+  const totals={};keys.forEach(item=>totals[item.key]=rows.reduce((sum,row)=>sum+Math.max(0,Number(row[item.key]||0)),0));
+  const gradedTotal=totals.E+totals.D+totals.C+totals.B+totals.A;
+  const legend=keys.map(item=>`<div class="pajsk-grade-chart-legend-item"><span class="pajsk-grade-chart-swatch grade-${item.cls}"></span><span>${item.label}</span><b>${totals[item.key].toLocaleString('ms-MY')}</b></div>`).join('');
+  const bars=rows.map(row=>{
+    const level=Number(row.TINGKATAN||0),count=Math.max(0,Number(row.JUMLAH_MURID||0));
+    if(!count)return `<div class="pajsk-grade-chart-row is-empty"><div class="pajsk-grade-chart-row-label"><b>TINGKATAN ${level}</b><small>Tiada murid</small></div><div class="pajsk-grade-chart-track" aria-label="Tingkatan ${level}: tiada murid"></div></div>`;
+    const segments=keys.map(item=>{
+      const value=Math.max(0,Number(row[item.key]||0));if(!value)return '';
+      const pct=value/count*100;
+      const title=`${item.label}: ${value.toLocaleString('ms-MY')} murid (${pct.toFixed(1)}%)`;
+      const text=pct>=9?`<span>${value.toLocaleString('ms-MY')}</span>`:'';
+      return `<span class="pajsk-grade-chart-segment grade-${item.cls}" style="width:${pct.toFixed(4)}%" title="${pajskEsc_(title)}" aria-label="${pajskEsc_(title)}">${text}</span>`;
+    }).join('');
+    const description=keys.map(item=>`${item.label} ${Number(row[item.key]||0)}`).join(', ');
+    return `<div class="pajsk-grade-chart-row"><div class="pajsk-grade-chart-row-label"><b>TINGKATAN ${level}</b><small>${count.toLocaleString('ms-MY')} murid</small></div><div class="pajsk-grade-chart-track" role="img" aria-label="Tingkatan ${level}, ${pajskEsc_(description)}">${segments}</div></div>`;
+  }).join('');
+  const stateNote=gradedTotal===0
+    ?'<div class="pajsk-grade-chart-note is-pending">Belum ada gred A–E direkodkan. Bar yang dipaparkan menunjukkan bilangan TL/TD sebenar sahaja.</div>'
+    :'<div class="pajsk-grade-chart-note">Peratus bar dikira daripada jumlah murid setiap tingkatan, termasuk TL/TD. Angka pada segmen menunjukkan bilangan murid.</div>';
+  host.innerHTML=`<div class="pajsk-grade-chart-legend">${legend}</div><div class="pajsk-grade-chart-bars">${bars}</div>${stateNote}`;
+}
+
 function renderPajskSchoolGradeSummary_(summary){
   const host=$('pajskSchoolGradeTableWrap');if(!host)return;
   const rows=Array.isArray(summary?.rows)?summary.rows:[];
@@ -759,8 +797,12 @@ async function loadPajskSchoolAnalysis_(force=false){
     analysisSetKpi_('pajskSchoolKpiPct',`${Number(d.confirmationPct||0).toFixed(1)}%`);
     const note=$('pajskSchoolScoreNote');if(note)note.textContent=d.scoreNote||'GPA/CGPA PAJSK rasmi belum tersedia.';
     const gpsOverall=d.GPS_SEKOLAH??d.gpsSekolah??d.gpsOverall??null;
-    const gpsOverallText=$('pajskSchoolGpsOverall');if(gpsOverallText)gpsOverallText.innerHTML=pajskGpsText_(gpsOverall);
-    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent='';
+    const gpsMarked=Number(d.gpsMarkedStudents??d.gradeSummary?.total?.JUMLAH_LAKSANA??0);
+    const gpsOverallText=$('pajskSchoolGpsOverall');
+    if(gpsOverallText)gpsOverallText.innerHTML=gpsMarked>0?pajskGpsText_(gpsOverall):'<span class="pajsk-gps-pending">BELUM DIKIRA</span>';
+    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent=`${gpsMarked.toLocaleString('ms-MY')} daripada ${Number(d.totalStudents||0).toLocaleString('ms-MY')} murid mempunyai markah PAJSK.`;
+    analysisSetKpi_('pajskSchoolGpsTotalStudents',Number(d.totalStudents||0).toLocaleString('ms-MY'));
+    renderPajskSchoolGradeChart_(d.gradeSummary||{rows:[],total:{}});
     renderPajskSchoolGradeSummary_(d.gradeSummary||{rows:[],total:{}});
     renderPajskSchoolUnits_(d.unitStats||[],d.unassignedRecords||[]);
     if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;

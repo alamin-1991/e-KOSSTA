@@ -650,11 +650,18 @@
       <article class="analysis-kpi"><span class="analysis-kpi-label">PERATUS PENGESAHAN</span><strong id="pajskSchoolKpiPct">—</strong><small>Kadar pengesahan rekod</small><span class="analysis-kpi-index">04</span></article>
     </div>
     <span id="pajskSchoolScoreNote" hidden></span>
-    <section class="analysis-panel pajsk-gps-summary-panel">
-      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / GPS</span><h3>Statistik GPS Sekolah Keseluruhan</h3></div><span class="analysis-count">SEKOLAH</span></div>
-      <div class="pajsk-gps-school-value"><div><small>GPS SEKOLAH KESELURUHAN</small><span id="pajskSchoolGpsOverall"><strong class="pajsk-gps-number">0.00</strong></span><span id="pajskSchoolGpsNote"></span></div></div>
+    <section class="analysis-panel pajsk-gps-summary-panel pajsk-school-summary-v14">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / RUMUSAN SEKOLAH</span><h3>GPS Kokurikulum Mengikut Tingkatan</h3></div><span class="analysis-count">TINGKATAN 1–5</span></div>
+      <div class="pajsk-school-summary-metrics">
+        <article class="pajsk-school-summary-metric"><span>JUMLAH MURID</span><strong id="pajskSchoolGpsTotalStudents">—</strong><small>Murid aktif dalam tahun dipilih</small></article>
+        <article class="pajsk-school-summary-metric is-accent"><span>GPS SEKOLAH</span><div id="pajskSchoolGpsOverall"><span class="pajsk-gps-pending">BELUM DIKIRA</span></div><small id="pajskSchoolGpsNote">Menunggu data markah PAJSK.</small></article>
+      </div>
+      <section class="pajsk-grade-chart-panel" aria-labelledby="pajskSchoolGradeChartTitle">
+        <div class="pajsk-grade-chart-heading"><div><span class="analysis-panel-index">PAJSK / TABURAN</span><h4 id="pajskSchoolGradeChartTitle">Graf Taburan Gred Mengikut Tingkatan</h4></div><span class="pajsk-grade-chart-type">BAR BERTINDAN 100%</span></div>
+        <div id="pajskSchoolGradeChart" class="pajsk-grade-chart" aria-live="polite"><div class="pajsk-grade-chart-empty">Memuatkan taburan gred sebenar...</div></div>
+      </section>
       <section class="analysis-panel analysis-table-panel pajsk-school-grade-panel">
-        <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / RUMUSAN SEKOLAH</span><h3>GPS Kokurikulum Mengikut Tingkatan</h3></div></div>
+        <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / JADUAL GPS</span><h3>Jadual GPS Asal</h3></div></div>
         <div id="pajskSchoolGradeTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan statistik murid...</div></div>
       </section>
     </section>

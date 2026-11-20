@@ -99,3 +99,51 @@
   .pajsk-school-grade-table th,.pajsk-school-grade-table td{padding:.68rem .58rem}
 }
 @media(prefers-reduced-motion:reduce){.pajsk-school-grade-table tbody td{transition:none}}
+
+
+/* e-KOSSTA v14 — PAJSK stacked grade chart and compact school summary. */
+.pajsk-school-summary-v14{padding:1rem;margin:1rem 0 1.2rem}
+.pajsk-school-summary-v14>.analysis-panel-heading{margin-bottom:.9rem}
+.pajsk-school-summary-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:.7rem 0 1.1rem}
+.pajsk-school-summary-metric{display:grid;gap:.38rem;min-width:0;padding:1rem 1.05rem;border:1px solid var(--ekt-line-soft,#35564A);border-left:3px solid var(--ekt-line-soft,#638071);border-radius:11px;background:color-mix(in srgb,var(--surface2,#101914) 78%,transparent)}
+.pajsk-school-summary-metric.is-accent{border-left-color:var(--ekt-lime,#D8E267)}
+.pajsk-school-summary-metric>span{font:750 .62rem/1.4 "IBM Plex Mono","JetBrains Mono",monospace;letter-spacing:.09em;color:var(--ekt-muted,#91A69A)}
+.pajsk-school-summary-metric>strong,.pajsk-school-summary-metric>div{font:850 1.55rem/1.2 "IBM Plex Mono","JetBrains Mono",monospace;font-variant-numeric:tabular-nums;color:var(--text,#EDF4EC)}
+.pajsk-school-summary-metric.is-accent>div{color:var(--ekt-lime,#D8E267)}
+.pajsk-school-summary-metric>small{font-size:.68rem;line-height:1.45;color:var(--ekt-muted,#91A69A)}
+.pajsk-grade-chart-panel{margin:.5rem 0 1rem;padding:1rem;border:1px solid var(--border,#35564A);border-radius:12px;background:color-mix(in srgb,var(--surface2,#1A2922) 75%,transparent)}
+.pajsk-grade-chart-heading{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.85rem}
+.pajsk-grade-chart-heading h4{margin:.16rem 0 0;font-size:.9rem;color:var(--text,#EDF4EC)}
+.pajsk-grade-chart-type{font:700 .57rem/1.3 "IBM Plex Mono","JetBrains Mono",monospace;letter-spacing:.06em;color:var(--ekt-muted,#91A69A);white-space:nowrap}
+.pajsk-grade-chart-legend{display:flex;flex-wrap:wrap;gap:.48rem .9rem;padding:.3rem 0 .85rem;border-bottom:1px solid var(--border,#35564A)}
+.pajsk-grade-chart-legend-item{display:inline-flex;align-items:center;gap:.38rem;font-size:.68rem;color:var(--muted,#A9B9AE)}
+.pajsk-grade-chart-legend-item b{font:800 .68rem "IBM Plex Mono","JetBrains Mono",monospace;color:var(--text,#EDF4EC);font-variant-numeric:tabular-nums}
+.pajsk-grade-chart-swatch{width:.62rem;height:.62rem;flex:0 0 .62rem;border-radius:2px}
+.pajsk-grade-chart-bars{display:grid;gap:.82rem;padding:.9rem 0 .35rem}
+.pajsk-grade-chart-row{display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:.8rem}
+.pajsk-grade-chart-row-label{display:grid;gap:.18rem;min-width:0}
+.pajsk-grade-chart-row-label b{font:800 .67rem "IBM Plex Mono","JetBrains Mono",monospace;letter-spacing:.035em;color:var(--text,#EDF4EC)}
+.pajsk-grade-chart-row-label small{font-size:.62rem;color:var(--ekt-muted,#91A69A)}
+.pajsk-grade-chart-track{display:flex;min-width:0;height:1.75rem;overflow:hidden;border:1px solid var(--border,#35564A);border-radius:5px;background:color-mix(in srgb,var(--surface,#101914) 60%,transparent)}
+.pajsk-grade-chart-segment{display:flex;flex:0 0 auto;align-items:center;justify-content:center;min-width:0;height:100%;overflow:hidden;transition:width .25s ease}
+.pajsk-grade-chart-segment span{padding:0 .12rem;color:#fff;font:800 .62rem "IBM Plex Mono","JetBrains Mono",monospace;text-shadow:0 1px 2px rgba(0,0,0,.45);white-space:nowrap}
+.grade-tltd{background:#64748b}.grade-e{background:#b4534b}.grade-d{background:#c47a35}.grade-c{background:#b59a39}.grade-b{background:#78984d}.grade-a{background:#32866b}
+.pajsk-grade-chart-note{margin-top:.55rem;padding:.55rem .7rem;border-left:2px solid var(--ekt-line-soft,#638071);background:color-mix(in srgb,var(--surface2,#101914) 70%,transparent);font-size:.65rem;line-height:1.5;color:var(--ekt-muted,#91A69A)}
+.pajsk-grade-chart-note.is-pending{border-left-color:var(--ekt-lime,#D8E267)}
+.pajsk-grade-chart-empty{display:grid;gap:.3rem;padding:1rem;border:1px dashed var(--border,#35564A);border-radius:9px;color:var(--ekt-muted,#91A69A);font-size:.7rem;line-height:1.5}
+.pajsk-grade-chart-empty b{color:var(--text,#EDF4EC)}
+.pajsk-gps-pending{display:inline-block;padding:.24rem .42rem;border:1px dashed var(--ekt-line-soft,#638071);border-radius:4px;color:var(--ekt-muted,#91A69A);font:750 .68rem "IBM Plex Mono","JetBrains Mono",monospace;letter-spacing:.04em}
+.pajsk-school-grade-panel{margin-top:1rem}
+@media(max-width:640px){
+  .pajsk-school-summary-v14{padding:.72rem}
+  .pajsk-school-summary-metrics{gap:.48rem}
+  .pajsk-school-summary-metric{padding:.78rem .72rem}
+  .pajsk-school-summary-metric>strong,.pajsk-school-summary-metric>div{font-size:1.2rem}
+  .pajsk-grade-chart-panel{padding:.72rem}
+  .pajsk-grade-chart-row{grid-template-columns:88px minmax(0,1fr);gap:.5rem}
+  .pajsk-grade-chart-track{height:1.55rem}
+  .pajsk-grade-chart-heading{align-items:flex-start}
+  .pajsk-grade-chart-type{font-size:.5rem}
+}
+@media(max-width:390px){.pajsk-school-summary-metrics{grid-template-columns:1fr}.pajsk-grade-chart-row{grid-template-columns:78px minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.pajsk-grade-chart-segment{transition:none}}
