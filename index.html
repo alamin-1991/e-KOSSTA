@@ -629,21 +629,38 @@
       <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">ADA REKOD ACARA</span><strong id="analysisPajskKpiEvents">—</strong><small>Penyertaan acara direkod</small><span class="analysis-kpi-index">03</span></article>
       <article class="analysis-kpi"><span class="analysis-kpi-label">REKOD PERLU SEMAK</span><strong id="analysisPajskKpiIncomplete">—</strong><small>Unit / penyertaan belum lengkap</small><span class="analysis-kpi-index">04</span></article>
     </div>
+    <div class="analysis-pajsk-note"><b>NOTA DATA</b><span>CSV terperinci menyusun medan Kelab/Persatuan, Badan Beruniform, Sukan/Permainan dan Ekstra Kokurikulum mengikut struktur borang extension. Penglibatan, peringkat pencapaian, jawatan, aktiviti dan kehadiran diisi daripada rekod e-KOSSTA; komitmen, khidmat sumbangan, NILAM, TIMSS/PISA serta markah rasmi dibiarkan kosong jika belum direkod, bukan direka.</span></div>
+    <section class="analysis-panel analysis-table-panel analysis-pajsk-table-panel">
+      <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Senarai Rekod Murid Mengikut Kelas</h3><p>Senarai dipaparkan mengikut kelas yang dipilih. Pilih Semua Kelas untuk melihat keseluruhan sekolah.</p></div><span id="analysisPajskStudentCount" class="analysis-count">0 MURID</span></div>
+      <div id="analysisPajskTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan rekod PAJSK...</div></div>
+    </section>
+    <div id="analysisPajskUpdatedAt" class="analysis-updated">Belum dikemas kini.</div>
+  </div>
+  <div id="analysisSchoolView" class="analysis-pajsk-workflow-view" hidden>
+    <div class="analysis-heading">
+      <div><span class="analysis-kicker">PAJSK • PEMANTAUAN SEKOLAH</span><h2>Analisis PAJSK</h2></div>
+      <div class="analysis-actions"><button id="pajskSchoolRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div>
+    </div>
+    <div class="analysis-filterbar"><div><label for="pajskSchoolYearFilter">Tahun</label><select id="pajskSchoolYearFilter"></select></div></div>
+    <div id="pajskSchoolStatus" class="analysis-status" role="status" aria-live="polite">Memuatkan analisis sekolah...</div>
+    <div class="analysis-pajsk-kpi-grid">
+      <article class="analysis-kpi"><span class="analysis-kpi-label">JUMLAH MURID</span><strong id="pajskSchoolKpiStudents">—</strong><small>Murid aktif dalam tahun dipilih</small><span class="analysis-kpi-index">01</span></article>
+      <article class="analysis-kpi"><span class="analysis-kpi-label">EKSTRA LENGKAP</span><strong id="pajskSchoolKpiExtra">—</strong><small id="pajskSchoolKpiExtraNote">Murid lengkap keenam-enam elemen</small><span class="analysis-kpi-index">02</span></article>
+      <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">DISAHKAN</span><strong id="pajskSchoolKpiConfirmed">—</strong><small>Rekod murid telah disahkan</small><span class="analysis-kpi-index">03</span></article>
+      <article class="analysis-kpi"><span class="analysis-kpi-label">PERATUS PENGESAHAN</span><strong id="pajskSchoolKpiPct">—</strong><small>Kadar pengesahan rekod</small><span class="analysis-kpi-index">04</span></article>
+    </div>
+    <span id="pajskSchoolScoreNote" hidden></span>
     <section class="analysis-panel pajsk-gps-summary-panel">
       <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / GPS</span><h3>Statistik GPS Sekolah Keseluruhan</h3></div><span class="analysis-count">SEKOLAH</span></div>
-      <div class="pajsk-gps-school-value"><div><small>GPS SEKOLAH KESELURUHAN</small><strong id="pajskSchoolGpsOverall">0.00</strong><span id="pajskSchoolGpsNote"></span></div></div>
+      <div class="pajsk-gps-school-value"><div><small>GPS SEKOLAH KESELURUHAN</small><span id="pajskSchoolGpsOverall"><strong class="pajsk-gps-number">0.00</strong></span><span id="pajskSchoolGpsNote"></span></div></div>
       <section class="analysis-panel analysis-table-panel pajsk-school-grade-panel">
-        <div class="analysis-panel-heading">
-          <div><span class="analysis-panel-index">PAJSK / RUMUSAN SEKOLAH</span><h3>GPS Kokurikulum Mengikut Tingkatan</h3></div>
-        </div>
-        <div id="pajskSchoolGradeTableWrap" class="table-wrap">
-          <div class="analysis-empty">Memuatkan statistik murid...</div>
-        </div>
+        <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / RUMUSAN SEKOLAH</span><h3>GPS Kokurikulum Mengikut Tingkatan</h3></div></div>
+        <div id="pajskSchoolGradeTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan statistik murid...</div></div>
       </section>
     </section>
     <section class="analysis-panel analysis-table-panel"><div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Rekod Pencapaian Mengikut Unit</h3></div></div><div id="pajskSchoolUnitTableWrap" class="table-wrap"><div class="analysis-empty">Belum dimuatkan.</div></div></section>
   </div>
-  <div id="analysisPajskDetailModal" class="analysis-pajsk-detail-modal" hidden>
+    <div id="analysisPajskDetailModal" class="analysis-pajsk-detail-modal" hidden>
     <div class="analysis-pajsk-detail-backdrop" data-pajsk-detail-close></div>
     <section class="analysis-pajsk-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="analysisPajskDetailTitle">
       <div class="analysis-pajsk-detail-head"><div><span class="analysis-kicker">PAJSK • MURID</span><h2 id="analysisPajskDetailTitle">Butiran Murid</h2><p id="analysisPajskDetailMeta" class="muted"></p></div><button class="btn secondary small" type="button" data-pajsk-detail-close>Tutup</button></div>
@@ -654,26 +671,17 @@
 </section>
 <section id="ekstraSection" class="page-section page-ekstra" hidden>
   <div id="analysisExtraEntryView" class="analysis-pajsk-workflow-view" hidden>
-  <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • REKOD ELEMEN EKSTRA</span><h2>Rekod Ekstra Kurikulum</h2><p>Guru Kelas mengisi semua elemen Ekstra murid dalam satu jadual. Pilih senarai pencapaian; sistem menentukan markah secara automatik.</p></div><div class="analysis-actions"><button id="pajskExtraSaveAllBtn" class="btn primary" type="button">Simpan Semua</button><button id="pajskExtraRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
+  <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • REKOD ELEMEN EKSTRA</span><h2>Rekod Ekstra Kurikulum</h2><p>Guru Kelas mengisi semua elemen Ekstra murid dalam satu jadual. Pilih senarai pencapaian; sistem menentukan markah secara automatik.</p></div><div class="analysis-actions"><button id="pajskExtraSaveAllBtn" class="btn primary" type="button">Simpan Semua</button><button id="pajskExtraConfirmAllBtn" class="btn secondary" type="button" hidden disabled>Sahkan</button><button id="pajskExtraRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
   <div class="analysis-filterbar analysis-pajsk-filterbar">
     <div><label for="pajskExtraYearFilter">Tahun</label><select id="pajskExtraYearFilter"></select></div>
     <div id="pajskExtraElementFilterWrap"><label for="pajskExtraElementFilter">Elemen ditugaskan</label><select id="pajskExtraElementFilter"></select></div>
     <div><label for="pajskExtraClassFilter">Kelas</label><select id="pajskExtraClassFilter"><option value="">Semua kelas</option></select></div>
     <div class="analysis-search-field"><label for="pajskExtraSearch">Cari murid</label><input id="pajskExtraSearch" type="search" placeholder="Nama atau No. KP..."></div>
   </div>
-  <div id="pajskExtraEntryStatus" class="analysis-status" role="status" aria-live="polite">Memuatkan penugasan rekod Ekstra...</div>
+  <div id="pajskExtraEntryStatus" class="analysis-status" role="status" aria-live="polite" hidden></div>
   <div id="pajskExtraEntryTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan senarai murid...</div></div>
 </div>
-<div id="analysisClassReviewView" class="analysis-pajsk-workflow-view" hidden>
-  <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • PENGESAHAN KELAS</span><h2>Pengesahan Guru Kelas</h2><p>Semak status keenam-enam elemen Ekstra Kurikulum setiap murid. Guru Kelas mengesahkan selepas semua elemen direkodkan.</p></div><div class="analysis-actions"><button id="pajskClassReviewRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
-  <div class="analysis-filterbar analysis-pajsk-filterbar">
-    <div><label for="pajskReviewYearFilter">Tahun</label><select id="pajskReviewYearFilter"></select></div>
-    <div><label for="pajskReviewClassFilter">Kelas</label><select id="pajskReviewClassFilter"><option value="">Pilih kelas</option></select></div>
-    <div class="analysis-search-field"><label for="pajskReviewSearch">Cari murid</label><input id="pajskReviewSearch" type="search" placeholder="Nama atau No. KP..."></div>
-  </div>
-  <div id="pajskClassReviewStatus" class="analysis-status" role="status" aria-live="polite">Pilih kelas untuk menyemak rekod murid.</div>
-  <div id="pajskClassReviewTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan kelas yang ditugaskan...</div></div>
-</div>
+
 </section>
 <section id="reportsSection" class="card page-section page-reports" hidden>
   <div class="reports-module-heading">

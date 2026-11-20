@@ -1,4 +1,4 @@
-const CACHE = 'ekossta-pajsk-table-khidmat-details-v11-20261120';
+const CACHE = 'ekossta-pajsk-polish-distill-v12-20261120';
 const SHELL = [
   './', './index.html', './styles.css', './material-ui.css',
   './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-ui-corrections-v5.css', './ekossta-gps-role-v6.css', './ekossta-iphone-v8.css', './ekossta-ekstra-gps-v9.css',

@@ -306,13 +306,8 @@ function renderPageSubnav_(page){
     tetapan:{label:'PENGURUSAN DATA',items:[['murid','Murid'],['guru','Guru'],['users','Pengurusan Pengguna'],['report-templates','Edit Templat'],['system-settings','Tetapan Sistem']]}
   };
   if(page==='ekstra'){
-    const items=[
-      {id:'analysisExtraEntryTab',view:'extra',label:'Rekod Ekstra'},
-      {id:'analysisClassReviewTab',view:'class-review',label:'Pengesahan Guru Kelas'}
-    ];
-    host.hidden=false;
-    host.innerHTML=`<div class="page-subnav-tabs" role="tablist" aria-label="Ekstra Kokurikulum">${items.map(item=>`<button id="${item.id}" class="subnav-tab ekstra-subnav-tab ${CURRENT_EKSTRA_VIEW_===item.view?'active':''}" type="button" role="tab" aria-selected="${CURRENT_EKSTRA_VIEW_===item.view?'true':'false'}" data-subnav-page="ekstra-${item.view}" data-ekstra-view="${item.view}">${item.label}</button>`).join('')}</div>`;
-    host.querySelectorAll('[data-ekstra-view]').forEach(btn=>btn.addEventListener('click',()=>switchEkstraView_(btn.dataset.ekstraView)));
+    // Rekod Ekstra menjadi satu halaman; pengesahan dibuat melalui butang di halaman yang sama.
+    host.hidden=true;host.innerHTML='';
     return;
   }
   const cfg=config[groupKey];
@@ -339,23 +334,13 @@ function switchAnalysisView_(view){
   if(view==='school')loadPajskSchoolAnalysis_(false);
 }
 function switchEkstraView_(view='extra',load=true){
-  const views={extra:'analysisExtraEntryView','class-review':'analysisClassReviewView'};
-  if(!views[view])view='extra';
-  if(view==='extra'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length)view='class-review';
-  if(view==='class-review'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.classes.length&&PAJSK_WORKFLOW_CACHE_.assignedElements.length)view='extra';
-  CURRENT_EKSTRA_VIEW_=view;
-  Object.entries(views).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==view;});
-  const tabs={extra:'analysisExtraEntryTab','class-review':'analysisClassReviewTab'};
-  Object.entries(tabs).forEach(([key,id])=>{const el=$(id);if(el){el.classList.toggle('active',key===view);el.setAttribute('aria-selected',String(key===view));}});
-  const subnav=$('pageSubnav');
-  if(subnav && CURRENT_PAGE==='ekstra'){
-    subnav.querySelectorAll('[data-ekstra-view]').forEach(el=>{
-      const active=el.dataset.ekstraView===view;
-      el.classList.toggle('active',active);
-      el.setAttribute('aria-selected',String(active));
-    });
-  }
-  if(load)loadPajskTeacherWorkspace_(false,view);
+  CURRENT_EKSTRA_VIEW_='extra';
+  const role=String(state.user?.role||'').toUpperCase(),admin=['ADMIN','PENTADBIR'].includes(role),teacher=['GURU','PENYELARAS'].includes(role);
+  const canAccessExtra=admin||(teacher&&(PAJSK_WORKFLOW_CACHE_.assignedElements.length>0||PAJSK_WORKFLOW_CACHE_.classes.length>0));
+  const entry=$('analysisExtraEntryView');if(entry)entry.hidden=!canAccessExtra;
+  const legacyReview=$('analysisClassReviewView');if(legacyReview)legacyReview.hidden=true;
+  const subnav=$('pageSubnav');if(subnav&&CURRENT_PAGE==='ekstra'){subnav.hidden=true;subnav.innerHTML='';}
+  if(load)loadPajskTeacherWorkspace_(false,'extra');
 }
 function pajskEsc_(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const PAJSK_EXTRA_ELEMENT_LABELS_={PERKHIDMATAN:'Perkhidmatan',ANUGERAH_KHAS:'Anugerah Khas',KHIDMAT_MASYARAKAT:'Khidmat Masyarakat',NILAM:'NILAM',TIMSS_PISA:'TIMSS dan PISA',TUGAS_KHAS:'Tugas-tugas Khas'};
@@ -380,43 +365,36 @@ function pajskWorkflowYear_(){return String(new Date().getFullYear());}
 function pajskWorkflowRecordMap_(){const map={};(PAJSK_WORKFLOW_CACHE_.extraRecords||[]).forEach(r=>{map[String(r.NO_KP||'')+'|'+String(r.ELEMEN||'')]=r;});return map;}
 function pajskWorkflowReviewMap_(){const map={};(PAJSK_WORKFLOW_CACHE_.reviews||[]).forEach(r=>{map[String(r.NO_KP||'')]=r;});return map;}
 async function loadPajskTeacherWorkspace_(force=false,view='extra'){
+  view='extra';
   if(!$('analysisSection')||!state.token)return;
-  const year=String((view==='class-review'?$('pajskReviewYearFilter')?.value:$('pajskExtraYearFilter')?.value)||pajskWorkflowYear_());
+  const year=String($('pajskExtraYearFilter')?.value||pajskWorkflowYear_());
   if(!force&&PAJSK_WORKFLOW_CACHE_.loaded&&PAJSK_WORKFLOW_CACHE_.year===year){
     applyPajskWorkflowPermissions_();
-    if(view==='extra'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length)view='class-review';
-    if(view==='class-review'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.classes.length&&PAJSK_WORKFLOW_CACHE_.assignedElements.length)view='extra';
-    switchEkstraView_(view,false);
-    if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();
+    switchEkstraView_('extra',false);
+    renderPajskExtraEntry_();
     return;
   }
-  const status=$(view==='extra'?'pajskExtraEntryStatus':'pajskClassReviewStatus');if(status)status.textContent='Memuatkan penugasan dan rekod PAJSK...';
+  const status=$('pajskExtraEntryStatus');if(status)status.textContent='Memuatkan penugasan dan rekod PAJSK...';
   try{
     const d=await apiGet('getPajskTeacherWorkspace',{token:state.token,tahun:year},30000);if(!d||d.ok===false)throw Error(d?.error||'Rekod PAJSK tidak dapat dimuatkan.');
     PAJSK_WORKFLOW_CACHE_={loaded:true,year:String(d.year||year),classes:Array.isArray(d.classes)?d.classes:[],assignedElements:Array.isArray(d.assignedElements)?d.assignedElements:[],students:Array.isArray(d.students)?d.students:[],extraRecords:Array.isArray(d.extraRecords)?d.extraRecords:[],extraGridRecords:Array.isArray(d.extraGridRecords)?d.extraGridRecords:[],legacyGridStudents:Array.isArray(d.legacyGridStudents)?d.legacyGridStudents:[],reviews:Array.isArray(d.reviews)?d.reviews:[],isAdmin:!!d.isAdmin};
-    const yearControls=['pajskExtraYearFilter','pajskReviewYearFilter'];yearControls.forEach(id=>{const el=$(id);if(el){const v=el.value||year;el.innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;el.value=year;}});
-    const classControls=['pajskExtraClassFilter','pajskReviewClassFilter'];classControls.forEach(id=>{const el=$(id);if(el){const prev=el.value;el.innerHTML='<option value="">'+(id==='pajskReviewClassFilter'?'Pilih kelas':'Semua kelas')+'</option>'+PAJSK_WORKFLOW_CACHE_.classes.map(c=>`<option value="${pajskEsc_(c)}">${pajskEsc_(c)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.classes.includes(prev))el.value=prev;else if(PAJSK_WORKFLOW_CACHE_.classes.length===1)el.value=PAJSK_WORKFLOW_CACHE_.classes[0];}});
+    const yearControl=$('pajskExtraYearFilter');if(yearControl){yearControl.innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;yearControl.value=year;}
+    const classControl=$('pajskExtraClassFilter');if(classControl){const prev=classControl.value;classControl.innerHTML='<option value="">Semua kelas</option>'+PAJSK_WORKFLOW_CACHE_.classes.map(c=>`<option value="${pajskEsc_(c)}">${pajskEsc_(c)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.classes.includes(prev))classControl.value=prev;else classControl.value='';}
     const elementSelect=$('pajskExtraElementFilter');if(elementSelect){const prev=elementSelect.value;elementSelect.innerHTML=PAJSK_WORKFLOW_CACHE_.assignedElements.map(e=>`<option value="${pajskEsc_(e)}">${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[e]||e)}</option>`).join('');if(PAJSK_WORKFLOW_CACHE_.assignedElements.includes(prev))elementSelect.value=prev;}
     applyPajskWorkflowPermissions_();
-    if(view==='extra'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length)view='class-review';
-    if(view==='class-review'&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.classes.length&&PAJSK_WORKFLOW_CACHE_.assignedElements.length)view='extra';
-    switchEkstraView_(view,false);
-    if(view==='extra')renderPajskExtraEntry_();else renderPajskClassReview_();
+    switchEkstraView_('extra',false);
+    renderPajskExtraEntry_();
   }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan rekod PAJSK.';toast(e.message||'Gagal memuatkan rekod PAJSK.');}
 }
 function applyPajskWorkflowPermissions_(){
   const role=String(state.user?.role||'').toUpperCase(),admin=['ADMIN','PENTADBIR'].includes(role),teacher=['GURU','PENYELARAS'].includes(role);
-  const entry=$('analysisExtraEntryTab'),review=$('analysisClassReviewTab'),school=$('sideAnalysisPajsk'),ekstraNav=$('ekstraNavItem');
-  if(entry)entry.hidden=!(admin||(teacher&&(PAJSK_WORKFLOW_CACHE_.assignedElements.length||PAJSK_WORKFLOW_CACHE_.classes.length)));
-  if(review)review.hidden=!(admin||(teacher&&PAJSK_WORKFLOW_CACHE_.classes.length));
-  const elementFilterWrap=$('pajskExtraElementFilterWrap');if(elementFilterWrap)elementFilterWrap.hidden=admin||PAJSK_WORKFLOW_CACHE_.classes.length>0;
+  const school=$('sideAnalysisPajsk'),ekstraNav=$('ekstraNavItem'),entryView=$('analysisExtraEntryView');
+  const canAccessExtra=admin||(teacher&&(PAJSK_WORKFLOW_CACHE_.assignedElements.length>0||PAJSK_WORKFLOW_CACHE_.classes.length>0));
   if(school)school.hidden=!admin;
-  if(ekstraNav)ekstraNav.hidden=!(admin||entry?.hidden===false||review?.hidden===false);
-  const pageSubnav=$('pageSubnav');
-  if(pageSubnav && CURRENT_PAGE==='ekstra'){
-    const hasVisibleTab=[entry,review].some(el=>el&&!el.hidden);
-    pageSubnav.hidden=!hasVisibleTab;
-  }
+  if(ekstraNav)ekstraNav.hidden=!canAccessExtra;
+  if(entryView&&!canAccessExtra)entryView.hidden=true;
+  const elementFilterWrap=$('pajskExtraElementFilterWrap');if(elementFilterWrap)elementFilterWrap.hidden=admin||PAJSK_WORKFLOW_CACHE_.classes.length>0;
+  const pageSubnav=$('pageSubnav');if(pageSubnav&&CURRENT_PAGE==='ekstra'){pageSubnav.hidden=true;pageSubnav.innerHTML='';}
 }
 function renderPajskExtraEntryLegacy_(){
   const host=$('pajskExtraEntryTableWrap');if(!host)return;
@@ -432,6 +410,7 @@ function pajskExtraGridMap_(){const map={};(PAJSK_WORKFLOW_CACHE_.extraGridRecor
 function renderPajskExtraEntry_(){
   const classGrid=PAJSK_WORKFLOW_CACHE_.isAdmin||PAJSK_WORKFLOW_CACHE_.classes.length>0;
   const saveAllButton=$('pajskExtraSaveAllBtn');if(saveAllButton)saveAllButton.hidden=!classGrid;
+  const confirmButton=$('pajskExtraConfirmAllBtn');if(confirmButton){confirmButton.hidden=!classGrid;confirmButton.disabled=true;}
   if(!classGrid){renderPajskExtraEntryLegacy_();return;}
   const host=$('pajskExtraEntryTableWrap');if(!host)return;
   const kelas=String($('pajskExtraClassFilter')?.value||''),q=String($('pajskExtraSearch')?.value||'').trim().toLocaleLowerCase('ms');
@@ -451,19 +430,34 @@ function renderPajskExtraEntry_(){
     const legacyRecords=(PAJSK_WORKFLOW_CACHE_.extraRecords||[]).filter(x=>String(x.NO_KP||'')===kp&&String(x.STATUS_PENGLIBATAN||'')==='ADA_PENGLIBATAN');
     const legacyHtml=isLegacy?`<details class="pajsk-legacy-extra"><summary>Rekod lama perlu disemak (${legacyRecords.length})</summary>${legacyRecords.map(x=>`<small>${pajskEsc_(PAJSK_EXTRA_ELEMENT_LABELS_[x.ELEMEN]||x.ELEMEN)}: ${pajskEsc_(x.BUTIRAN||'Ada penglibatan')}</small>`).join('')}<label><input type="checkbox" data-legacy-confirm="${pajskEsc_(kp)}"> Saya telah semak dan mahu guna jadual baharu</label></details>`:'';
     return `<tr data-ekstra-grid-row="${pajskEsc_(kp)}" data-ekstra-legacy="${isLegacy?'true':'false'}">
-      <td class="pajsk-grid-student"><b>${pajskEsc_(m.NAMA||'-')}</b><small>${pajskEsc_(kp)} • ${pajskEsc_(m.KELAS||'-')}</small><small class="pajsk-grid-saved">${done?'Nilai awal / rekod: '+pajskEsc_(r.UPDATED_BY||''):'Nilai awal (0)'}</small>${legacyHtml}</td>
+      <td class="pajsk-grid-student"><b>${pajskEsc_(m.NAMA||'-')}</b>${legacyHtml}</td>
       <td>${selectCells[0]}</td><td>${selectCells[1]}</td><td class="pajsk-grid-khidmat">${khidmatHtml}</td>
       <td>${selectCells[2]}</td><td>${selectCells[3]}</td><td>${selectCells[4]}</td>
       <td class="pajsk-grid-markah" data-grid-markah="${pajskEsc_(kp)}">${mark}</td><td class="pajsk-grid-ek" data-grid-ek="${pajskEsc_(kp)}">${ek.toFixed(0)}</td>
     </tr>`;
   }).join('');
   host.innerHTML=rows.length?`<div class="pajsk-grid-scroll"><table class="analysis-table pajsk-ekstra-grid-table"><thead><tr><th>NAMA</th><th>PERKHIDMATAN</th><th>ANUGERAH</th><th>KHIDMAT MASYARAKAT</th><th>NILAM</th><th>TIMSS</th><th>TAMBAHAN</th><th>MARKAH</th><th>EK</th></tr></thead><tbody>${tableRows}</tbody></table></div><div class="pajsk-grid-footnote">Pilih jawatan / anugerah / tahap sebenar. Markah dijana oleh sistem. Khidmat Masyarakat: setiap aktiviti yang layak 3 jam menyumbang 1 markah; ikut borang rujukan yang dibekalkan, maksimum 5 pilihan aktiviti; skor elemen ini maksimum 10. TAMBAHAN ialah Tugas-tugas Khas; MARKAH ialah skornya. EK mengambil markah tertinggi daripada enam elemen sahaja.</div>`:'<div class="analysis-empty">Tiada murid sepadan dengan penapis.</div>';
-  host.querySelectorAll('select[data-ekstra-select],input[data-khidmat-count]').forEach(el=>el.addEventListener('change',()=>updatePajskExtraGridPreview_(el.dataset.kp)));
+  if(confirmButton){
+    confirmButton.hidden=!classGrid;
+    const renderedRows=[...host.querySelectorAll('[data-ekstra-grid-row]')];
+    const gridMap=pajskExtraGridMap_(),reviewMap=pajskWorkflowReviewMap_();
+    const allRowsSaved=renderedRows.length>0&&renderedRows.every(row=>{
+      const kp=row.dataset.ekstraGridRow||'',savedRow=gridMap[kp];
+      return row.dataset.ekstraDirty!=='true'&&!!savedRow&&!!savedRow.COMPLETED&&String(savedRow.UPDATED_BY||'')!=='Sistem (nilai awal)';
+    });
+    const hasPendingReview=renderedRows.some(row=>String(reviewMap[row.dataset.ekstraGridRow||'']?.STATUS||'')!=='DISAHKAN');
+    confirmButton.disabled=!allRowsSaved||!hasPendingReview;
+  }
+  host.querySelectorAll('select[data-ekstra-select],input[data-khidmat-count]').forEach(el=>el.addEventListener('change',()=>{
+    const row=el.closest('[data-ekstra-grid-row]');if(row)row.dataset.ekstraDirty='true';
+    if(confirmButton)confirmButton.disabled=true;
+    updatePajskExtraGridPreview_(el.dataset.kp);
+  }));
   host.querySelectorAll('.pajsk-khidmat-details').forEach(detail=>detail.addEventListener('toggle',()=>{
     if(!detail.open)return;
     host.querySelectorAll('.pajsk-khidmat-details[open]').forEach(other=>{if(other!==detail)other.open=false;});
   }));
-  host.querySelectorAll('[data-legacy-confirm]').forEach(el=>el.addEventListener('change',()=>updatePajskExtraGridPreview_(el.dataset.legacyConfirm)));
+  host.querySelectorAll('[data-legacy-confirm]').forEach(el=>el.addEventListener('change',()=>{const row=el.closest('[data-ekstra-grid-row]');if(row)row.dataset.ekstraDirty='true';if(confirmButton)confirmButton.disabled=true;updatePajskExtraGridPreview_(el.dataset.legacyConfirm);}));
   const st=$('pajskExtraEntryStatus');if(st)st.textContent=`Jadual Ekstra • ${rows.length} murid • Tahun ${PAJSK_WORKFLOW_CACHE_.year}. Semua dropdown bermula dengan Tiada (0), Khidmat Masyarakat bermula dengan semua bilangan 0. Ubah pilihan hanya jika murid mempunyai pencapaian.`;
 }
 function collectPajskExtraGridRow_(kp){
@@ -520,6 +514,41 @@ async function savePajskExtraGridAll_(){
     toast(saved+' rekod Ekstra berjaya disimpan.');PAJSK_WORKFLOW_CACHE_.loaded=false;await loadPajskTeacherWorkspace_(true,'extra');
   }catch(e){if(status)status.textContent='Simpanan separa: '+saved+'/'+records.length+' murid. '+(e.message||'Sila cuba semula.');toast(e.message||'Gagal menyimpan semua rekod.');PAJSK_WORKFLOW_CACHE_.loaded=false;await loadPajskTeacherWorkspace_(true,'extra');}
   finally{if(button){button.disabled=false;button.textContent='Simpan Semua';}}
+}
+
+async function confirmPajskExtraGridAll_(){
+  const host=$('pajskExtraEntryTableWrap'),button=$('pajskExtraConfirmAllBtn');if(!host||!button)return;
+  const tableRows=[...host.querySelectorAll('[data-ekstra-grid-row]')];
+  if(!tableRows.length)return toast('Tiada rekod murid untuk disahkan.');
+  const savedMap=pajskExtraGridMap_(),reviewMap=pajskWorkflowReviewMap_(),noKps=[];
+  for(const row of tableRows){
+    const kp=String(row.dataset.ekstraGridRow||''),name=row.querySelector('.pajsk-grid-student b')?.textContent||kp;
+    if(row.dataset.ekstraDirty==='true')return toast(name+': perubahan belum disimpan. Tekan Simpan Semua dahulu.');
+    const saved=savedMap[kp];
+    if(!saved||!saved.COMPLETED)return toast(name+': rekod belum disimpan. Tekan Simpan Semua dahulu.');
+    if(String(reviewMap[kp]?.STATUS||'')!=='DISAHKAN')noKps.push(kp);
+  }
+  if(!noKps.length)return toast('Semua rekod yang dipaparkan telah disahkan.');
+  if(!confirm('Sahkan '+noKps.length+' rekod Ekstra yang telah disimpan untuk tahun '+PAJSK_WORKFLOW_CACHE_.year+'?'))return;
+  button.disabled=true;button.textContent='Mengesahkan...';
+  const status=$('pajskExtraEntryStatus');let done=0;
+  try{
+    for(let i=0;i<noKps.length;i+=40){
+      const group=noKps.slice(i,i+40);
+      const d=await apiGet('savePajskClassReviews',{token:state.token,tahun:PAJSK_WORKFLOW_CACHE_.year,rows:JSON.stringify(group)},30000);
+      if(!d||d.ok===false)throw Error(d?.error||'Pengesahan kelompok gagal.');
+      done+=Number(d.saved||group.length);
+      if(status)status.textContent='Mengesahkan rekod Ekstra: '+done+'/'+noKps.length+' murid...';
+    }
+    toast(done+' rekod Ekstra berjaya disahkan.');
+    PAJSK_WORKFLOW_CACHE_.loaded=false;await loadPajskTeacherWorkspace_(true,'extra');
+  }catch(e){
+    toast('Pengesahan separa: '+done+'/'+noKps.length+'. '+(e.message||'Sila cuba semula.'));
+    PAJSK_WORKFLOW_CACHE_.loaded=false;await loadPajskTeacherWorkspace_(true,'extra');
+  }finally{
+    button.textContent='Sahkan';
+    // Render semula menentukan sama ada butang boleh digunakan selepas status terkini dimuatkan.
+  }
 }
 
 async function savePajskExtraFromRow_(kp,element,button){
@@ -1511,8 +1540,7 @@ function showPage(page){
     switchAnalysisView_(CURRENT_ANALYSIS_VIEW_);
   }
   if(page==='ekstra'){
-    const preferred=PAJSK_WORKFLOW_CACHE_.loaded&&!PAJSK_WORKFLOW_CACHE_.isAdmin&&!PAJSK_WORKFLOW_CACHE_.assignedElements.length&&PAJSK_WORKFLOW_CACHE_.classes.length?'class-review':'extra';
-    switchEkstraView_(preferred,true);
+    switchEkstraView_('extra',true);
   }
   if(page==='dashboard'){updateDashboardSessionUi_();if(role==='ADMIN')loadMurid(false);loadUnit();loadDashboardAnalytics_();}
   if(page==='reports'||page==='reports-edit'||page==='report-templates'){openDocumentsModule_();updateReportWorkspaceMode_();}
@@ -1580,14 +1608,12 @@ function init(){
   bind('analysisPajskRefreshBtn','click',()=>loadPajskClassReport_(true));
   bind('pajskExtraRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'extra'));
   bind('pajskExtraSaveAllBtn','click',savePajskExtraGridAll_);
-  bind('pajskClassReviewRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'class-review'));
+  bind('pajskExtraConfirmAllBtn','click',confirmPajskExtraGridAll_);
   bind('pajskSchoolRefreshBtn','click',()=>loadPajskSchoolAnalysis_(true));
-  ['pajskExtraYearFilter','pajskReviewYearFilter'].forEach(id=>bind(id,'change',()=>{PAJSK_WORKFLOW_CACHE_.loaded=false;loadPajskTeacherWorkspace_(true,id==='pajskExtraYearFilter'?'extra':'class-review');}));
+  bind('pajskExtraYearFilter','change',()=>{PAJSK_WORKFLOW_CACHE_.loaded=false;loadPajskTeacherWorkspace_(true,'extra');});
   bind('pajskExtraElementFilter','change',renderPajskExtraEntry_);
   bind('pajskExtraClassFilter','change',renderPajskExtraEntry_);
   bind('pajskExtraSearch','input',renderPajskExtraEntry_);
-  bind('pajskReviewClassFilter','change',renderPajskClassReview_);
-  bind('pajskReviewSearch','input',renderPajskClassReview_);
   bind('pajskSchoolYearFilter','change',()=>{if($('pajskSchoolYearFilter'))$('pajskSchoolYearFilter').dataset.loadedYear='';loadPajskSchoolAnalysis_(true);});
   bind('pajskClassAssignSaveBtn','click',()=>savePajskAssignment_('class'));
   bind('pajskElementAssignSaveBtn','click',()=>savePajskAssignment_('element'));

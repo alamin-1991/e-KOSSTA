@@ -47,3 +47,6 @@
   .pajsk-grid-khidmat{width:130px;min-width:125px}
   .pajsk-khidmat-details-panel{min-width:205px}
 }
+
+/* v12: confirmation action stays aligned with existing Ekstra actions. */
+.page-ekstra .analysis-heading .analysis-actions{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
