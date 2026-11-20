@@ -4,9 +4,20 @@
 <meta name="apple-mobile-web-app-title" content="e-KOSSTA">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css">  <link rel="stylesheet" href="ekossta-mobile-responsive.css"><link rel="stylesheet" href="ekossta-ui-standard-v2.css"><title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"></head>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="material-ui.css"><link rel="stylesheet" href="ekossta-ui-refresh.css"><link rel="stylesheet" href="ekossta-terminal-ui.css">  <link rel="stylesheet" href="ekossta-mobile-responsive.css"><link rel="stylesheet" href="ekossta-ui-standard-v2.css"><script>
+(function(){
+  var ua=navigator.userAgent||'';
+  var isIPhone=/iPhone|iPod/i.test(ua);
+  var isStandalone=!!(navigator.standalone===true ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+  if(isIPhone)document.documentElement.classList.add('ios-device');
+  if(isIPhone && isStandalone)document.documentElement.classList.add('ios-standalone');
+})();
+</script>
+<title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"><link rel="stylesheet" href="ekossta-iphone-v8.css"></head>
 <body>
 <header class="mobile-topbar">
+  <button id="iosSidebarToggle" class="ios-sidebar-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <div class="mobile-brand-cluster"><img id="mobileBrandLogo" class="mobile-brand-logo" alt="Logo sekolah" hidden><div class="mobile-brand-text"><b>e-KOSSTA</b><small id="mobilePageTitle">Dashboard</small></div></div>
   <button id="themeBtn" class="icon-btn theme-toggle" type="button" aria-label="Tukar tema" title="Tukar tema"></button>
 </header>
@@ -65,6 +76,7 @@
     <div class="profile-mini"><span class="avatar">U</span><div><b id="sideUserName">Pengguna</b><small id="sideUserRole">-</small></div></div>
   </div>
 </aside>
+<div id="iosSidebarBackdrop" class="ios-sidebar-backdrop" hidden></div>
 <main class="app-shell">
   <div class="desktop-topbar">
     <div><span class="breadcrumb">e-KOSSTA</span><strong id="desktopPageTitle">Dashboard</strong></div>
@@ -783,4 +795,4 @@
     <footer class="report-participant-dialog-actions"><button type="button" class="btn secondary" data-report-participant-close>Batal</button><button id="reportParticipantSaveBtn" type="button" class="btn primary" disabled>Simpan Peserta</button></footer>
   </section>
 </div>
-<div id="toast" class="toast"></div><script src="app.js"></script></body></html>
+<div id="toast" class="toast"></div><script src="app.js"></script><script src="ios-mobile-navigation.js"></script></body></html>
