@@ -10728,3 +10728,9 @@ html.dark .unit-achievement-label{border-left-color:var(--ekt-lime)}
 @media(max-width:640px){.pajsk-cell-detail-dialog,.unit-achievement-dialog{width:100%;padding:14px}.unit-achievement-dialog .table-wrap{max-height:58vh}.pajsk-cell-detail-content{max-height:58vh}}
 
 #analysisStatus[hidden]{display:none!important}
+
+
+/* e-KOSSTA v28 — compact grade/gender chart groups + print all five levels. */
+.pajsk-grade-chart-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:.65rem;flex-wrap:wrap}
+.pajsk-grade-chart-heading-actions .btn{white-space:nowrap}
+@media(max-width:640px){.pajsk-grade-chart-heading-actions{width:100%;justify-content:space-between}.pajsk-grade-chart-heading-actions .btn{font-size:.62rem;padding:.42rem .55rem}}

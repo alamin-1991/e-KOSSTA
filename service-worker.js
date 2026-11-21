@@ -1,4 +1,4 @@
-const CACHE = 'ekossta-pajsk-v26-clean-20261121';
+const CACHE = 'ekossta-pajsk-v28-print-all-levels-20261122';
 const SHELL = [
   './',
   './index.html',

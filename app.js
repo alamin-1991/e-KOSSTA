@@ -661,7 +661,10 @@ function pajskGradeClassGenderSvg_(formData){
   const step=Math.max(1,Math.ceil(maximum/4));
   const maxAxis=step*4;
   const left=54,top=18,plotHeight=210,right=22,bottom=100;
-  const slot=Math.max(112,Math.floor(900/categories.length));
+  // Gunakan slot yang lebih padat supaya pasangan bar Lelaki/Perempuan
+  // tidak berjauhan antara kelas/gred, tetapi kekalkan ruang label dan scroll
+  // untuk kombinasi gred-kelas yang banyak.
+  const slot=Math.max(108,Math.min(152,Math.ceil(456/categories.length)));
   const width=left+right+slot*categories.length;
   const height=top+plotHeight+bottom;
   const plotBottom=top+plotHeight;
@@ -729,6 +732,66 @@ function pajskGradePie_(gradeRow){
   }).join('');
   return `<div class="pajsk-pie-content"><div class="pajsk-pie-visual"><svg viewBox="0 0 220 220" role="img" aria-label="Carta pai peratus murid mengikut gred A hingga E">${paths}</svg><div class="pajsk-pie-total"><b>${total.toLocaleString('ms-MY')}</b></div></div><div class="pajsk-pie-legend">${legend}</div></div>`;
 }
+function pajskSchoolGradePrintHtml_(){
+  const data=PAJSK_GRADE_CHART_DATA_||{};
+  const summary=data.summary||{};
+  const rows=Array.isArray(summary.rows)?summary.rows:[];
+  if(!rows.length)return '';
+  const year=String($('pajskSchoolYearFilter')?.value||PAJSK_CACHE_.year||new Date().getFullYear());
+  const pages=[1,2,3,4,5].map((level,index)=>{
+    const gradeRow=rows.find(r=>Number(r.TINGKATAN)===level)||{TINGKATAN:level,A:0,B:0,C:0,D:0,E:0,TL_TD:0,JUMLAH_MURID:0};
+    const classData=(data.gradeClassGenderStats||[]).find(x=>Number(x.TINGKATAN)===level)||{TINGKATAN:level,groups:[]};
+    const total=Number(gradeRow.JUMLAH_MURID||0);
+    return `<section class="pajsk-grade-print-page ${index===4?'is-last':''}">
+      <div class="print-topline"><span>${pajskChartEscape_(getAppName_())} • ANALISIS PAJSK</span><span>TAHUN ${pajskChartEscape_(year)}</span></div>
+      <header class="pajsk-grade-print-title"><span>RUMUSAN TABURAN GRED</span><h1>Analisis PAJSK — Tingkatan ${level}</h1><p>${total.toLocaleString('ms-MY')} murid dalam tingkatan ini</p></header>
+      <div class="pajsk-grade-print-grid">
+        <section class="pajsk-grade-print-card pajsk-grade-print-bar"><h2>Bilangan Murid Mengikut Gred, Kelas dan Jantina</h2>${pajskGradeClassGenderSvg_(classData)}</section>
+        <section class="pajsk-grade-print-card pajsk-grade-print-pie"><h2>Peratus Murid Mengikut Gred</h2>${pajskGradePie_(gradeRow)}</section>
+      </div>
+      <footer class="pajsk-grade-print-footer">${pajskChartEscape_(getAppName_())} • Analisis PAJSK • Tingkatan ${level} daripada 5</footer>
+    </section>`;
+  }).join('');
+  const printCss=`
+    .pajsk-grade-print-page{min-height:170mm;break-after:page;page-break-after:always;padding:0 0 3mm;color:#17251e}
+    .pajsk-grade-print-page.is-last{break-after:auto;page-break-after:auto}
+    .pajsk-grade-print-title{text-align:center;margin:5mm 0 6mm;padding:0 0 4mm;border-bottom:1px solid #91a89a}
+    .pajsk-grade-print-title>span{font-size:7pt;font-weight:800;letter-spacing:.12em;color:#45614e}
+    .pajsk-grade-print-title h1{margin:2mm 0;font-size:17pt;color:#14251b}
+    .pajsk-grade-print-title p{margin:0;color:#52665a;font-size:8pt}
+    .pajsk-grade-print-grid{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(65mm,.88fr);gap:6mm;align-items:start}
+    .pajsk-grade-print-card{min-width:0;border:1px solid #aebdb2;padding:4mm;background:#fff;color:#17251e}
+    .pajsk-grade-print-card h2{font-size:9pt;margin:0 0 3mm;padding:0 0 2mm;border-bottom:1px solid #d5ded7;color:#1c3527}
+    .pajsk-grade-print-page .pajsk-chart-legend-item,.pajsk-grade-print-page .pajsk-chart-total{color:#253a2d}
+    .pajsk-grade-print-page .pajsk-bar-scroll{overflow:visible!important;border-color:#b9c8bd}
+    .pajsk-grade-print-page .pajsk-class-gender-svg{display:block;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important}
+    .pajsk-grade-print-page .pajsk-bar-grid{stroke:#d5ded8}
+    .pajsk-grade-print-page .pajsk-bar-axis{stroke:#657b6c}
+    .pajsk-grade-print-page .pajsk-bar-axis-label,.pajsk-grade-print-page .pajsk-bar-class-label,.pajsk-grade-print-page .pajsk-bar-axis-title,.pajsk-grade-print-page .pajsk-bar-grade-label,.pajsk-grade-print-page .pajsk-bar-gender-label,.pajsk-grade-print-page .pajsk-bar-value{fill:#17251e}
+    .pajsk-grade-print-page .pajsk-pie-content{grid-template-columns:1fr;gap:3mm;justify-items:center}
+    .pajsk-grade-print-page .pajsk-pie-visual{width:48mm;max-width:48mm}
+    .pajsk-grade-print-page .pajsk-pie-total b{color:#17251e}
+    .pajsk-grade-print-page .pajsk-pie-total small{color:#52665a}
+    .pajsk-grade-print-page .pajsk-pie-legend{width:100%}
+    .pajsk-grade-print-page .pajsk-pie-legend-row>span,.pajsk-grade-print-page .pajsk-pie-legend-row>strong{color:#17251e}
+    .pajsk-grade-print-page .pajsk-pie-legend-row>small{color:#52665a}
+    .pajsk-grade-print-page .pajsk-pie-slice{stroke:#fff}
+    .pajsk-grade-print-page .pajsk-chart-empty{color:#52665a;border-color:#aebdb2}
+    .pajsk-grade-print-footer{margin-top:5mm;padding-top:2mm;border-top:1px solid #cbd6ce;text-align:center;color:#64766a;font-size:7pt}
+    @media screen{.pajsk-grade-print-page{min-height:0;margin-bottom:10mm;padding:8mm;background:#fff;box-shadow:0 0 0 1px #d4ded6}.pajsk-grade-print-grid{grid-template-columns:minmax(0,1.72fr) minmax(240px,.88fr)}}
+    @media print{.pajsk-grade-print-page{min-height:0}.pajsk-grade-print-card,.pajsk-grade-print-title{break-inside:avoid;page-break-inside:avoid}}
+  `;
+  return `<style>${printCss}</style>${pages}`;
+}
+function printPajskSchoolGradeAnalysis_(){
+  const data=PAJSK_GRADE_CHART_DATA_||{};
+  if(!Array.isArray(data.summary?.rows)||!data.summary.rows.length)return toast('Muatkan Analisis PAJSK terlebih dahulu.');
+  const year=String($('pajskSchoolYearFilter')?.value||PAJSK_CACHE_.year||new Date().getFullYear());
+  const html=pajskSchoolGradePrintHtml_();
+  if(!html)return toast('Tiada data taburan gred untuk dicetak.');
+  pajskPrintWindow_(`Analisis PAJSK Semua Tingkatan ${year}`,html,'landscape');
+}
+
 function renderPajskSchoolGradeSlide_(){
   const host=$('pajskSchoolGradeChart');if(!host)return;
   const rows=Array.isArray(PAJSK_GRADE_CHART_DATA_.summary?.rows)?PAJSK_GRADE_CHART_DATA_.summary.rows:[];
@@ -761,6 +824,7 @@ function renderPajskSchoolGradeSlide_(){
 }
 function renderPajskSchoolGradeChart_(summary,classGenderStats=[],gradeClassGenderStats=[]){
   PAJSK_GRADE_CHART_DATA_={summary:summary||{rows:[]},classGenderStats:Array.isArray(classGenderStats)?classGenderStats:[],gradeClassGenderStats:Array.isArray(gradeClassGenderStats)?gradeClassGenderStats:[]};
+  const printButton=$('pajskSchoolGradePrintBtn');if(printButton)printButton.disabled=!Array.isArray(PAJSK_GRADE_CHART_DATA_.summary?.rows)||!PAJSK_GRADE_CHART_DATA_.summary.rows.length;
   PAJSK_GRADE_SLIDE_INDEX_=Math.max(0,Math.min(4,PAJSK_GRADE_SLIDE_INDEX_));
   renderPajskSchoolGradeSlide_();
 }
@@ -1862,6 +1926,7 @@ function init(){
   bind('pajskExtraSaveAllBtn','click',savePajskExtraGridAll_);
   bind('pajskExtraConfirmAllBtn','click',confirmPajskExtraGridAll_);
   bind('pajskSchoolRefreshBtn','click',()=>loadPajskSchoolAnalysis_(true));
+  bind('pajskSchoolGradePrintBtn','click',printPajskSchoolGradeAnalysis_);
   bind('pajskExtraYearFilter','change',()=>{PAJSK_WORKFLOW_CACHE_.loaded=false;loadPajskTeacherWorkspace_(true,'extra');});
   bind('pajskExtraElementFilter','change',renderPajskExtraEntry_);
   bind('pajskExtraClassFilter','change',renderPajskExtraEntry_);
@@ -1972,7 +2037,7 @@ function init(){
   bind('docSearch','input',renderSavedDocuments_);
   bind('docListType','change',renderSavedDocuments_);
   bind('docSaveBtn','click',saveEditorDocument_);
-  bind('docPrintBtn','click',printEditorDocument_);
+  bind('docPrintBtn','click',()=>printEditorDocument_());
   bind('editorLinkBtn','click',insertEditorLink_);
   bind('editorBlockFormat','change',applyEditorBlockFormat_);
   bind('editorTextColor','input',applyEditorTextColor_);
@@ -4400,7 +4465,7 @@ async function openSavedDocument_(id){
 }
 async function printEditorDocument_(providedWindow=null){
   if(isStandaloneMeetingReport_()){if(REPORT_STANDALONE_PARTICIPANT_MODE_==='unset')return toast('Pilih + Peserta atau Tiada Peserta sebelum mencetak laporan.');renderStandaloneParticipantsAppendix_();}
-  const w=providedWindow||window.open('about:blank','_blank');if(!w)return toast('Popup disekat. Benarkan pop-up untuk cetakan A4.');
+  const w=(providedWindow&&providedWindow.document&&typeof providedWindow.document.open==='function')?providedWindow:window.open('about:blank','_blank');if(!w||!w.document||typeof w.document.open!=='function')return toast('Tetingkap cetakan tidak dapat dibuka. Benarkan pop-up dan cuba semula.');
   try{
     if(REPORT_WORKFLOW_MODE_==='form')updateReportPreviewFromForm_();
     const ed=editorEl_();if(!ed)throw new Error('Pratonton laporan tidak ditemui.');
