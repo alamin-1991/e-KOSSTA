@@ -698,6 +698,9 @@ html.dark-mode-active .attendance-kpi{background:var(--surface2)}
 .activity-day{display:block;margin-top:4px;color:var(--muted);font-size:11px}
 .activity-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .activity-participants-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+.activity-participants-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;flex:0 0 auto}
+.activity-participants-head-actions [hidden]{display:none!important}
+.activity-participants-head-actions .btn{flex:0 0 auto}
 .activity-participants-head h2{margin:8px 0 6px;font-size:clamp(26px,3vw,38px)}
 .activity-participants-kicker{margin-top:16px;font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--primary)}
 .activity-participants-meta{font-size:14px;color:var(--muted)}
@@ -705,15 +708,15 @@ html.dark-mode-active .attendance-kpi{background:var(--surface2)}
 .activity-participants-filter{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(260px,1.3fr);gap:12px;margin-bottom:14px}
 .activity-participants-filter>div{display:flex;flex-direction:column;gap:6px}
 .activity-participants-count{font-size:13px;font-weight:800;color:var(--muted);margin:8px 0 12px}
-.activity-participant-bulkbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 12px}.activity-participant-bulkbar .activity-participants-count{margin:0}.activity-participant-bulkbar .btn{flex:0 0 auto}
-@media(max-width:640px){.activity-participant-bulkbar{align-items:flex-start;flex-wrap:wrap}.activity-participant-bulkbar .btn{width:100%}}
+.activity-participant-bulkbar{display:flex;align-items:center;justify-content:flex-start;gap:12px;margin:8px 0 12px}.activity-participant-bulkbar .activity-participants-count{margin:0}
+@media(max-width:640px){.activity-participant-bulkbar{align-items:flex-start;flex-wrap:wrap}}
 .activity-participant-table{min-width:900px}
 .activity-participant-table td,.activity-participant-table th{vertical-align:middle}
 .activity-participant-table input[type="checkbox"]{width:18px;height:18px;accent-color:var(--primary)}
 .activity-participant-role{min-width:130px}
 @media(max-width:900px){
   .activity-participants-head{flex-direction:column}
-  .activity-participants-head .btn{width:100%}
+  .activity-participants-head-actions{width:100%;justify-content:stretch}.activity-participants-head-actions .btn{width:100%;flex:1 1 160px}
   .activity-participants-filter{grid-template-columns:1fr 1fr}
 }
 @media(max-width:560px){
@@ -3116,7 +3119,7 @@ html:not(.dark) .murid-import-progress progress::-webkit-progress-bar { backgrou
 @media(max-width:700px){.pajsk-review-details{min-width:150px}.pajsk-review-detail-list{max-width:min(78vw,360px)}}
 
 
-/* v16 — Pemarkahan Penglibatan per murid */
+/* v17 — GPS PAJSK dinamik dan kawalan Pilih Semua peserta */
 .pencapaian-engagement-bulkbar{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:9px;align-items:end;padding:12px;margin:10px 0;border:1px solid var(--border);border-radius:12px;background:var(--surface2)}
 .pencapaian-engagement-bulkbar label{display:block;font-size:10px;font-weight:850;margin:0 0 5px;text-transform:uppercase}
 .pencapaian-engagement-bulkbar select{width:100%;min-height:38px}
@@ -3133,3 +3136,10 @@ html:not(.dark) .murid-import-progress progress::-webkit-progress-bar { backgrou
 .pencapaian-student-engagement-score b{font-size:14px;color:var(--page-accent,var(--primary))}
 @media(max-width:850px){.pencapaian-engagement-bulkbar{grid-template-columns:1fr 1fr}.pencapaian-engagement-bulkbar button{grid-column:1/-1}.pencapaian-participant-column-head{display:none}.pencapaian-participant-row{grid-template-columns:18px 24px minmax(0,1fr) minmax(120px,150px) minmax(120px,150px) 55px}}
 @media(max-width:620px){.pencapaian-engagement-bulkbar{grid-template-columns:1fr}.pencapaian-engagement-bulkbar button,.pencapaian-engagement-bulkbar p{grid-column:1}.pencapaian-participant-row{grid-template-columns:18px 20px minmax(0,1fr) 58px;gap:7px}.pencapaian-participant-row .pencapaian-participant-info{grid-column:3;grid-row:1}.pencapaian-participant-row .pencapaian-student-engagement-field{grid-column:1/5;display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center}.pencapaian-participant-row .pencapaian-student-engagement-field:nth-of-type(1){grid-row:2}.pencapaian-participant-row .pencapaian-student-engagement-field:nth-of-type(2){grid-row:3}.pencapaian-student-engagement-score{grid-column:4;grid-row:1;align-self:start}.pencapaian-participant-row input[type=checkbox]{grid-column:1;grid-row:1}.pencapaian-participant-row .pencapaian-participant-index{grid-column:2;grid-row:1}}
+
+/* v17: live PAJSK unit scoring breakdown */
+.pajsk-gps-unit-cell{min-width:180px}
+.pajsk-gps-unit-cell small{display:block;line-height:1.45;margin-top:4px;white-space:normal;text-align:right}
+.pajsk-gps-unit-cell .pajsk-unit-score-avg{font-weight:800;color:var(--text)}
+.pajsk-gps-unit-cell .pajsk-unit-element-breakdown{font-size:9px;letter-spacing:0;color:var(--muted);max-width:270px;margin-left:auto}
+@media(max-width:900px){.activity-participants-head-actions{width:100%}}

@@ -703,7 +703,7 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
         <td><b>${analysisEsc_(unit.NAMA_UNIT||'-')}</b></td>
         <td>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'-')}</td>
         <td class="num">${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</td>
-        <td class="num pajsk-gps-unit-cell">${pajskGpsText_(gps)}<small>${Number(unit.GPS_BILANGAN_MURID||0).toLocaleString('ms-MY')} / ${Number(unit.AHLI||0).toLocaleString('ms-MY')} murid ada markah</small></td>
+        <td class="num pajsk-gps-unit-cell">${gps===null||gps===undefined?'<span class="pajsk-table-muted">—</span>':pajskGpsText_(gps)}<small>${Number(unit.GPS_BILANGAN_MURID||0).toLocaleString('ms-MY')} / ${Number(unit.AHLI||0).toLocaleString('ms-MY')} murid dikira</small><small class="pajsk-unit-score-avg">Markah purata ${Number(unit.MARKAH_UNIT_PURATA||0).toFixed(2)}/100</small><small class="pajsk-unit-element-breakdown">J ${Number(unit.ELEMEN_PURATA?.JAWATAN||0).toFixed(1)}/10 · P ${Number(unit.ELEMEN_PURATA?.PENGLIBATAN||0).toFixed(1)}/20 · K ${Number(unit.ELEMEN_PURATA?.KOMITMEN||0).toFixed(1)}/10 · KS ${Number(unit.ELEMEN_PURATA?.KHIDMAT_SUMBANGAN||0).toFixed(1)}/10 · H ${Number(unit.ELEMEN_PURATA?.KEHADIRAN||0).toFixed(1)}/40 · Pc ${Number(unit.ELEMEN_PURATA?.PENCAPAIAN||0).toFixed(1)}/20</small></td>
         <td class="num">${total.toLocaleString('ms-MY')}</td>
         <td class="num">${share.toFixed(1)}%</td>
         <td>${recordText(records)}</td>
@@ -800,12 +800,12 @@ async function loadPajskSchoolAnalysis_(force=false){
     const gpsMarked=Number(d.gpsMarkedStudents??d.gradeSummary?.total?.JUMLAH_LAKSANA??0);
     const gpsOverallText=$('pajskSchoolGpsOverall');
     if(gpsOverallText)gpsOverallText.innerHTML=gpsMarked>0?pajskGpsText_(gpsOverall):'<span class="pajsk-gps-pending">BELUM DIKIRA</span>';
-    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent=`${gpsMarked.toLocaleString('ms-MY')} daripada ${Number(d.totalStudents||0).toLocaleString('ms-MY')} murid mempunyai markah PAJSK.`;
+    const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent=d.gpsMode==='AUTO_SEMENTARA'?`${gpsMarked.toLocaleString('ms-MY')} / ${Number(d.totalStudents||0).toLocaleString('ms-MY')} murid dikira. Nilai kosong = 0; Komitmen sementara 0; Ekstra 0 sehingga direkodkan.`:`${gpsMarked.toLocaleString('ms-MY')} daripada ${Number(d.totalStudents||0).toLocaleString('ms-MY')} murid mempunyai markah PAJSK.`;
     analysisSetKpi_('pajskSchoolGpsTotalStudents',Number(d.totalStudents||0).toLocaleString('ms-MY'));
     renderPajskSchoolGradeChart_(d.gradeSummary||{rows:[],total:{}});
     renderPajskSchoolGradeSummary_(d.gradeSummary||{rows:[],total:{}});
     renderPajskSchoolUnits_(d.unitStats||[],d.unassignedRecords||[]);
-    if(status)status.textContent=`Analisis tahun ${year} dikemas kini. Data diproses daripada ${Number(d.totalStudents||0)} murid aktif dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;
+    if(status)status.textContent=`GPS sementara tahun ${year} dikemas kini daripada ${Number(d.totalStudents||0)} murid aktif, rekod kehadiran, jawatan, penglibatan dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;
   }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan analisis.';toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
 }
 
@@ -948,7 +948,7 @@ async function loadPajskClassReport_(force=false){
   }catch(e){
     PAJSK_CACHE_.loaded=false;
     if(host)host.innerHTML=`<div class="analysis-empty">${pajskEsc_(e.message||'Gagal memuatkan data PAJSK.')}<br><button type="button" class="btn secondary" id="analysisPajskRetryBtn">Cuba Semula</button></div>`;
-    if(status)status.textContent='Ralat memuatkan Analisis PAJSK. Semak URL Apps Script dan pastikan backend v15 telah dideploy.';
+    if(status)status.textContent='Ralat memuatkan Analisis PAJSK. Semak URL Apps Script dan pastikan backend v17 telah dideploy.';
     $('analysisPajskRetryBtn')?.addEventListener('click',()=>loadPajskClassReport_(true));
     toast(e.message||'Data PAJSK gagal dimuatkan.');
   }
