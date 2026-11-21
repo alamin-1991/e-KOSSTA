@@ -1046,36 +1046,72 @@ function pajskUnitAchievementRecords_(student,category,unit){
   });
   return result;
 }
+let PAJSK_CELL_DETAILS_=[];
+function pajskCellDetailButton_(title,meta,items,label){
+  const index=PAJSK_CELL_DETAILS_.push({title:String(title||'Butiran Penyertaan'),meta:String(meta||''),items:Array.isArray(items)?items:[]})-1;
+  return `<button type="button" class="pajsk-cell-detail-trigger" data-pajsk-cell-detail="${index}">${pajskEsc_(label||'Lihat butiran')} <span aria-hidden="true">⌄</span></button>`;
+}
+function pajskUniqueEvents_(events){
+  const map=new Map();
+  (Array.isArray(events)?events:[]).forEach(event=>{
+    const id=String(event.AKTIVITI_ID||'').trim();
+    const key=[id||String(event.NAMA_AKTIVITI||''),String(event.TARIKH||''),analysisCategoryKey_(event.KATEGORI||''),String(event.NAMA_UNIT||'')].join('|');
+    if(!map.has(key))map.set(key,{...event,PENCAPAIAN:[]});
+    const target=map.get(key);
+    (event.PENCAPAIAN||[]).forEach(item=>{
+      const awardKey=String(item.PENCAPAIAN_ID||'')+'|'+String(item.NAMA_PENCAPAIAN||'')+'|'+String(item.KEDUDUKAN||'')+'|'+String(item.JENIS_PENGLIBATAN||item.TAJUK_PENGLIBATAN||'')+'|'+String(item.PERANAN_PENGLIBATAN||'');
+      if(!target.PENCAPAIAN.some(x=>x.__key===awardKey))target.PENCAPAIAN.push({...item,__key:awardKey});
+    });
+  });
+  return [...map.values()];
+}
 function pajskCategoryCell_(student,category){
   const units=(student.CATEGORIES&&student.CATEGORIES[category])||[];
-  const events=(student.EVENTS||[]).filter(e=>analysisCategoryKey_(e.KATEGORI)===analysisCategoryKey_(category));
-  const unitHtml=units.length?units.map(u=>{
-    const awards=pajskUnitAchievementRecords_(student,category,u);
-    const awardHtml=awards.map(x=>`<span class="analysis-pajsk-achievement">${pajskEsc_(x.label)}</span>`).join('');
-    return `<div class="analysis-pajsk-unit-record"><b>${pajskEsc_(u.NAMA_UNIT||'Unit')}</b>${awardHtml}</div>`;
-  }).join(''):'<b>Tiada unit dipautkan</b>';
-  const activityCount=events.length;
-  const unassignedAchievements=[];
-  if(!units.length){
-    events.forEach(e=>(e.PENCAPAIAN||[]).forEach(a=>{
-      if(analysisCategoryKey_(a.KATEGORI_PENYERTAAN||a.KATEGORI||e.KATEGORI||'')===analysisCategoryKey_(category))unassignedAchievements.push(pajskAchievementLabel_(a,e.NAMA_AKTIVITI||''));
-    }));
+  const events=pajskUniqueEvents_((student.EVENTS||[]).filter(e=>analysisCategoryKey_(e.KATEGORI)===analysisCategoryKey_(category)));
+  const items=[];
+  units.forEach(unit=>{
+    items.push({title:unit.NAMA_UNIT||'Unit',meta:`Unit • ${unit.JAWATAN||'Ahli'}`,detail:'Penempatan unit murid.'});
+    const related=pajskUnitAchievementRecords_(student,category,unit);
+    related.forEach(record=>{
+      const event=record.event||{};
+      items.push({title:event.NAMA_AKTIVITI||'Aktiviti',meta:[analysisDateLabel_(event.TARIKH),event.PERINGKAT].filter(x=>x&&x!=='-').join(' • '),detail:record.label||'Rekod penyertaan'});
+    });
+  });
+  if(!items.length&&events.length){
+    events.forEach(event=>{
+      const awards=event.PENCAPAIAN||[];
+      if(awards.length)awards.forEach(award=>items.push({title:event.NAMA_AKTIVITI||'Aktiviti',meta:[analysisDateLabel_(event.TARIKH),event.PERINGKAT].filter(x=>x&&x!=='-').join(' • '),detail:pajskAchievementLabel_(award,event.NAMA_AKTIVITI||'')}));
+      else items.push({title:event.NAMA_AKTIVITI||'Aktiviti',meta:[analysisDateLabel_(event.TARIKH),event.PERINGKAT].filter(x=>x&&x!=='-').join(' • '),detail:'Penyertaan direkod'});
+    });
   }
-  const unassignedHtml=unassignedAchievements.map(label=>`<span class="analysis-pajsk-achievement">${pajskEsc_(label)}</span>`).join('');
-  return `<div class="analysis-pajsk-category-cell">${unitHtml}<small>${units.length?units.length+' unit':''}${units.length&&activityCount?' • ':''}${activityCount} aktiviti berkaitan</small>${unassignedHtml}</div>`;
+  // Deduplicate identical unit/event details to keep the popup concise.
+  const unique=[];const seen=new Set();items.forEach(item=>{const k=[item.title,item.meta,item.detail].join('|');if(!seen.has(k)){seen.add(k);unique.push(item);}});
+  const total=unique.length;
+  if(!units.length&&!events.length)return '<span class="analysis-no-data">TIADA REKOD</span>';
+  const summary=[units.length?`${units.length} unit`: '',events.length?`${events.length} penyertaan`: ''].filter(Boolean).join(' • ')||`${total} rekod`;
+  return `<div class="analysis-pajsk-category-cell pajsk-compact-cell"><b>${pajskEsc_(summary)}</b>${pajskCellDetailButton_(`${PAJSK_CATEGORY_LABELS_[category]||category} • ${student.NAMA||'Murid'}`,`${total} butiran direkodkan`,unique,'Lihat butiran')}</div>`;
 }
-function pajskEventCell_(events){
-  if(!events.length)return '<span class="analysis-no-data">TIADA REKOD</span>';
-  const ordered=events.slice().sort((a,b)=>Number((b.PENCAPAIAN||[]).length>0)-Number((a.PENCAPAIAN||[]).length>0));
-  const visible=ordered.slice(0,3);
-  const rows=visible.map(e=>{
-    const achievements=(e.PENCAPAIAN||[]).map(a=>`<span class="analysis-pajsk-achievement">${pajskEsc_(pajskAchievementLabel_(a,e.NAMA_AKTIVITI||''))}</span>`).join('');
-    const meta=[e.PERINGKAT,analysisDateLabel_(e.TARIKH)].filter(x=>x&&x!=='-').join(' • ');
-    return `<div class="analysis-pajsk-event-record"><b>${pajskEsc_(e.NAMA_AKTIVITI||'Aktiviti')}</b>${meta?`<small>${pajskEsc_(meta)}</small>`:''}${achievements}</div>`;
-  }).join('');
-  const more=ordered.length>visible.length?`<span class="analysis-pajsk-more">+${ordered.length-visible.length} lagi</span>`:'';
-  return `<div class="analysis-pajsk-category-cell"><b>${events.length} acara / penyertaan</b>${rows}${more}</div>`;
+function pajskEventCell_(events,student){
+  const ordered=pajskUniqueEvents_(events||[]).sort((a,b)=>Number((b.PENCAPAIAN||[]).length>0)-Number((a.PENCAPAIAN||[]).length>0));
+  if(!ordered.length)return '<span class="analysis-no-data">TIADA REKOD</span>';
+  const items=[];
+  ordered.forEach(event=>{
+    const awards=event.PENCAPAIAN||[];
+    if(awards.length)awards.forEach(award=>items.push({title:event.NAMA_AKTIVITI||'Aktiviti',meta:[analysisDateLabel_(event.TARIKH),event.PERINGKAT,event.NAMA_UNIT].filter(x=>x&&x!=='-').join(' • '),detail:pajskAchievementLabel_(award,event.NAMA_AKTIVITI||'')}));
+    else items.push({title:event.NAMA_AKTIVITI||'Aktiviti',meta:[analysisDateLabel_(event.TARIKH),event.PERINGKAT,event.NAMA_UNIT].filter(x=>x&&x!=='-').join(' • '),detail:'Penyertaan direkod'});
+  });
+  return `<div class="analysis-pajsk-category-cell pajsk-compact-cell"><b>${ordered.length} acara / penyertaan</b>${pajskCellDetailButton_(`Acara / Penyertaan • ${student?.NAMA||'Murid'}`,`${items.length} butiran`,items,'Lihat butiran')}</div>`;
 }
+function openPajskCellDetail_(index){
+  const data=PAJSK_CELL_DETAILS_[Number(index)];if(!data)return;
+  const modal=$('pajskCellDetailModal');if(!modal)return;
+  $('pajskCellDetailTitle').textContent=data.title;
+  $('pajskCellDetailMeta').textContent=data.meta;
+  const host=$('pajskCellDetailContent');
+  host.innerHTML=data.items.length?`<div class="pajsk-cell-detail-list">${data.items.map((item,i)=>`<article class="pajsk-cell-detail-item"><span>${String(i+1).padStart(2,'0')}</span><div><b>${pajskEsc_(item.title||'Rekod')}</b>${item.meta?`<small>${pajskEsc_(item.meta)}</small>`:''}<p>${pajskEsc_(item.detail||'')}</p></div></article>`).join('')}</div>`:'<div class="analysis-empty">Tiada butiran untuk dipaparkan.</div>';
+  modal.hidden=false;document.body.classList.add('unit-member-modal-open');
+}
+function closePajskCellDetail_(){const modal=$('pajskCellDetailModal');if(modal){modal.hidden=true;document.body.classList.remove('unit-member-modal-open');}}
 async function loadPajskClassReport_(force=false){
   if(!$('analysisPajskView')||!state.token)return;
   const year=String($('analysisPajskYearFilter')?.value||new Date().getFullYear());
@@ -1140,13 +1176,15 @@ function renderPajskClassReport_(){
   analysisSetKpi_('analysisPajskKpiIncomplete',incomplete.toLocaleString('ms-MY'));
   const count=$('analysisPajskStudentCount');if(count)count.textContent=`${rows.length} MURID`;
   if(!rows.length){host.innerHTML='<div class="analysis-empty">Tiada murid sepadan dengan kelas atau carian yang dipilih.</div>';return;}
+  PAJSK_CELL_DETAILS_=[];
   host.innerHTML=`<table class="analysis-table analysis-pajsk-table"><thead><tr><th>MURID</th><th>KELAB / PERSATUAN</th><th>BADAN BERUNIFORM</th><th>SUKAN / PERMAINAN</th><th>ACARA / PENYERTAAN</th><th>JUMLAH REKOD</th><th>GRED</th><th>TINDAKAN</th></tr></thead><tbody>${rows.map(s=>{
     const events=(s.EVENTS||[]);
-    const eventHtml=pajskEventCell_(events);
+    const eventHtml=pajskEventCell_(events,s);
     const grade=String(s.GRED_PAJSK||'E').toUpperCase(),gradeClass=grade==='A'||grade==='B'?'is-active':grade==='C'?'is-pending':'is-inactive';
     return `<tr><td><div class="analysis-pajsk-student-cell"><b>${pajskEsc_(s.NAMA)}</b><small>${pajskEsc_(s.KELAS)}</small></div></td><td>${pajskCategoryCell_(s,'KELAB / PERSATUAN')}</td><td>${pajskCategoryCell_(s,'UNIT BERUNIFORM')}</td><td>${pajskCategoryCell_(s,'SUKAN / PERMAINAN')}</td><td>${eventHtml}</td><td><span class="analysis-pajsk-record-count">${Number(s.JUMLAH_REKOD)||0}</span><small>aktiviti direkod</small></td><td><span class="analysis-status-pill ${gradeClass}" title="Markah sementara PAJSK">${pajskEsc_(grade)}</span><small class="analysis-pajsk-grade-note">${Number(s.MARKAH_PAJSK||0).toFixed(2)}/100 • GPS ${Number(s.GPS_PAJSK||5).toFixed(2)}</small></td><td><button class="btn secondary small" type="button" data-pajsk-detail="${pajskEsc_(s.NO_KP)}">◉ Detail</button></td></tr>`;
   }).join('')}</tbody></table>`;
   host.querySelectorAll('[data-pajsk-detail]').forEach(btn=>btn.addEventListener('click',()=>openPajskStudentDetail_(btn.dataset.pajskDetail)));
+  host.querySelectorAll('[data-pajsk-cell-detail]').forEach(btn=>btn.addEventListener('click',()=>openPajskCellDetail_(btn.dataset.pajskCellDetail)));
   const updated=$('analysisPajskUpdatedAt');if(updated)updated.textContent=`KEMAS KINI TERAKHIR: ${new Date().toLocaleString('ms-MY',{dateStyle:'medium',timeStyle:'short'})} • TAHUN ${PAJSK_CACHE_.year}`;
 }
 function pajskStudentDetailHTML_(s){
@@ -1854,6 +1892,9 @@ function init(){
   bind('unitOverviewAttendancePrintBtn','click',()=>printUnitOverview_('attendance'));
   bind('unitOverviewMemberAttendancePrintBtn','click',()=>printUnitOverview_('member-attendance'));
   bind('unitOverviewAjkPrintBtn','click',()=>printUnitOverview_('ajk'));
+  bind('unitOverviewAchievementsPrintBtn','click',()=>printUnitOverview_('achievements'));
+  document.querySelectorAll('[data-unit-achievement-close]').forEach(el=>el.addEventListener('click',closeUnitAchievementParticipants_));
+  document.querySelectorAll('[data-pajsk-cell-detail-close]').forEach(el=>el.addEventListener('click',closePajskCellDetail_));
   bind('unitAjkBackBtn','click',()=>showPage('unit-overview'));
   bind('unitAjkRefreshBtn','click',loadUnitAjkPage_);
   bind('unitAjkPrintBtn','click',printUnitAjkPage_);
@@ -3107,7 +3148,8 @@ async function loadUnitOverview(){
   switchUnitOverviewTab_('members');
   const title=$('unitOverviewTitle');
   if(!UNIT_OVERVIEW_ID){showPage('unit');return;}
-  ['unitOverviewMembers','unitOverviewWeeks','unitOverviewMemberAttendance','unitOverviewAjk'].forEach(id=>{if($(id))$(id).innerHTML='<div class="empty">Memuatkan data...</div>';});
+  UNIT_OVERVIEW_ACHIEVEMENT_KEY_='';UNIT_OVERVIEW_ACHIEVEMENT_ROWS_=[];
+  ['unitOverviewMembers','unitOverviewWeeks','unitOverviewMemberAttendance','unitOverviewAjk','unitOverviewAchievements'].forEach(id=>{if($(id))$(id).innerHTML='<div class="empty">Memuatkan data...</div>';});
   try{
     const d=await apiGet('getUnitOverview',{token:state.token,unitId:UNIT_OVERVIEW_ID,tahun:UNIT_OVERVIEW_YEAR});
     UNIT_OVERVIEW_DATA=d;
@@ -3129,6 +3171,8 @@ async function loadUnitOverview(){
 }
 let UNIT_OVERVIEW_ACTIVE_KP=new Set();
 let UNIT_OVERVIEW_MEMBER_ROWS_=[];
+let UNIT_OVERVIEW_ACHIEVEMENT_ROWS_=[];
+let UNIT_OVERVIEW_ACHIEVEMENT_KEY_='';
 let UNIT_MEMBER_CANDIDATES=[];
 let UNIT_MEMBER_FILTERED=[];
 function openAddUnitMemberModal_(){
@@ -3189,7 +3233,7 @@ async function saveUnitMemberFromModal_(event){
   }finally{btn.disabled=false;btn.textContent='Simpan Ahli';}
 }
 
-const UNIT_OVERVIEW_TAB_KEYS_=['members','attendance','member-attendance','ajk'];
+const UNIT_OVERVIEW_TAB_KEYS_=['members','attendance','member-attendance','ajk','achievements'];
 function setupUnitOverviewTabs_(){
   const tabs=Array.from(document.querySelectorAll('[data-unit-overview-tab]'));
   tabs.forEach((button,index)=>{
@@ -3221,8 +3265,110 @@ function switchUnitOverviewTab_(key){
     panel.hidden=!selected;
     panel.classList.toggle('is-active',selected);
   });
+  if(active==='achievements'){
+    const key=`${UNIT_OVERVIEW_ID}|${UNIT_OVERVIEW_YEAR}`;
+    if(UNIT_OVERVIEW_ACHIEVEMENT_KEY_!==key)loadUnitOverviewAchievements_();
+  }
 }
 
+function unitAchievementCategory_(unit){
+  return analysisCategoryKey_(unit?.KATEGORI||unit?.KATEGORI_UNIT||unit?.KATEGORI_PENYERTAAN||'');
+}
+function unitAchievementMatches_(event,student,unit){
+  const unitId=String(unit?.UNIT_ID||unit?.ID_UNIT||UNIT_OVERVIEW_ID||'').trim();
+  const unitName=String(unit?.NAMA_UNIT||'').trim().toLocaleLowerCase('ms');
+  const category=unitAchievementCategory_(unit);
+  const awards=Array.isArray(event?.PENCAPAIAN)?event.PENCAPAIAN:[];
+  const candidates=[event,...awards];
+  const explicitIds=candidates.map(x=>String(x?.UNIT_ID||x?.ID_UNIT||'').trim()).filter(Boolean);
+  if(explicitIds.length)return explicitIds.some(id=>id===unitId);
+  const explicitNames=candidates.map(x=>String(x?.NAMA_UNIT||'').trim().toLocaleLowerCase('ms')).filter(Boolean);
+  if(explicitNames.length)return explicitNames.some(name=>name===unitName);
+  const categoryValues=candidates.map(x=>x?.KATEGORI_PENYERTAAN||x?.KATEGORI||'').filter(Boolean);
+  if(categoryValues.length&&category&& !categoryValues.some(value=>analysisCategoryKey_(value)===category))return false;
+  const studentUnits=(student?.CATEGORIES&&student.CATEGORIES[category])||[];
+  const mapped=studentUnits.some(x=>String(x.UNIT_ID||'')===unitId||String(x.NAMA_UNIT||'').trim().toLocaleLowerCase('ms')===unitName);
+  return mapped || (studentUnits.length===1&&categoryValues.length>0);
+}
+function unitAchievementDisplay_(record){
+  const pos=String(record?.KEDUDUKAN||'').trim();
+  const name=String(record?.NAMA_PENCAPAIAN||'').trim();
+  if(pos&&name&&pos.toUpperCase()!==name.toUpperCase())return `${name} • ${pos}`;
+  return pos||name||'Penyertaan direkod';
+}
+async function loadUnitOverviewAchievements_(force=false){
+  const host=$('unitOverviewAchievements');if(!host||!state.token||!UNIT_OVERVIEW_ID)return;
+  const key=`${UNIT_OVERVIEW_ID}|${UNIT_OVERVIEW_YEAR}`;
+  if(!force&&UNIT_OVERVIEW_ACHIEVEMENT_KEY_===key){renderUnitOverviewAchievements_();return;}
+  host.innerHTML='<div class="empty">Memuatkan aktiviti dan pencapaian unit...</div>';
+  try{
+    const [report,activityResult]=await Promise.all([
+      apiGet('getPajskClassReport',{token:state.token,tahun:UNIT_OVERVIEW_YEAR,kelas:''},30000),
+      apiGet('getPencapaianAktivitiList',{token:state.token},30000).catch(()=>({data:[]}))
+    ]);
+    if(!report||report.ok===false)throw Error(report?.error||'Laporan PAJSK tidak dapat dimuatkan.');
+    const members=(UNIT_OVERVIEW_DATA?.ahli||[]).filter(x=>String(x.STATUS||'AKTIF').toUpperCase()==='AKTIF');
+    const kpSet=new Set(members.map(x=>String(x.NO_KP||'')).filter(Boolean));
+    const activityMap=new Map((activityResult.data||[]).map(a=>[String(a.AKTIVITI_ID||''),a]));
+    const unit=UNIT_OVERVIEW_DATA?.unit||{};
+    const groups=new Map();
+    (report.data||[]).forEach(student=>{
+      const kp=String(student.NO_KP||'');if(!kpSet.has(kp))return;
+      (student.EVENTS||[]).forEach(event=>{
+        const activityId=String(event.AKTIVITI_ID||'');
+        const master=activityMap.get(activityId)||{};
+        const eventDate=String(event.TARIKH||master.TARIKH||'');
+        if(analysisYear_(eventDate)&&analysisYear_(eventDate)!==String(UNIT_OVERVIEW_YEAR))return;
+        if(!unitAchievementMatches_(event,student,unit))return;
+        const eventName=String(event.NAMA_AKTIVITI||master.NAMA_AKTIVITI||'Aktiviti');
+        const keyEvent=[activityId||eventName,eventDate||String(master.TARIKH||''),String(event.NAMA_UNIT||unit.NAMA_UNIT||'')].join('|');
+        if(!groups.has(keyEvent))groups.set(keyEvent,{aktivitiId:activityId,nama:eventName,tarikh:eventDate||master.TARIKH||'',tempat:event.TEMPAT||master.TEMPAT||'',peringkat:event.PERINGKAT||master.PERINGKAT||'',participants:new Map(),achievements:new Set()});
+        const group=groups.get(keyEvent);
+        if(!group.tempat&&master.TEMPAT)group.tempat=master.TEMPAT;
+        const participantKey=kp||String(student.NAMA||'');
+        if(!group.participants.has(participantKey))group.participants.set(participantKey,{NAMA:student.NAMA||'Murid',KELAS:student.KELAS||'',JANTINA:student.JANTINA||'',PERANAN:event.PERANAN||''});
+        const awardRows=Array.isArray(event.PENCAPAIAN)?event.PENCAPAIAN:[];
+        if(awardRows.length)awardRows.forEach(award=>{
+          const category=award.KATEGORI_PENYERTAAN||award.KATEGORI||event.KATEGORI||'';
+          if(category&&unitAchievementCategory_(unit)&&analysisCategoryKey_(category)!==unitAchievementCategory_(unit))return;
+          const awardUnitId=String(award.UNIT_ID||award.ID_UNIT||'').trim();
+          if(awardUnitId&&awardUnitId!==String(unit.UNIT_ID||unit.ID_UNIT||UNIT_OVERVIEW_ID||'').trim())return;
+          const awardUnitName=String(award.NAMA_UNIT||'').trim().toLocaleLowerCase('ms');
+          if(awardUnitName&&awardUnitName!==String(unit.NAMA_UNIT||'').trim().toLocaleLowerCase('ms'))return;
+          group.achievements.add(unitAchievementDisplay_(award));
+        });
+        else group.achievements.add('Penyertaan direkod');
+      });
+    });
+    UNIT_OVERVIEW_ACHIEVEMENT_ROWS_=[...groups.values()].map(row=>({...row,participants:[...row.participants.values()],achievements:[...row.achievements]})).sort((a,b)=>new Date(b.tarikh||0)-new Date(a.tarikh||0));
+    UNIT_OVERVIEW_ACHIEVEMENT_KEY_=key;
+    renderUnitOverviewAchievements_();
+  }catch(error){
+    UNIT_OVERVIEW_ACHIEVEMENT_KEY_='';
+    host.innerHTML=`<div class="empty">${unitOverviewEsc_(error.message||'Gagal memuatkan pencapaian unit.')} <button type="button" class="btn secondary small" id="unitOverviewAchievementsRetryBtn">Cuba Semula</button></div>`;
+    $('unitOverviewAchievementsRetryBtn')?.addEventListener('click',()=>loadUnitOverviewAchievements_(true));
+  }
+}
+function renderUnitOverviewAchievements_(){
+  const host=$('unitOverviewAchievements');if(!host)return;
+  const rows=UNIT_OVERVIEW_ACHIEVEMENT_ROWS_;
+  if(!rows.length){host.innerHTML='<div class="empty">Belum ada rekod aktiviti atau pencapaian yang dipautkan kepada ahli unit ini.</div>';return;}
+  host.innerHTML=`<table class="unit-overview-table unit-achievement-table"><thead><tr><th>NAMA ACARA</th><th>TARIKH</th><th>TEMPAT</th><th>PENCAPAIAN</th><th>PESERTA</th></tr></thead><tbody>${rows.map((row,index)=>`<tr><td><b>${unitOverviewEsc_(row.nama)}</b></td><td>${unitOverviewEsc_(analysisDateLabel_(row.tarikh))}</td><td>${unitOverviewEsc_(row.tempat||'-')}</td><td>${row.achievements.map(x=>`<span class="unit-achievement-label">${unitOverviewEsc_(x)}</span>`).join('')}</td><td><button type="button" class="btn secondary small" data-unit-achievement-participants="${index}">Lihat Peserta (${row.participants.length}) <span aria-hidden="true">⌄</span></button></td></tr>`).join('')}</tbody></table>`;
+  host.querySelectorAll('[data-unit-achievement-participants]').forEach(button=>button.addEventListener('click',()=>openUnitAchievementParticipants_(button.dataset.unitAchievementParticipants)));
+}
+function openUnitAchievementParticipants_(index){
+  const row=UNIT_OVERVIEW_ACHIEVEMENT_ROWS_[Number(index)];if(!row)return;
+  const modal=$('unitAchievementParticipantsModal');if(!modal)return;
+  $('unitAchievementParticipantsTitle').textContent=row.nama||'Senarai Peserta';
+  $('unitAchievementParticipantsMeta').textContent=[analysisDateLabel_(row.tarikh),row.tempat,row.achievements.join(' • ')].filter(Boolean).join(' • ');
+  $('unitAchievementParticipantsList').innerHTML=row.participants.length?`<table class="unit-overview-table"><thead><tr><th>#</th><th>NAMA MURID</th><th>KELAS</th><th>JANTINA</th></tr></thead><tbody>${row.participants.map((p,i)=>`<tr><td>${i+1}</td><td><b>${unitOverviewEsc_(p.NAMA)}</b></td><td>${unitOverviewEsc_(p.KELAS||'-')}</td><td>${unitOverviewEsc_(String(p.JANTINA||'').toUpperCase()==='L'?'Lelaki':String(p.JANTINA||'').toUpperCase()==='P'?'Perempuan':p.JANTINA||'-')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Tiada peserta direkodkan.</div>';
+  modal.hidden=false;requestAnimationFrame(()=>modal.classList.add('show'));document.body.classList.add('unit-member-modal-open');
+}
+function closeUnitAchievementParticipants_(){const modal=$('unitAchievementParticipantsModal');if(!modal)return;modal.classList.remove('show');document.body.classList.remove('unit-member-modal-open');setTimeout(()=>{modal.hidden=true;},160);}
+function unitPrintAchievements_(d){
+  const rows=UNIT_OVERVIEW_ACHIEVEMENT_ROWS_.map((r,i)=>[i+1,unitPrintEsc_(r.nama),unitPrintEsc_(unitPrintDate_(r.tarikh)),unitPrintEsc_(r.tempat||'-'),unitPrintEsc_(r.achievements.join('; ')),unitPrintEsc_(r.participants.map(x=>x.NAMA).join(', '))]);
+  return rows.length?unitPrintTable_(['#','Nama Acara','Tarikh','Tempat','Pencapaian','Peserta'],rows):'<p>Tiada rekod pencapaian.</p>';
+}
 function renderUnitOverviewMembers_(rows){
   const w=$('unitOverviewMembers');if(!w)return;
   const source=Array.isArray(rows)?rows:UNIT_OVERVIEW_MEMBER_ROWS_;
@@ -3412,6 +3558,10 @@ function printUnitOverview_(kind='unit'){
   }else if(kind==='ajk'){
     title='Senarai AJK Unit';
     content=unitPrintHeader_(title,d)+unitPrintSection_('Jawatankuasa / AJK',unitPrintAjk_(d));
+  }else if(kind==='achievements'){
+    title='Pencapaian Unit';
+    content=unitPrintHeader_(title,d)+unitPrintSection_('Aktiviti dan Pencapaian Unit',unitPrintAchievements_(d));
+    landscape=true;
   }else{
     title='Senarai Ahli Unit';
     content=unitPrintHeader_(title,d)+unitPrintSection_('Senarai Ahli Unit',unitPrintMembers_(d));
@@ -3502,7 +3652,7 @@ document.addEventListener('click',e=>{
   if(e.target && e.target.id==='unitOverviewRefreshBtn')loadUnitOverview();
   if(e.target && e.target.id==='unitAjkBackBtn')showPage('unit-overview');
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('unitMemberModal')&&!$('unitMemberModal').hidden)closeAddUnitMemberModal_();});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if($('unitMemberModal')&&!$('unitMemberModal').hidden)closeAddUnitMemberModal_();if($('unitAchievementParticipantsModal')&&!$('unitAchievementParticipantsModal').hidden)closeUnitAchievementParticipants_();if($('pajskCellDetailModal')&&!$('pajskCellDetailModal').hidden)closePajskCellDetail_();});
 document.addEventListener('DOMContentLoaded',init);
 
 

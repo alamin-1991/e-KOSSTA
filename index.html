@@ -276,6 +276,7 @@
     <button id="unitOverviewTabAttendance" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelAttendance" tabindex="-1" data-unit-overview-tab="attendance">Rekod Keseluruhan</button>
     <button id="unitOverviewTabMemberAttendance" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelMemberAttendance" tabindex="-1" data-unit-overview-tab="member-attendance">Rekod Individu</button>
     <button id="unitOverviewTabAjk" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelAjk" tabindex="-1" data-unit-overview-tab="ajk">AJK</button>
+    <button id="unitOverviewTabAchievements" class="unit-overview-tab" type="button" role="tab" aria-selected="false" aria-controls="unitOverviewPanelAchievements" tabindex="-1" data-unit-overview-tab="achievements">Pencapaian</button>
   </nav>
   <section id="unitOverviewPanelMembers" class="unit-overview-panel unit-overview-tab-panel" data-unit-overview-panel="members" role="tabpanel" aria-labelledby="unitOverviewTabMembers">
     <div class="unit-overview-section-head"><div><h3>Senarai Ahli Unit</h3></div><button id="unitOverviewMembersPrintBtn" class="btn secondary small" type="button">▤ Cetak Senarai Ahli</button></div>
@@ -294,7 +295,19 @@
     <div class="unit-overview-section-head"><div><h3>Jawatankuasa / AJK</h3><small class="muted">Disusun mengikut hierarki jawatan bermula dengan Pengerusi.</small></div><div class="unit-overview-section-actions"><button id="unitOverviewAjkAddBtn" class="btn primary small" type="button">+ AJK</button><button id="unitOverviewAjkPrintBtn" class="btn secondary small" type="button">▤ Cetak AJK</button></div></div>
     <div id="unitOverviewAjk" class="table-wrap"></div>
   </section>
+  <section id="unitOverviewPanelAchievements" class="unit-overview-panel unit-overview-tab-panel" data-unit-overview-panel="achievements" role="tabpanel" aria-labelledby="unitOverviewTabAchievements" hidden>
+    <div class="unit-overview-section-head"><div><h3>Senarai Pencapaian Unit</h3></div><button id="unitOverviewAchievementsPrintBtn" class="btn secondary small" type="button">▤ Cetak Pencapaian</button></div>
+    <div id="unitOverviewAchievements" class="table-wrap"><div class="empty">Pilih tab Pencapaian untuk memuatkan rekod.</div></div>
+  </section>
 </section>
+<div id="unitAchievementParticipantsModal" class="unit-member-modal" hidden>
+  <div class="unit-member-backdrop" data-unit-achievement-close></div>
+  <section class="unit-member-dialog unit-achievement-dialog" role="dialog" aria-modal="true" aria-labelledby="unitAchievementParticipantsTitle">
+    <div class="unit-member-dialog-head"><div><span class="unit-member-kicker">KOKURIKULUM • PENCAPAIAN UNIT</span><h3 id="unitAchievementParticipantsTitle">Senarai Peserta</h3><p id="unitAchievementParticipantsMeta" class="muted"></p></div><button class="unit-member-close" type="button" data-unit-achievement-close aria-label="Tutup">×</button></div>
+    <div id="unitAchievementParticipantsList" class="table-wrap"></div>
+    <div class="unit-member-dialog-actions"><button class="btn secondary" type="button" data-unit-achievement-close>Tutup</button></div>
+  </section>
+</div>
 <div id="unitMemberModal" class="unit-member-modal" hidden>
   <div class="unit-member-backdrop" data-unit-member-close></div>
   <section class="unit-member-dialog" role="dialog" aria-modal="true" aria-labelledby="unitMemberModalTitle">
@@ -540,8 +553,8 @@
   <div class="analysis-heading">
     <div>
       <span class="analysis-kicker">ANALISIS • e-KOSSTA / DATA LANGSUNG</span>
-      <h2><span class="analysis-prompt">&gt;_</span> Analisis Kokurikulum</h2>
-      <p>Ringkasan ahli, kehadiran, aktiviti, pencapaian dan dokumentasi berdasarkan rekod sistem.</p>
+      <h2>Analisis Kokurikulum</h2>
+      
     </div>
     <div class="analysis-actions">
       <button id="analysisExportBtn" class="btn secondary" type="button">↓ Muat Turun CSV</button>
@@ -553,7 +566,7 @@
     <div><label for="analysisCategoryFilter">Kategori Unit</label><select id="analysisCategoryFilter"><option value="">Semua Kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select></div>
     <div class="analysis-search-field"><label for="analysisUnitSearch">Cari Unit</label><input id="analysisUnitSearch" type="search" placeholder="Nama unit atau guru penasihat..."></div>
   </div>
-  <div id="analysisStatus" class="analysis-status" role="status" aria-live="polite">Sedia memuatkan data analisis...</div>
+  <div id="analysisStatus" class="analysis-status" role="status" aria-live="polite" hidden>Sedia memuatkan data analisis...</div>
   <div class="analysis-kpi-grid">
     <article class="analysis-kpi"><span class="analysis-kpi-label">MURID AKTIF</span><strong id="analysisKpiStudents">—</strong><small>Murid dalam data sistem</small><span class="analysis-kpi-index">01</span></article>
     <article class="analysis-kpi"><span class="analysis-kpi-label">UNIT AKTIF</span><strong id="analysisKpiUnits">—</strong><small>Unit bagi tahun dipilih</small><span class="analysis-kpi-index">02</span></article>
@@ -620,8 +633,8 @@
     <div class="analysis-heading">
       <div>
         <span class="analysis-kicker">ANALISIS • PAJSK / DATA PENYERTAAN</span>
-        <h2><span class="analysis-prompt">&gt;_</span> Analisis Kelas</h2>
-        <p>Paparan keseluruhan murid aktif daripada semua kelas. Pilihan kelas digunakan hanya untuk mencetak laporan kelas ke PDF.</p>
+        <h2>Analisis Kelas</h2>
+        
       </div>
       <div class="analysis-actions">
         <button id="analysisPajskRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button>
@@ -641,7 +654,7 @@
       <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">ADA REKOD ACARA</span><strong id="analysisPajskKpiEvents">—</strong><small>Penyertaan acara direkod</small><span class="analysis-kpi-index">03</span></article>
       <article class="analysis-kpi"><span class="analysis-kpi-label">REKOD PERLU SEMAK</span><strong id="analysisPajskKpiIncomplete">—</strong><small>Unit / penyertaan belum lengkap</small><span class="analysis-kpi-index">04</span></article>
     </div>
-    <div class="analysis-pajsk-note"><b>NOTA DATA</b><span>CSV terperinci menyusun medan Kelab/Persatuan, Badan Beruniform, Sukan/Permainan dan Ekstra Kokurikulum mengikut struktur borang extension. Penglibatan, peringkat pencapaian, jawatan, aktiviti dan kehadiran diisi daripada rekod e-KOSSTA; komitmen, khidmat sumbangan, NILAM, TIMSS/PISA serta markah rasmi dibiarkan kosong jika belum direkod, bukan direka.</span></div>
+
     <section class="analysis-panel analysis-table-panel analysis-pajsk-table-panel">
       <div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Senarai Rekod Murid Mengikut Kelas</h3><p>Senarai dipaparkan mengikut kelas yang dipilih. Pilih Semua Kelas untuk melihat keseluruhan sekolah.</p></div><span id="analysisPajskStudentCount" class="analysis-count">0 MURID</span></div>
       <div id="analysisPajskTableWrap" class="table-wrap"><div class="analysis-empty">Memuatkan rekod PAJSK...</div></div>
@@ -679,6 +692,14 @@
     </section>
     <section class="analysis-panel analysis-table-panel"><div class="analysis-panel-heading"><div><span class="analysis-panel-index">PAJSK / 01</span><h3>Rekod Pencapaian Mengikut Unit</h3></div></div><div id="pajskSchoolUnitTableWrap" class="table-wrap"><div class="analysis-empty">Belum dimuatkan.</div></div></section>
   </div>
+    <div id="pajskCellDetailModal" class="analysis-pajsk-detail-modal" hidden>
+      <div class="analysis-pajsk-detail-backdrop" data-pajsk-cell-detail-close></div>
+      <section class="analysis-pajsk-detail-dialog pajsk-cell-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="pajskCellDetailTitle">
+        <div class="analysis-pajsk-detail-head"><div><span class="analysis-kicker">PAJSK • BUTIRAN PENYERTAAN</span><h2 id="pajskCellDetailTitle">Butiran Penyertaan</h2><p id="pajskCellDetailMeta" class="muted"></p></div><button class="btn secondary small" type="button" data-pajsk-cell-detail-close>Tutup</button></div>
+        <div id="pajskCellDetailContent" class="pajsk-cell-detail-content"></div>
+        <div class="analysis-pajsk-detail-actions"><button class="btn secondary" type="button" data-pajsk-cell-detail-close>Tutup</button></div>
+      </section>
+    </div>
     <div id="analysisPajskDetailModal" class="analysis-pajsk-detail-modal" hidden>
     <div class="analysis-pajsk-detail-backdrop" data-pajsk-detail-close></div>
     <section class="analysis-pajsk-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="analysisPajskDetailTitle">

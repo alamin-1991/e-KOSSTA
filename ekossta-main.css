@@ -10701,3 +10701,30 @@ html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-slice {
   .pajsk-grade-class-gender-svg .pajsk-bar-grade-label,
   .pajsk-grade-class-gender-svg .pajsk-bar-class-label { font-size: 8px; }
 }
+
+
+/* v26 — compact PAJSK participation details and unit achievement view */
+.pajsk-compact-cell{min-width:118px;max-width:220px;gap:5px}
+.pajsk-compact-cell>b{font:700 10px/1.4 'IBM Plex Mono','JetBrains Mono',monospace;color:var(--text)}
+.pajsk-cell-detail-trigger{display:inline-flex;align-items:center;gap:9px;max-width:100%;padding:7px 9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:700 10px/1.25 'IBM Plex Mono','JetBrains Mono',monospace;cursor:pointer;text-align:left}
+.pajsk-cell-detail-trigger:hover{border-color:var(--ekt-teal);background:var(--surface)}
+html.dark .pajsk-cell-detail-trigger:hover{border-color:var(--ekt-lime)}
+.pajsk-cell-detail-trigger span{color:var(--ekt-teal);font-size:14px}
+html.dark .pajsk-cell-detail-trigger span{color:var(--ekt-lime)}
+.pajsk-cell-detail-dialog{width:min(760px,100%);max-height:min(86vh,820px)}
+.pajsk-cell-detail-content{max-height:62vh;overflow:auto}
+.pajsk-cell-detail-list{display:grid;gap:8px}
+.pajsk-cell-detail-item{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;padding:11px;border:1px solid var(--border);background:var(--surface)}
+.pajsk-cell-detail-item>span{display:grid;place-items:center;width:30px;height:30px;background:var(--surface2);color:var(--ekt-teal);font:700 10px 'IBM Plex Mono','JetBrains Mono',monospace}
+html.dark .pajsk-cell-detail-item>span{color:var(--ekt-lime)}
+.pajsk-cell-detail-item b{display:block;color:var(--text);font-size:12px}
+.pajsk-cell-detail-item small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+.pajsk-cell-detail-item p{margin:5px 0 0;color:var(--text);font-size:11px;line-height:1.45}
+.unit-achievement-dialog{width:min(900px,100%);max-height:min(88vh,900px)}
+.unit-achievement-dialog .table-wrap{max-height:62vh;overflow:auto}
+.unit-achievement-table{min-width:760px}
+.unit-achievement-label{display:inline-block;margin:2px 4px 2px 0;padding:4px 7px;border-left:2px solid var(--ekt-teal);background:var(--surface2);color:var(--text);font:600 10px/1.4 'IBM Plex Mono','JetBrains Mono',monospace}
+html.dark .unit-achievement-label{border-left-color:var(--ekt-lime)}
+@media(max-width:640px){.pajsk-cell-detail-dialog,.unit-achievement-dialog{width:100%;padding:14px}.unit-achievement-dialog .table-wrap{max-height:58vh}.pajsk-cell-detail-content{max-height:58vh}}
+
+#analysisStatus[hidden]{display:none!important}
