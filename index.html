@@ -418,7 +418,7 @@
         <div class="activity-field"><label>Hari</label><input id="activityDay" readonly></div>
         <div class="activity-field"><label>Masa</label><input id="activityTime" type="time"></div>
         <div class="activity-field"><label>Tempat</label><input id="activityPlace" required></div>
-        <div class="activity-field"><label>Peringkat</label><select id="activityLevelForm" required><option value="">-- Pilih Peringkat --</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
+        <div class="activity-field"><label>Peringkat</label><select id="activityLevelForm" required><option value="">-- Pilih Peringkat --</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option value="ZON/DAERAH">ZON/DAERAH</option><option>NEGERI</option><option value="BAHAGIAN">BAHAGIAN (SABAH/SARAWAK)</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
         <div class="activity-field"><label>Guru</label><select id="activityTeacher" required><option value="">-- Pilih Guru --</option></select></div>
       </div>
       <div class="activity-dialog-actions"><button class="btn secondary" type="button" data-activity-close>Batal</button><button id="activitySaveBtn" class="btn primary" type="submit">Simpan Aktiviti</button></div>
@@ -441,7 +441,10 @@
       <div><label>Kelas</label><select id="activityParticipantClass"><option value="">Semua Kelas</option></select></div>
       <div><label>Carian Murid</label><input id="activityParticipantSearch" type="search" placeholder="Nama atau No. KP"></div>
     </div>
-    <div id="activityParticipantsCount" class="activity-participants-count"></div>
+    <div class="activity-participant-bulkbar">
+      <div id="activityParticipantsCount" class="activity-participants-count"></div>
+      <button id="activityParticipantsSelectAllBtn" class="btn secondary small" type="button">Pilih Semua</button>
+    </div>
     <div id="activityParticipantsTableWrap" class="table-wrap"></div>
   </div>
 </section>
@@ -456,7 +459,7 @@
     <div class="pencapaian-toolbar pencapaian-activity-toolbar">
       <input id="pencapaianActivitySearch" type="search" placeholder="Cari aktiviti atau tempat..." aria-label="Cari aktiviti berdaftar">
       <select id="pencapaianActivityFilterYear" aria-label="Tapis tahun aktiviti"><option value="">Semua Tahun</option></select>
-      <select id="pencapaianActivityFilterLevel" aria-label="Tapis peringkat"><option value="">Semua Peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select>
+      <select id="pencapaianActivityFilterLevel" aria-label="Tapis peringkat"><option value="">Semua Peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option value="ZON/DAERAH">ZON/DAERAH</option><option>NEGERI</option><option value="BAHAGIAN">BAHAGIAN</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select>
     </div>
     <div id="pencapaianActivityCount" class="pencapaian-activity-count">Memuatkan aktiviti...</div>
     <div id="pencapaianActivitiesTableWrap" class="table-wrap"><div class="empty">Memuatkan aktiviti berdaftar...</div></div>
@@ -482,9 +485,9 @@
       <input type="hidden" id="pencapaianRecordLegacyKey">
       <div class="pencapaian-record-grid">
         <div class="pencapaian-record-wide"><label for="pencapaianRecordName">Acara / Pencapaian *</label><input id="pencapaianRecordName" maxlength="180" required placeholder="Contoh: 100 Meter Lelaki atau Kejohanan Hoki MSSD Tangkak"></div>
-        <div><label for="pencapaianRecordEngagementTitle">Tajuk Penglibatan *</label><select id="pencapaianRecordEngagementTitle" required><option value="">Pilih tajuk penglibatan</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+        
         <div><label for="pencapaianRecordYear">Tahun *</label><input id="pencapaianRecordYear" type="number" min="2000" max="2100" required></div>
-        <div><label for="pencapaianRecordLevel">Peringkat *</label><select id="pencapaianRecordLevel" required><option value="">Pilih peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option>NEGERI</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
+        <div><label for="pencapaianRecordLevel">Peringkat *</label><select id="pencapaianRecordLevel" required><option value="">Pilih peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option value="ZON/DAERAH">ZON/DAERAH</option><option>NEGERI</option><option value="BAHAGIAN">BAHAGIAN (SABAH/SARAWAK)</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
         <div><label for="pencapaianRecordPosition">Kedudukan *</label><select id="pencapaianRecordPosition" required><option value="">Pilih kedudukan</option><option value="JOHAN">Johan</option><option value="NAIB JOHAN">Naib Johan</option><option value="KETIGA">Ketiga</option><option value="KEEMPAT">Keempat</option><option value="KELIMA">Kelima</option><option value="PENYERTAAN">Penyertaan sahaja</option><option value="EMAS">Emas</option><option value="PERAK">Perak</option><option value="GANGSA">Gangsa</option><option value="ANUGERAH KHAS">Anugerah Khas</option><option value="LAIN-LAIN">Lain-lain</option></select></div>
         <div><label for="pencapaianRecordCategory">Kategori Penyertaan *</label><select id="pencapaianRecordCategory" required><option value="">Pilih kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab / Persatuan</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select><small class="pencapaian-help">Setiap murid dipautkan kepada unit masing-masing berdasarkan kategori dan tahun. Contoh: Ali → Pengakap, Abu → Bomba.</small><div id="pencapaianUnitMappingPreview" class="pencapaian-unit-mapping-preview" aria-live="polite"><span class="pencapaian-preview-muted">Pilih kategori dan tahun untuk menyemak unit bagi setiap peserta.</span></div></div>
         <div><label for="pencapaianRecordDate">Tarikh *</label><input id="pencapaianRecordDate" type="date" required></div>
@@ -494,6 +497,13 @@
       <div class="pencapaian-participant-section">
         <div class="pencapaian-participant-head"><div><h3>Peserta / Murid Berdaftar</h3><p id="pencapaianRecordParticipantsCount" class="muted">Memuatkan peserta...</p><small class="muted">Senarai ini datang daripada peserta yang didaftarkan dalam Aktiviti &amp; Acara. Semua peserta ditandakan secara automatik bagi acara baharu.</small></div><div class="pencapaian-selection-actions"><button id="pencapaianSelectAllBtn" type="button" class="btn secondary small">Pilih Semua</button><button id="pencapaianClearAllBtn" type="button" class="btn secondary small">Kosongkan</button></div></div>
         <div class="pencapaian-participant-filters"><input id="pencapaianRecordParticipantSearch" type="search" placeholder="Cari nama / No. KP..."><select id="pencapaianRecordParticipantClass"><option value="">Semua Kelas</option></select></div>
+        <div class="pencapaian-engagement-bulkbar">
+          <div><label for="pencapaianBulkEngagementType">Jenis Penglibatan (tetapan pukal)</label><select id="pencapaianBulkEngagementType"><option value="">Pilih jenis penglibatan</option><option value="I">Penglibatan I — Atlet / peserta</option><option value="II">Penglibatan II — AJK / petugas</option><option value="III">Penglibatan III — Penyokong / pasukan sorak</option></select></div>
+          <div><label for="pencapaianBulkEngagementRole">Peranan khusus</label><select id="pencapaianBulkEngagementRole"><option value="">Pilih peranan</option></select></div>
+          <button id="pencapaianApplyEngagementToSelectedBtn" class="btn primary small" type="button">Tetapkan kepada murid dipilih</button>
+          <p>Tetapan pukal digunakan kepada murid yang ditanda. Jenis dan peranan masih boleh diubah bagi setiap murid.</p>
+        </div>
+        <div class="pencapaian-participant-column-head"><span></span><span>MURID</span><span>JENIS PENGLIBATAN</span><span>PERANAN</span><span>MARKAH</span></div>
         <div id="pencapaianRecordParticipantsWrap" class="pencapaian-record-participants"><div class="empty">Memuatkan peserta...</div></div>
       </div>
       <div class="pencapaian-record-grid"><div class="pencapaian-record-wide"><label for="pencapaianRecordEvidence">Pautan bukti / sijil (pilihan)</label><input id="pencapaianRecordEvidence" type="url" placeholder="https://..."></div><div class="pencapaian-record-wide"><label for="pencapaianRecordNotes">Catatan (pilihan)</label><textarea id="pencapaianRecordNotes" rows="3" maxlength="1500" placeholder="Catatan tambahan... "></textarea></div></div>

@@ -843,12 +843,14 @@ async function savePajskAssignment_(kind){
 }
 
 function pajskAchievementLabel_(achievement,fallbackActivity=''){
-  const involvement=String(achievement?.TAJUK_PENGLIBATAN??'').trim();
+  const involvement=pencapaianNormalizeEngagementType_(achievement?.JENIS_PENGLIBATAN||achievement?.TAJUK_PENGLIBATAN||'');
+  const role=String(achievement?.PERANAN_PENGLIBATAN||'').trim();
   const name=String(achievement?.NAMA_PENCAPAIAN||fallbackActivity||'Pencapaian').trim();
   const position=String(achievement?.KEDUDUKAN||'').trim();
   const parts=[];
-  if(involvement)parts.push(`Penglibatan ${involvement}`);
+  if(['I','II','III'].includes(involvement))parts.push(`Penglibatan ${involvement}${role?' ('+role+')':''}`);
   if(name)parts.push(name);
+  if(Number.isFinite(Number(achievement?.MARKAH_PENGLIBATAN))&&achievement?.MARKAH_PENGLIBATAN!==''&&achievement?.MARKAH_PENGLIBATAN!==null&&achievement?.MARKAH_PENGLIBATAN!==undefined)parts.push(`${Number(achievement.MARKAH_PENGLIBATAN)} markah Penglibatan`);
   if(position)parts.push(position);
   return parts.join(' — ')||'Rekod pencapaian';
 }
@@ -1714,6 +1716,9 @@ function init(){
   bind('pencapaianRecordYear','input',schedulePencapaianUnitPreview_);
   bind('pencapaianRecordCategory','change',schedulePencapaianUnitPreview_);
   bind('pencapaianRecordPosition','change',()=>selectPencapaianRank_($('pencapaianRecordPosition').value));
+  bind('pencapaianRecordLevel','change',renderPencapaianParticipants_);
+  bind('pencapaianBulkEngagementType','change',pencapaianUpdateBulkRoleOptions_);
+  bind('pencapaianApplyEngagementToSelectedBtn','click',applyPencapaianEngagementToSelected_);
   bind('pencapaianRecordParticipantSearch','input',renderPencapaianParticipants_);
   bind('pencapaianRecordParticipantClass','change',renderPencapaianParticipants_);
   bind('pencapaianSelectAllBtn','click',()=>setAllPencapaianParticipants_(true));
@@ -1765,6 +1770,7 @@ function init(){
   document.querySelectorAll('[data-editor-cmd]').forEach(btn=>btn.addEventListener('click',()=>runEditorCommand_(btn.dataset.editorCmd)));
   bind('activityParticipantClass','change',renderAktivitiPesertaTable_);
   bind('activityParticipantSearch','input',renderAktivitiPesertaTable_);
+  bind('activityParticipantsSelectAllBtn','click',selectAllAktivitiPeserta_);
   document.querySelectorAll('[data-activity-close]').forEach(e=>e.addEventListener('click',closeAktivitiModal));
   bind('attLoadBtn','click',loadAttendanceForm);
   bind('attSaveBtn','click',saveAttendance);
@@ -2834,16 +2840,18 @@ async function openAktivitiPermissionLetter(activityId){
 async function loadActivityTeacherOptions_(selected=''){
   const sel=$('activityTeacher');if(!sel)return;
   const role=String(state.user?.role||'').toUpperCase(),field=sel.closest('.activity-field');
-  if(role!=='ADMIN'){
-    // Pentadbir dan akaun guru baharu tidak perlu dikaitkan secara paksa dengan rekod Guru Penasihat.
-    sel.innerHTML='<option value="">Tidak dipautkan kepada Guru Penasihat</option>';sel.value='';sel.disabled=true;sel.required=false;if(field)field.hidden=true;return;
+  const canChooseTeacher=['ADMIN','PENTADBIR'].includes(role);
+  if(!canChooseTeacher){
+    // Akaun guru/penyelaras dipaut secara automatik kepada profil sendiri di backend.
+    sel.innerHTML='<option value="">Guru semasa</option>';sel.value='';sel.disabled=true;sel.required=false;if(field)field.hidden=true;return;
   }
   if(field)field.hidden=false;sel.required=true;sel.disabled=false;
   try{
     const d=await apiGet('getGuru',{token:state.token});
-    const teachers=(d.data||[]).filter(x=>String(x.STATUS||'AKTIF').toUpperCase()==='AKTIF');
+    const target=String(selected||d.currentNoGuru||'');
+    const teachers=(d.data||[]).filter(x=>String(x.STATUS||'AKTIF').toUpperCase()==='AKTIF'||String(x.NO_GURU||'')===target);
     sel.innerHTML='<option value="">-- Pilih Guru --</option>'+teachers.map(x=>`<option value="${activityEsc_(x.NO_GURU)}">${activityEsc_(x.NAMA)} — ${activityEsc_(x.NO_GURU)}</option>`).join('');
-    if(selected)sel.value=selected;
+    if(target)sel.value=target;
   }catch(e){toast(e.message||'Gagal memuatkan guru.');}
 }
 function updateActivityDay_(){if($('activityDay'))$('activityDay').value=activityDayFromDate_($('activityDate')?.value||'')}
@@ -3361,11 +3369,26 @@ async function loadAktivitiPesertaPage(requestedActivityId){
     toast(e.message||'Gagal memuatkan peserta.');
   }
 }
+function getVisibleAktivitiPesertaRows_(){
+  const cls=String($('activityParticipantClass')?.value||'');
+  const q=String($('activityParticipantSearch')?.value||'').trim().toLocaleLowerCase('ms');
+  return AKTIVITI_PESERTA_STATE.rows.filter(r=>(!cls||String(r.KELAS)===cls)&&(!q||String(r.NAMA||'').toLocaleLowerCase('ms').includes(q)||String(r.NO_KP||'').toLocaleLowerCase('ms').includes(q)));
+}
+function selectAllAktivitiPeserta_(){
+  if(!AKTIVITI_PESERTA_STATE.canManage)return;
+  const visible=getVisibleAktivitiPesertaRows_();
+  if(!visible.length){toast('Tiada murid dalam senarai yang sedang dipaparkan.');return;}
+  const selectAll=!visible.every(r=>r.selected===true);
+  visible.forEach(r=>{r.selected=selectAll;if(selectAll)r.peranan=String(r.peranan||'PESERTA').trim()||'PESERTA';else r.peranan='PESERTA';});
+  renderAktivitiPesertaTable_();
+}
 function renderAktivitiPesertaTable_(){
   const wrap=$('activityParticipantsTableWrap');if(!wrap)return;
-  const cls=String($('activityParticipantClass')?.value||'');const q=String($('activityParticipantSearch')?.value||'').trim().toLowerCase();
-  const rows=AKTIVITI_PESERTA_STATE.rows.filter(r=>(!cls||String(r.KELAS)===cls)&&(!q||String(r.NAMA).toLowerCase().includes(q)||String(r.NO_KP).toLowerCase().includes(q)));
-  const selected=AKTIVITI_PESERTA_STATE.rows.filter(r=>r.selected===true).length;if($('activityParticipantsCount'))$('activityParticipantsCount').textContent=AKTIVITI_PESERTA_STATE.canManage?`${selected} peserta dipilih untuk aktiviti ini`:`${selected} peserta direkodkan • paparan sahaja`;
+  const rows=getVisibleAktivitiPesertaRows_();
+  const selected=AKTIVITI_PESERTA_STATE.rows.filter(r=>r.selected===true).length;
+  if($('activityParticipantsCount'))$('activityParticipantsCount').textContent=AKTIVITI_PESERTA_STATE.canManage?`${selected} peserta dipilih untuk aktiviti ini`:`${selected} peserta direkodkan • paparan sahaja`;
+  const bulk=$('activityParticipantsSelectAllBtn');
+  if(bulk){bulk.hidden=!AKTIVITI_PESERTA_STATE.canManage;bulk.disabled=!rows.length;bulk.textContent=rows.length&&rows.every(r=>r.selected===true)?'Nyahpilih Semua':'Pilih Semua';bulk.title='Pilih semua murid yang sedang dipaparkan mengikut penapis kelas dan carian.';}
   wrap.innerHTML=`<table class="activity-participant-table"><thead><tr><th>PILIH</th><th>NAMA MURID</th><th>TINGKATAN</th><th>KELAS</th><th>JANTINA</th><th>PERANAN</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td><input class="activity-participant-check" type="checkbox" data-kp="${activityEsc_(r.NO_KP)}" ${r.selected?'checked':''} ${AKTIVITI_PESERTA_STATE.canManage?'':'disabled'}></td><td><b>${activityEsc_(r.NAMA)}</b></td><td>${activityEsc_(r.TINGKATAN||'-')}</td><td>${activityEsc_(r.KELAS||'-')}</td><td>${activityEsc_(r.JANTINA||'-')}</td><td><input class="activity-participant-role" data-kp="${activityEsc_(r.NO_KP)}" value="${activityEsc_(r.peranan||'PESERTA')}" ${r.selected&&AKTIVITI_PESERTA_STATE.canManage?'':'disabled'}></td></tr>`).join(''):'<tr><td colspan="6"><div class="empty">Tiada murid ditemui.</div></td></tr>'}</tbody></table>`;
   wrap.querySelectorAll('.activity-participant-check').forEach(ch=>ch.addEventListener('change',e=>{const r=AKTIVITI_PESERTA_STATE.rows.find(x=>String(x.NO_KP)===String(e.target.dataset.kp));if(!r)return;r.selected=e.target.checked;if(!r.selected)r.peranan='PESERTA';renderAktivitiPesertaTable_();}));
   wrap.querySelectorAll('.activity-participant-role').forEach(inp=>inp.addEventListener('input',e=>{const r=AKTIVITI_PESERTA_STATE.rows.find(x=>String(x.NO_KP)===String(e.target.dataset.kp));if(r)r.peranan=e.target.value;}));
@@ -4136,6 +4159,7 @@ let PENCAPAIAN_RECORD_PARTICIPANTS_=[];
 let PENCAPAIAN_RECORDS_=[];
 let PENCAPAIAN_GROUPS_=[];
 let PENCAPAIAN_SELECTED_KP_=new Set();
+let PENCAPAIAN_STUDENT_ENGAGEMENT_={};
 let PENCAPAIAN_CURRENT_GROUP_ID_='';
 let PENCAPAIAN_CURRENT_LEGACY_KEY_=null;
 
@@ -4155,6 +4179,55 @@ function pencapaianDateInput_(v){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function pencapaianLevelText_(v){return String(v||'-').replace(/_/g,' ');}
+function pencapaianNormalizeEngagementType_(value){
+  const v=String(value||'').trim().toUpperCase();
+  return ({'1':'I','2':'II','3':'III','PENGLIBATAN I':'I','PENGLIBATAN II':'II','PENGLIBATAN III':'III'})[v]||v;
+}
+const PENCAPAIAN_ENGAGEMENT_ROLES_={
+  I:[
+    {value:'ATLET / PESERTA',label:'Atlet / peserta'},
+    {value:'PESERTA PERKHEMAHAN / KURSUS / KARNIVAL',label:'Peserta perkhemahan / kursus / karnival'}
+  ],
+  II:[
+    {value:'AJK PELAKSANA',label:'AJK pelaksana'},
+    {value:'PETUGAS TEKNIKAL',label:'Petugas teknikal'},
+    {value:'PERSEMBAHAN SELINGAN',label:'Persembahan selingan'}
+  ],
+  III:[
+    {value:'PASUKAN SORAK',label:'Pasukan sorak'},
+    {value:'PENYOKONG',label:'Penyokong'},
+    {value:'MEMERIAHKAN MAJLIS',label:'Penglibatan memeriahkan majlis'}
+  ]
+};
+function pencapaianDefaultEngagementRole_(type){
+  const list=PENCAPAIAN_ENGAGEMENT_ROLES_[pencapaianNormalizeEngagementType_(type)]||[];
+  return list[0]?.value||'';
+}
+function pencapaianEngagementScore_(level,type){
+  const t=pencapaianNormalizeEngagementType_(type);
+  if(!String(level||'').trim()||!['I','II','III'].includes(t))return '—';
+  const raw=String(level||'').trim().toUpperCase().replace(/_/g,' ').replace(/\s+/g,' ');
+  const key=raw.includes('ANTARABANGSA')?'ANTARABANGSA':raw.includes('KEBANGSAAN')?'KEBANGSAAN':raw==='NEGERI'?'NEGERI':raw.includes('BAHAGIAN')?'BAHAGIAN':(raw.includes('ZON')||raw.includes('DAERAH'))?'ZON_DAERAH':'SEKOLAH';
+  const table={ANTARABANGSA:{I:20,II:15,III:10},KEBANGSAAN:{I:17,II:12,III:8},NEGERI:{I:14,II:10,III:6},BAHAGIAN:{I:12,II:9,III:5},ZON_DAERAH:{I:11,II:8,III:4},SEKOLAH:{I:0,II:0,III:0}};
+  return Number(table[key]?.[t]??0);
+}
+function pencapaianUpdateBulkRoleOptions_(){
+  const type=String($('pencapaianBulkEngagementType')?.value||'');
+  const role=$('pencapaianBulkEngagementRole');if(!role)return;
+  const list=PENCAPAIAN_ENGAGEMENT_ROLES_[type]||[];
+  role.innerHTML='<option value="">Pilih peranan</option>'+list.map(x=>`<option value="${pencapaianEsc_(x.value)}">${pencapaianEsc_(x.label)}</option>`).join('');
+  if(list.length)role.value=pencapaianDefaultEngagementRole_(type);
+}
+function applyPencapaianEngagementToSelected_(){
+  const type=pencapaianNormalizeEngagementType_($('pencapaianBulkEngagementType')?.value||'');
+  const role=String($('pencapaianBulkEngagementRole')?.value||'').trim();
+  if(!['I','II','III'].includes(type))return toast('Pilih Penglibatan I, II atau III.');
+  if(!(PENCAPAIAN_ENGAGEMENT_ROLES_[type]||[]).some(x=>x.value===role))return toast('Pilih peranan yang sepadan dengan jenis penglibatan.');
+  if(!PENCAPAIAN_SELECTED_KP_.size)return toast('Pilih sekurang-kurangnya seorang murid.');
+  PENCAPAIAN_SELECTED_KP_.forEach(kp=>{PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]={type,role};});
+  renderPencapaianParticipants_();
+  toast(`Penglibatan ${type} ditetapkan kepada ${PENCAPAIAN_SELECTED_KP_.size} murid.`);
+}
 async function loadPencapaianPage(){
   const wrap=$('pencapaianActivitiesTableWrap');if(!wrap)return;
   wrap.innerHTML='<div class="empty">Memuatkan aktiviti berdaftar...</div>';
@@ -4203,7 +4276,7 @@ async function openPencapaianActivityRecord_(activityId,groupToOpen=null){
     $('pencapaianRecordYear').value=String(PENCAPAIAN_CURRENT_ACTIVITY_?.TARIKH||'').slice(0,4)||String(new Date().getFullYear());
     $('pencapaianRecordDate').value=pencapaianDateInput_(PENCAPAIAN_CURRENT_ACTIVITY_?.TARIKH)||pencapaianDateInput_(new Date());
     $('pencapaianRecordLevel').value=String(PENCAPAIAN_CURRENT_ACTIVITY_?.PERINGKAT||'').toUpperCase();
-    $('pencapaianRecordName').value='';$('pencapaianRecordEngagementTitle').value='';$('pencapaianRecordPosition').value='';$('pencapaianRecordCategory').value='';$('pencapaianRecordNotes').value='';$('pencapaianRecordEvidence').value='';
+    $('pencapaianRecordName').value='';PENCAPAIAN_STUDENT_ENGAGEMENT_={};if($('pencapaianBulkEngagementType'))$('pencapaianBulkEngagementType').value='';pencapaianUpdateBulkRoleOptions_();$('pencapaianRecordPosition').value='';$('pencapaianRecordCategory').value='';$('pencapaianRecordNotes').value='';$('pencapaianRecordEvidence').value='';
     $('pencapaianRecordGroupId').value='';$('pencapaianRecordLegacyKey').value='';
     $('pencapaianRecordParticipantSearch').value='';
     const classes=[...new Set(PENCAPAIAN_RECORD_PARTICIPANTS_.map(x=>String(x.KELAS||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ms'));
@@ -4225,7 +4298,7 @@ function applyPencapaianReadOnly_(){
   const newEvent=$('pencapaianNewEventBtn'),refresh=$('pencapaianRefreshRecordBtn');
   if(newEvent)newEvent.hidden=PENCAPAIAN_READ_ONLY_;
   if(refresh)refresh.hidden=PENCAPAIAN_READ_ONLY_;
-  const formButtons=['pencapaianSelectAllBtn','pencapaianClearAllBtn','pencapaianSaveAndBackBtn','pencapaianRecordSaveBtn'];
+  const formButtons=['pencapaianSelectAllBtn','pencapaianClearAllBtn','pencapaianApplyEngagementToSelectedBtn','pencapaianSaveAndBackBtn','pencapaianRecordSaveBtn'];
   formButtons.forEach(id=>{const el=$(id);if(!el)return;if(id==='pencapaianSaveAndBackBtn'||id==='pencapaianRecordSaveBtn')el.hidden=PENCAPAIAN_READ_ONLY_;else el.disabled=PENCAPAIAN_READ_ONLY_;});
   if(form){form.querySelectorAll('input:not([type="hidden"]),select,textarea,button[data-pencapaian-rank]').forEach(el=>{if(el.id==='pencapaianRecordBackBottomBtn')return;el.disabled=PENCAPAIAN_READ_ONLY_;});}
 }
@@ -4245,7 +4318,8 @@ function renderPencapaianExistingGroups_(){
   if(!PENCAPAIAN_GROUPS_.length){wrap.innerHTML='<div class="empty">Belum ada rekod pencapaian untuk aktiviti ini. Isi acara di atas dan simpan untuk merekod murid yang terlibat.</div>';return;}
   wrap.innerHTML='<div class="pencapaian-existing-list">'+PENCAPAIAN_GROUPS_.map((g,i)=>{
     const r=g.first;const students=[...new Set(g.records.map(x=>String(x.NAMA_MURID||x.NO_KP||'')).filter(Boolean))];
-    return `<article class="pencapaian-existing-item"><div class="pencapaian-existing-main"><b>${pencapaianEsc_(r.NAMA_PENCAPAIAN||'Acara tanpa tajuk')}</b><small>${pencapaianEsc_(pencapaianDateText_(r.TARIKH))} • ${pencapaianEsc_(r.PERINGKAT||'-')} • ${pencapaianEsc_(r.KEDUDUKAN||'-')}</small><small>${students.length} murid direkodkan</small></div><button type="button" class="btn secondary small" data-pencapaian-open-group="${i}">Buka Rekod</button></article>`;
+    const types=[...new Set(g.records.map(x=>pencapaianNormalizeEngagementType_(x.JENIS_PENGLIBATAN||x.TAJUK_PENGLIBATAN||'')).filter(x=>['I','II','III'].includes(x)))].sort();
+    return `<article class="pencapaian-existing-item"><div class="pencapaian-existing-main"><b>${pencapaianEsc_(r.NAMA_PENCAPAIAN||'Acara tanpa tajuk')}</b><small>${pencapaianEsc_(pencapaianDateText_(r.TARIKH))} • ${pencapaianEsc_(r.PERINGKAT||'-')} • ${pencapaianEsc_(r.KEDUDUKAN||'-')}</small><small>${students.length} murid direkodkan • ${types.length?types.map(t=>'Penglibatan '+t).join(', '):'Jenis penglibatan belum dipetakan'}</small></div><button type="button" class="btn secondary small" data-pencapaian-open-group="${i}">Buka Rekod</button></article>`;
   }).join('')+'</div>';
   wrap.querySelectorAll('[data-pencapaian-open-group]').forEach(btn=>btn.addEventListener('click',()=>openPencapaianRecordGroup_(PENCAPAIAN_GROUPS_[Number(btn.dataset.pencapaianOpenGroup)].groupKey)));
 }
@@ -4256,7 +4330,9 @@ function openPencapaianRecordGroup_(groupKey){
   $('pencapaianRecordGroupId').value=PENCAPAIAN_CURRENT_GROUP_ID_;
   $('pencapaianRecordLegacyKey').value=PENCAPAIAN_CURRENT_LEGACY_KEY_?JSON.stringify(PENCAPAIAN_CURRENT_LEGACY_KEY_):'';
   $('pencapaianRecordName').value=String(r.NAMA_PENCAPAIAN||'');
-  $('pencapaianRecordEngagementTitle').value=String(r.TAJUK_PENGLIBATAN||'');
+  PENCAPAIAN_STUDENT_ENGAGEMENT_={};
+  if($('pencapaianBulkEngagementType'))$('pencapaianBulkEngagementType').value='';pencapaianUpdateBulkRoleOptions_();
+  g.records.forEach(x=>{const kp=String(x.NO_KP||'');if(!kp)return;const type=pencapaianNormalizeEngagementType_(x.JENIS_PENGLIBATAN||x.TAJUK_PENGLIBATAN||'');if(['I','II','III'].includes(type)){const roles=PENCAPAIAN_ENGAGEMENT_ROLES_[type]||[];const savedRole=String(x.PERANAN_PENGLIBATAN||'').trim();PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]={type,role:roles.some(y=>y.value===savedRole)?savedRole:pencapaianDefaultEngagementRole_(type)};}});
   $('pencapaianRecordYear').value=String(r.TAHUN||String(r.TARIKH||'').slice(0,4));
   $('pencapaianRecordDate').value=pencapaianDateInput_(r.TARIKH);
   $('pencapaianRecordLevel').value=String(r.PERINGKAT||'').toUpperCase();
@@ -4282,19 +4358,46 @@ function renderPencapaianParticipants_(){
   const total=PENCAPAIAN_RECORD_PARTICIPANTS_.length,selected=PENCAPAIAN_SELECTED_KP_.size;
   const count=$('pencapaianRecordParticipantsCount');if(count)count.textContent=`${total} peserta berdaftar • ${selected} dipilih`;
   if(!rows.length){wrap.innerHTML='<div class="empty">Tiada murid berdaftar sepadan. Pastikan peserta telah didaftarkan dalam Aktiviti & Acara.</div>';return;}
+  const level=String($('pencapaianRecordLevel')?.value||PENCAPAIAN_CURRENT_ACTIVITY_?.PERINGKAT||'');
   wrap.innerHTML=rows.map((m,i)=>{
     const kp=String(m.NO_KP||''),checked=PENCAPAIAN_SELECTED_KP_.has(kp);
-    return `<label class="pencapaian-participant-row ${checked?'selected':''}"><span class="pencapaian-participant-index">${i+1}</span><input type="checkbox" data-pencapaian-student="${pencapaianEsc_(kp)}" ${checked?'checked':''} ${PENCAPAIAN_READ_ONLY_?'disabled':''}><span class="pencapaian-participant-info"><b>${pencapaianEsc_(m.NAMA||'-')}</b><small>${pencapaianEsc_([m.KELAS].filter(Boolean).join(' • '))}</small></span><span class="pencapaian-participant-badge">${checked?'DIPILIH':'TIDAK DIPILIH'}</span></label>`;
+    const entry=PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]||{};
+    const type=pencapaianNormalizeEngagementType_(entry.type||'');
+    const roles=PENCAPAIAN_ENGAGEMENT_ROLES_[type]||[];
+    const role=String(entry.role||'');
+    const score=type?pencapaianEngagementScore_(level,type):'—';
+    const typeOptions=['I','II','III'].map(t=>`<option value="${t}" ${type===t?'selected':''}>Penglibatan ${t}</option>`).join('');
+    const roleOptions=roles.map(r=>`<option value="${pencapaianEsc_(r.value)}" ${role===r.value?'selected':''}>${pencapaianEsc_(r.label)}</option>`).join('');
+    return `<div class="pencapaian-participant-row ${checked?'selected':''}" data-pencapaian-row="${pencapaianEsc_(kp)}">
+      <input type="checkbox" data-pencapaian-student="${pencapaianEsc_(kp)}" ${checked?'checked':''} ${PENCAPAIAN_READ_ONLY_?'disabled':''} aria-label="Pilih ${pencapaianEsc_(m.NAMA||'murid')}">
+      <span class="pencapaian-participant-index">${i+1}</span>
+      <span class="pencapaian-participant-info"><b>${pencapaianEsc_(m.NAMA||'-')}</b><small>${pencapaianEsc_([m.KELAS].filter(Boolean).join(' • '))}</small><span class="pencapaian-participant-badge">${checked?'DIPILIH':'TIDAK DIPILIH'}</span></span>
+      <label class="pencapaian-student-engagement-field"><small>JENIS</small><select data-pencapaian-type="${pencapaianEsc_(kp)}" ${(!checked||PENCAPAIAN_READ_ONLY_)?'disabled':''}><option value="">Pilih jenis</option>${typeOptions}</select></label>
+      <label class="pencapaian-student-engagement-field"><small>PERANAN</small><select data-pencapaian-role="${pencapaianEsc_(kp)}" ${(!checked||!type||PENCAPAIAN_READ_ONLY_)?'disabled':''}><option value="">Pilih peranan</option>${roleOptions}</select></label>
+      <span class="pencapaian-student-engagement-score"><small>MARKAH</small><b>${score}</b></span>
+    </div>`;
   }).join('');
   wrap.querySelectorAll('[data-pencapaian-student]').forEach(input=>input.addEventListener('change',()=>{
     const kp=String(input.dataset.pencapaianStudent||'');
     if(input.checked)PENCAPAIAN_SELECTED_KP_.add(kp);else PENCAPAIAN_SELECTED_KP_.delete(kp);
-    input.closest('.pencapaian-participant-row')?.classList.toggle('selected',input.checked);
-    const badge=input.closest('.pencapaian-participant-row')?.querySelector('.pencapaian-participant-badge');if(badge)badge.textContent=input.checked?'DIPILIH':'TIDAK DIPILIH';
+    const row=input.closest('.pencapaian-participant-row');
+    row?.classList.toggle('selected',input.checked);
+    const badge=row?.querySelector('.pencapaian-participant-badge');if(badge)badge.textContent=input.checked?'DIPILIH':'TIDAK DIPILIH';
+    row?.querySelectorAll('select').forEach(select=>select.disabled=!input.checked||PENCAPAIAN_READ_ONLY_||(select.hasAttribute('data-pencapaian-role')&&!PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]?.type));
     const c=$('pencapaianRecordParticipantsCount');if(c)c.textContent=`${PENCAPAIAN_RECORD_PARTICIPANTS_.length} peserta berdaftar • ${PENCAPAIAN_SELECTED_KP_.size} dipilih`;
     renderPencapaianUnitPreview_();
   }));
+  wrap.querySelectorAll('[data-pencapaian-type]').forEach(select=>select.addEventListener('change',()=>{
+    const kp=String(select.dataset.pencapaianType||''),type=select.value;
+    PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]=type?{type,role:pencapaianDefaultEngagementRole_(type)}:{};
+    renderPencapaianParticipants_();
+  }));
+  wrap.querySelectorAll('[data-pencapaian-role]').forEach(select=>select.addEventListener('change',()=>{
+    const kp=String(select.dataset.pencapaianRole||''),entry=PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]||{};
+    if(entry.type)PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]={type:entry.type,role:select.value};
+  }));
 }
+
 let PENCAPAIAN_UNIT_PREVIEW_CACHE_=[];
 let PENCAPAIAN_UNIT_PREVIEW_CACHE_KEY_='';
 let PENCAPAIAN_UNIT_PREVIEW_TIMER_=null;
@@ -4369,7 +4472,7 @@ function syncPencapaianRecordYear_(){const d=$('pencapaianRecordDate')?.value||'
 function newPencapaianEventRecord_(){
   PENCAPAIAN_CURRENT_GROUP_ID_='';PENCAPAIAN_CURRENT_LEGACY_KEY_=null;
   $('pencapaianRecordGroupId').value='';$('pencapaianRecordLegacyKey').value='';
-  $('pencapaianRecordName').value='';$('pencapaianRecordPosition').value='';$('pencapaianRecordCategory').value='';$('pencapaianRecordNotes').value='';$('pencapaianRecordEvidence').value='';
+  $('pencapaianRecordName').value='';PENCAPAIAN_STUDENT_ENGAGEMENT_={};if($('pencapaianBulkEngagementType'))$('pencapaianBulkEngagementType').value='';pencapaianUpdateBulkRoleOptions_();$('pencapaianRecordPosition').value='';$('pencapaianRecordCategory').value='';$('pencapaianRecordNotes').value='';$('pencapaianRecordEvidence').value='';
   if(PENCAPAIAN_CURRENT_ACTIVITY_){
     $('pencapaianRecordDate').value=pencapaianDateInput_(PENCAPAIAN_CURRENT_ACTIVITY_.TARIKH)||pencapaianDateInput_(new Date());
     $('pencapaianRecordYear').value=$('pencapaianRecordDate').value.slice(0,4);
@@ -4405,16 +4508,17 @@ async function savePencapaianActivityRecord_(event,returnAfterSave){
   if(event)event.preventDefault();
   const btn=$('pencapaianRecordSaveBtn'),status=$('pencapaianRecordStatus');
   const activityId=String($('pencapaianRecordActivityId').value||'');
-  const selected=[...PENCAPAIAN_SELECTED_KP_];
+  const selected=[...PENCAPAIAN_SELECTED_KP_].map(kp=>({noKP:kp,jenisPenglibatan:pencapaianNormalizeEngagementType_(PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]?.type||''),perananPenglibatan:String(PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]?.role||'')}));
   const p={
     token:state.token,aktivitiId:activityId,acaraPencapaian:$('pencapaianRecordName').value.trim(),
-    tajukPenglibatan:$('pencapaianRecordEngagementTitle').value,
     kategoriPenyertaan:$('pencapaianRecordCategory').value,peringkat:$('pencapaianRecordLevel').value,
     kedudukan:$('pencapaianRecordPosition').value,tarikh:$('pencapaianRecordDate').value,tahun:$('pencapaianRecordYear').value,
     muridDipilih:JSON.stringify(selected),kumpulanId:$('pencapaianRecordGroupId').value||'',legacyMatchKey:$('pencapaianRecordLegacyKey').value||'',
     catatan:$('pencapaianRecordNotes').value.trim(),pautanBukti:$('pencapaianRecordEvidence').value.trim()
   };
-  if(!p.acaraPencapaian||!p.tajukPenglibatan||!p.kategoriPenyertaan||!p.peringkat||!p.kedudukan||!p.tarikh||!p.tahun){toast('Lengkapkan Acara/Pencapaian, Tajuk Penglibatan, Tahun, Peringkat, Kedudukan, Kategori Penyertaan dan Tarikh.');return;}
+  if(!p.acaraPencapaian||!p.kategoriPenyertaan||!p.peringkat||!p.kedudukan||!p.tarikh||!p.tahun){toast('Lengkapkan Acara/Pencapaian, Tahun, Peringkat, Kedudukan, Kategori Penyertaan dan Tarikh.');return;}
+  const missingEngagement=selected.filter(x=>!['I','II','III'].includes(x.jenisPenglibatan)||!x.perananPenglibatan);
+  if(missingEngagement.length){toast('Tetapkan Jenis Penglibatan dan Peranan untuk semua murid yang dipilih.');return;}
   if(!selected.length){toast('Pilih sekurang-kurangnya seorang murid yang terlibat.');return;}
   if(btn){btn.disabled=true;btn.textContent='Menyimpan...';}
   if(status)status.textContent='Menyimpan rekod pencapaian bagi murid yang dipilih...';
