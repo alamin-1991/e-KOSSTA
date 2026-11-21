@@ -3143,3 +3143,8 @@ html:not(.dark) .murid-import-progress progress::-webkit-progress-bar { backgrou
 .pajsk-gps-unit-cell .pajsk-unit-score-avg{font-weight:800;color:var(--text)}
 .pajsk-gps-unit-cell .pajsk-unit-element-breakdown{font-size:9px;letter-spacing:0;color:var(--muted);max-width:270px;margin-left:auto}
 @media(max-width:900px){.activity-participants-head-actions{width:100%}}
+
+/* v18: tunjuk pemetaan jenis penglibatan dan markah yang masuk ke PAJSK */
+.pajsk-table-records .pajsk-record-score-detail{display:block;margin-top:3px;color:var(--accent,#d8ed54);font-size:9px;line-height:1.5;white-space:normal;text-align:left}
+.pajsk-gps-unit-cell>small:first-of-type{color:var(--muted);font-size:9px}
+.pajsk-gps-unit-cell .pajsk-unit-score-avg{font-size:10px;font-weight:800;color:var(--text)}

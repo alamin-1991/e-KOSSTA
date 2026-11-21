@@ -686,9 +686,12 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
       const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
       const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
       const meta=[person,record.KELAS_MURID,record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
+      const type=pencapaianNormalizeEngagementType_(record.JENIS_PENGLIBATAN||record.TAJUK_PENGLIBATAN||'');
+      const engagement=type?`Penglibatan ${type}${record.PERANAN_PENGLIBATAN?' · '+record.PERANAN_PENGLIBATAN:''}: ${Number(record.MARKAH_PENGLIBATAN||0)} markah`:'Jenis Penglibatan belum direkodkan';
+      const achievement=`Pencapaian: ${Number(record.MARKAH_PENCAPAIAN||0)} markah`;
       const evidence=String(record.PAUTAN_BUKTI||'').trim();
       const link=/^https?:\/\//i.test(evidence)?` <a href="${analysisEsc_(evidence)}" target="_blank" rel="noopener noreferrer">Bukti ↗</a>`:'';
-      return `<li><b>${analysisEsc_(title)}</b><small>${analysisEsc_(meta)}</small>${link}</li>`;
+      return `<li><b>${analysisEsc_(title)}</b><small>${analysisEsc_(meta)}</small><small class="pajsk-record-score-detail">${analysisEsc_(engagement)} · ${analysisEsc_(achievement)}</small>${link}</li>`;
     }).join('')}</ul>`;
   };
   const groupsHtml=keys.map(key=>{
@@ -703,7 +706,7 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
         <td><b>${analysisEsc_(unit.NAMA_UNIT||'-')}</b></td>
         <td>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'-')}</td>
         <td class="num">${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</td>
-        <td class="num pajsk-gps-unit-cell">${gps===null||gps===undefined?'<span class="pajsk-table-muted">—</span>':pajskGpsText_(gps)}<small>${Number(unit.GPS_BILANGAN_MURID||0).toLocaleString('ms-MY')} / ${Number(unit.AHLI||0).toLocaleString('ms-MY')} murid dikira</small><small class="pajsk-unit-score-avg">Markah purata ${Number(unit.MARKAH_UNIT_PURATA||0).toFixed(2)}/100</small><small class="pajsk-unit-element-breakdown">J ${Number(unit.ELEMEN_PURATA?.JAWATAN||0).toFixed(1)}/10 · P ${Number(unit.ELEMEN_PURATA?.PENGLIBATAN||0).toFixed(1)}/20 · K ${Number(unit.ELEMEN_PURATA?.KOMITMEN||0).toFixed(1)}/10 · KS ${Number(unit.ELEMEN_PURATA?.KHIDMAT_SUMBANGAN||0).toFixed(1)}/10 · H ${Number(unit.ELEMEN_PURATA?.KEHADIRAN||0).toFixed(1)}/40 · Pc ${Number(unit.ELEMEN_PURATA?.PENCAPAIAN||0).toFixed(1)}/20</small></td>
+        <td class="num pajsk-gps-unit-cell">${gps===null||gps===undefined?'<span class="pajsk-table-muted">—</span>':pajskGpsText_(gps)}<small>GPS gred (1=A, 5=E; lebih rendah lebih baik)</small><small>${Number(unit.GPS_BILANGAN_MURID||0).toLocaleString('ms-MY')} / ${Number(unit.AHLI||0).toLocaleString('ms-MY')} murid dikira</small><small class="pajsk-unit-score-avg">Markah PAJSK purata: ${Number(unit.MARKAH_UNIT_PURATA||0).toFixed(2)}/100</small><small class="pajsk-unit-element-breakdown">J ${Number(unit.ELEMEN_PURATA?.JAWATAN||0).toFixed(1)}/10 · P ${Number(unit.ELEMEN_PURATA?.PENGLIBATAN||0).toFixed(1)}/20 · K ${Number(unit.ELEMEN_PURATA?.KOMITMEN||0).toFixed(1)}/10 · KS ${Number(unit.ELEMEN_PURATA?.KHIDMAT_SUMBANGAN||0).toFixed(1)}/10 · H ${Number(unit.ELEMEN_PURATA?.KEHADIRAN||0).toFixed(1)}/40 · Pc ${Number(unit.ELEMEN_PURATA?.PENCAPAIAN||0).toFixed(1)}/20</small></td>
         <td class="num">${total.toLocaleString('ms-MY')}</td>
         <td class="num">${share.toFixed(1)}%</td>
         <td>${recordText(records)}</td>
