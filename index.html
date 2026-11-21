@@ -782,6 +782,17 @@
     </section>
   </div>
   <div class="system-settings-footer"><div><div id="systemSettingsStatus" class="unit-member-form-status" role="status" aria-live="polite">Tetapan belum dimuatkan.</div><small class="muted">Tetapan disimpan di Google Sheets dan digunakan untuk paparan aplikasi, surat kebenaran serta One Page Report.</small></div><button id="saveSystemSettingsBtn" class="btn primary" type="button">Simpan Tetapan</button></div>
+  <section class="system-data-maintenance">
+    <div class="system-data-maintenance-head"><div><span class="unit-member-kicker">PENGURUSAN DATA • ADMIN SAHAJA</span><h3>Padam / Kosongkan Data</h3><p>Empat tindakan berasingan. Setiap tindakan memerlukan frasa pengesahan dan tidak boleh dipulihkan melalui aplikasi.</p></div><button id="systemDeletePreviewRefreshBtn" class="btn secondary" type="button">Kemas Kini Kiraan</button></div>
+    <div class="system-delete-grid">
+      <article class="system-delete-card"><span class="system-delete-step">01 / REKOD</span><h4>Padam Rekod Sahaja</h4><p>Padam kehadiran, AJK, aktiviti, peserta, pencapaian, dokumen dan rekod PAJSK. Profil murid, guru, unit dan akaun dikekalkan.</p><small id="systemDeleteCountRecords">— rekod terlibat</small><button class="btn danger" type="button" data-system-delete="RECORDS">Padam Rekod</button></article>
+      <article class="system-delete-card"><span class="system-delete-step">02 / MURID</span><h4>Padam Data Murid Sahaja</h4><p>Padam semua profil murid dan rekod kehadiran, penempatan, peserta, pencapaian individu serta data PAJSK yang berkaitan dengan No. KP.</p><small id="systemDeleteCountStudents">— rekod terlibat</small><button class="btn danger" type="button" data-system-delete="STUDENTS">Padam Data Murid</button></article>
+      <article class="system-delete-card"><span class="system-delete-step">03 / GURU</span><h4>Padam Data Guru Sahaja</h4><p>Padam profil guru, akaun bukan ADMIN, sesi log masuk dan penugasan guru. Rekod sejarah aktiviti dan pencapaian dikekalkan.</p><small id="systemDeleteCountTeachers">— rekod terlibat</small><button class="btn danger" type="button" data-system-delete="TEACHERS">Padam Data Guru</button></article>
+      <article class="system-delete-card is-critical"><span class="system-delete-step">04 / RESET SEKOLAH</span><h4>Kosongkan Semua Data</h4><p>Kosongkan data operasi termasuk murid, guru, unit, aktiviti, rekod PAJSK dan dokumen. Akaun ADMIN, sesi ADMIN, identiti aplikasi dan log audit dikekalkan.</p><small id="systemDeleteCountAll">— rekod terlibat</small><button class="btn danger-solid" type="button" data-system-delete="ALL">KOSONGKAN SEMUA DATA</button></article>
+    </div>
+    <div id="systemDeletePreviewStatus" class="system-delete-status" role="status" aria-live="polite">Kiraan data belum dimuatkan.</div>
+    <p class="system-delete-preserve-note"><b>DILINDUNGI:</b> Struktur helaian dan header Google Sheets, akaun dan profil ADMIN, sesi ADMIN, tetapan nama/logo aplikasi dan log audit tidak dipadam. Buat salinan Google Sheets sebelum menjalankan sebarang tindakan.</p>
+  </section>
 </section></section></div></main>
 <nav id="mobileNav" class="mobile-nav" aria-label="Navigasi mudah alih">
   <button class="nav-item active" data-page="dashboard" type="button" aria-label="Utama"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5.5 9.5V21h13V9.5M9 21v-7h6v7"/></svg><span>Utama</span></button>

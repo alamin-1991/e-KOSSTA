@@ -3515,3 +3515,19 @@ html.dark body .app-shell .container #guruSection #guruTableWrap td:last-child .
   .report-appendix-page .report-data-table tr{break-inside:avoid;page-break-inside:avoid}
   .ekossta-one-page-report{break-inside:auto!important;page-break-inside:auto!important}
 }
+
+
+/* v19 — admin data maintenance */
+.system-data-maintenance{margin-top:22px;padding:20px;border:1px solid var(--border,#36584c);background:var(--surface,#15251e)}
+.system-data-maintenance-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border,#36584c)}
+.system-data-maintenance-head h3{margin:5px 0 6px;font-size:17px}.system-data-maintenance-head p{margin:0;max-width:78ch;color:var(--muted);font-size:12px;line-height:1.55}
+.system-delete-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.system-delete-card{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:16px;border:1px solid var(--border,#36584c);background:var(--surface2,#102019)}
+.system-delete-card h4{margin:0;font-size:15px;color:var(--text,#f4f5e9)}.system-delete-card p{margin:0;flex:1;color:var(--muted);font-size:12px;line-height:1.55}.system-delete-card small{color:var(--muted);font:10px 'IBM Plex Mono','JetBrains Mono',monospace}
+.system-delete-step{font:700 9px 'IBM Plex Mono','JetBrains Mono',monospace;letter-spacing:.12em;color:var(--accent,#d8e267)}
+.system-delete-card.is-critical{border-color:#9c4545;background:rgba(139,45,45,.09)}.system-delete-card.is-critical .system-delete-step{color:#f0a4a4}
+.system-delete-card .btn{margin:2px 0 0}.btn.danger{border:1px solid #9c5b5b;background:rgba(150,45,45,.12);color:#e7a5a5}.btn.danger-solid{border:1px solid #a43f3f;background:#8d2525;color:#fff;font-weight:800}
+.system-delete-status{margin-top:14px;padding:10px 12px;border:1px solid var(--border,#36584c);background:var(--surface2,#102019);font-size:11px;color:var(--muted)}
+.system-delete-preserve-note{margin:10px 0 0;padding:10px 12px;border-left:3px solid var(--accent,#d8e267);background:rgba(216,226,103,.06);font-size:11px;line-height:1.55;color:var(--muted)}.system-delete-preserve-note b{color:var(--text,#f4f5e9)}
+.system-delete-card .btn:disabled{opacity:.55;cursor:wait}
+@media(max-width:760px){.system-data-maintenance{padding:14px}.system-data-maintenance-head{flex-direction:column}.system-data-maintenance-head .btn{width:100%}.system-delete-grid{grid-template-columns:1fr}.system-delete-card .btn{width:100%}}
