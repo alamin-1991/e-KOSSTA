@@ -1,24 +1,42 @@
-const CACHE = 'ekossta-pajsk-dashboard-v23-20261121';
+const CACHE = 'ekossta-pajsk-v25-clean-20261121';
 const SHELL = [
-  './', './index.html', './styles.css', './material-ui.css',
-  './ekossta-ui-refresh.css', './ekossta-terminal-ui.css', './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-ui-corrections-v5.css', './ekossta-gps-role-v6.css', './ekossta-iphone-v8.css', './ekossta-ekstra-gps-v9.css',
-  './app.js', './ekossta-pajsk-school-table-v11.css', './ekossta-pajsk-school-table-v13.css', './ekossta-pajsk-dashboard-v20.css', './ekossta-pajsk-dashboard-v21-light.css', './ekossta-pajsk-dashboard-v22.css', './ekossta-pajsk-dashboard-v23.css', './ekossta-ekstra-default-zero-v10.css', './ios-mobile-navigation.js', './manifest.webmanifest', './icon-192.svg', './icon-512.svg',
-  './ekossta-mobile-responsive.css', './ekossta-ui-standard-v2.css', './ekossta-materials.css', './ekossta-materials.js', './ekossta-icons.js', './design-tokens.json', './palette.json', './apple-touch-icon.png', './icon-192.png', './icon-512.png'
+  './',
+  './index.html',
+  './ekossta-main.css',
+  './app.js',
+  './ios-mobile-navigation.js',
+  './manifest.webmanifest',
+  './apple-touch-icon.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
+
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(SHELL))
+      .then(() => self.skipWaiting())
+  );
 });
+
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
 });
+
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.hostname.includes('script.google.com') || url.hostname.includes('googleusercontent.com')) return;
-  event.respondWith(fetch(event.request).then(response => {
-    if (!response || !response.ok) return response;
-    const copy = response.clone();
-    caches.open(CACHE).then(cache => cache.put(event.request, copy));
-    return response;
-  }).catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html'))));
+  event.respondWith(
+    fetch(event.request).then(response => {
+      if (!response || !response.ok) return response;
+      const copy = response.clone();
+      caches.open(CACHE).then(cache => cache.put(event.request, copy));
+      return response;
+    }).catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html')))
+  );
 });
