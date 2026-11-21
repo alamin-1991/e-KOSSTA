@@ -14,7 +14,7 @@
   if(isIPhone && isStandalone)document.documentElement.classList.add('ios-standalone');
 })();
 </script>
-<title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"><link rel="stylesheet" href="ekossta-iphone-v8.css"><link rel="stylesheet" href="ekossta-ekstra-gps-v9.css"><link rel="stylesheet" href="ekossta-ekstra-default-zero-v10.css"><link rel="stylesheet" href="ekossta-pajsk-school-table-v11.css"><link rel="stylesheet" href="ekossta-pajsk-school-table-v13.css"><link rel="stylesheet" href="ekossta-pajsk-dashboard-v20.css"><link rel="stylesheet" href="ekossta-pajsk-dashboard-v21-light.css"></head>
+<title>e-KOSSTA | Pengurusan Kokurikulum</title><link rel="stylesheet" href="ekossta-ui-corrections-v5.css"><link rel="stylesheet" href="ekossta-gps-role-v6.css"><link rel="stylesheet" href="ekossta-iphone-v8.css"><link rel="stylesheet" href="ekossta-ekstra-gps-v9.css"><link rel="stylesheet" href="ekossta-ekstra-default-zero-v10.css"><link rel="stylesheet" href="ekossta-pajsk-school-table-v11.css"><link rel="stylesheet" href="ekossta-pajsk-school-table-v13.css"><link rel="stylesheet" href="ekossta-pajsk-dashboard-v20.css"><link rel="stylesheet" href="ekossta-pajsk-dashboard-v21-light.css"><link rel="stylesheet" href="ekossta-pajsk-dashboard-v22.css"></head>
 <body>
 <header class="mobile-topbar">
   <button id="iosSidebarToggle" class="ios-sidebar-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
@@ -654,7 +654,7 @@
       <div class="analysis-actions"><button id="pajskSchoolRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div>
     </div>
     <div class="analysis-filterbar"><div><label for="pajskSchoolYearFilter">Tahun</label><select id="pajskSchoolYearFilter"></select></div></div>
-    <div id="pajskSchoolStatus" class="analysis-status" role="status" aria-live="polite">Memuatkan analisis sekolah...</div>
+    <div id="pajskSchoolStatus" class="analysis-status" role="status" aria-live="polite" hidden></div>
     <div class="analysis-pajsk-kpi-grid">
       <article class="analysis-kpi"><span class="analysis-kpi-label">JUMLAH MURID</span><strong id="pajskSchoolKpiStudents">—</strong><small>Murid aktif dalam tahun dipilih</small><span class="analysis-kpi-index">01</span></article>
       <article class="analysis-kpi"><span class="analysis-kpi-label">EKSTRA LENGKAP</span><strong id="pajskSchoolKpiExtra">—</strong><small id="pajskSchoolKpiExtraNote">Murid lengkap keenam-enam elemen</small><span class="analysis-kpi-index">02</span></article>

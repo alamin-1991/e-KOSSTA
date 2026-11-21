@@ -1,6 +1,6 @@
 /* EKOSSTA_UNIT_LAYOUT_BUILD: UNIT_TABLE_V7_20261022 */
 /* EKOSSTA_ANALYSIS_MODULE_BUILD: ANALYSIS_LIVE_DATA_V1_20261023 */
-/* EKOSSTA_PAJSK_CLASS_REPORT: V3_20261121_GRADE_SLIDER_CLASS_GENDER_PIE */
+/* EKOSSTA_PAJSK_CLASS_REPORT: V4_20261121_GRADE_CLASS_GENDER_MODAL */
 window.__EKOSSTA_UNIT_LAYOUT_BUILD__ = "UNIT_TABLE_V7_20261022";
 const $=id=>document.getElementById(id);
 const state={apiUrl:localStorage.getItem('ekossta_model_b_api_url')||'',dark:localStorage.getItem('ekossta_model_b_dark')==='1',token:sessionStorage.getItem('ekossta_v2_token')||'',user:JSON.parse(sessionStorage.getItem('ekossta_v2_user')||'null')};
@@ -19,7 +19,7 @@ let PAJSK_CACHE_={loaded:false,year:'',kelas:'',classes:[],years:[],data:[],scor
 let PAJSK_WORKFLOW_CACHE_={loaded:false,year:'',classes:[],assignedElements:[],students:[],extraRecords:[],extraGridRecords:[],reviews:[],isAdmin:false};
 let PAJSK_ASSIGNMENT_USER_=null;
 let PAJSK_GRADE_SLIDE_INDEX_=0;
-let PAJSK_GRADE_CHART_DATA_={summary:null,classGenderStats:[]};
+let PAJSK_GRADE_CHART_DATA_={summary:null,classGenderStats:[],gradeClassGenderStats:[]};
 const PAJSK_CATEGORIES_=['KELAB / PERSATUAN','UNIT BERUNIFORM','SUKAN / PERMAINAN'];
 const PAJSK_CATEGORY_LABELS_={'KELAB / PERSATUAN':'Kelab / Persatuan','UNIT BERUNIFORM':'Badan Beruniform','SUKAN / PERMAINAN':'Sukan / Permainan','RUMAH SUKAN':'Rumah Sukan','ACARA / PENYERTAAN':'Acara / Penyertaan'};
 let DASHBOARD_SUMMARY_CACHE_={murid:null,units:null};
@@ -634,6 +634,46 @@ function pajskClassGenderSvg_(formData){
   const totals=classes.reduce((acc,c)=>{series.forEach(s=>acc[s.key]+=Number(c[s.key]||0));return acc;},{LELAKI:0,PEREMPUAN:0,TIDAK_DIREKOD:0});
   return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${(totals.LELAKI+totals.PEREMPUAN+totals.TIDAK_DIREKOD).toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bar bilangan murid mengikut kelas dan jantina. Paksi X ialah kelas; siri bar ialah jantina; paksi Y ialah jumlah murid."><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-5}" text-anchor="middle">Kelas (mengikut jantina)</text></svg></div>`;
 }
+function pajskGradeClassGenderSvg_(formData){
+  const groups=Array.isArray(formData?.groups)?formData.groups.filter(g=>Number(g.JUMLAH||0)>0):[];
+  if(!groups.length)return '<div class="pajsk-chart-empty">Tiada data gred, kelas dan jantina untuk tingkatan ini.</div>';
+  const genderSeries=[
+    {key:'LELAKI',label:'Lelaki',cls:'male'},
+    {key:'PEREMPUAN',label:'Perempuan',cls:'female'},
+    {key:'TIDAK_DIREKOD',label:'Jantina tidak direkod',cls:'unknown'}
+  ];
+  const activeGenders=genderSeries.filter(g=>groups.some(row=>String(row.JANTINA||'')===g.key));
+  const maximum=Math.max(1,...groups.map(g=>Number(g.JUMLAH||0)));
+  const step=Math.max(1,Math.ceil(maximum/4));
+  const maxAxis=step*4;
+  const left=54,top=18,plotHeight=210,right=22,bottom=104;
+  const slot=Math.max(112,Math.floor(980/groups.length));
+  const width=left+right+slot*groups.length;
+  const height=top+plotHeight+bottom;
+  const plotBottom=top+plotHeight;
+  const plotWidth=width-left-right;
+  const grid=Array.from({length:5},(_,i)=>{
+    const val=maxAxis-i*step,y=top+(plotHeight/4)*i;
+    return `<line class="pajsk-bar-grid" x1="${left}" y1="${y}" x2="${width-right}" y2="${y}"/><text class="pajsk-bar-axis-label" x="${left-9}" y="${y+4}" text-anchor="end">${val}</text>`;
+  }).join('');
+  const gradeOrder={A:0,B:1,C:2,D:3,E:4};
+  const sorted=groups.slice().sort((a,b)=>(gradeOrder[String(a.GRED||'E')]??9)-(gradeOrder[String(b.GRED||'E')]??9)||String(a.KELAS||'').localeCompare(String(b.KELAS||''),'ms',{numeric:true})||genderSeries.findIndex(g=>g.key===a.JANTINA)-genderSeries.findIndex(g=>g.key===b.JANTINA));
+  const bars=sorted.map((g,i)=>{
+    const value=Math.max(0,Number(g.JUMLAH||0));
+    const groupLeft=left+i*slot,barWidth=Math.min(38,Math.max(20,slot*.34));
+    const x=groupLeft+(slot-barWidth)/2,h=value/maxAxis*plotHeight,y=plotBottom-h;
+    const gender=genderSeries.find(x=>x.key===g.JANTINA)||genderSeries[2];
+    const grade=String(g.GRED||'—'),kelas=String(g.KELAS||'—');
+    const genderLabel=gender.label;
+    const shortClass=kelas.length>16?kelas.slice(0,15)+'…':kelas;
+    const fullTitle=`Gred ${grade} • ${kelas} • ${genderLabel}: ${value} murid`;
+    const valueLabel=value?`<text class="pajsk-bar-value" x="${x+barWidth/2}" y="${Math.max(top+10,y-5)}" text-anchor="middle">${value}</text>`:'';
+    return `<rect class="pajsk-bar-column ${gender.cls}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth}" height="${Math.max(0,h).toFixed(2)}" rx="3"><title>${pajskChartEscape_(fullTitle)}</title></rect>${valueLabel}<text class="pajsk-bar-grade-label" x="${groupLeft+slot/2}" y="${plotBottom+19}" text-anchor="middle">GRED ${pajskChartEscape_(grade)}</text><text class="pajsk-bar-class-label" x="${groupLeft+slot/2}" y="${plotBottom+35}" text-anchor="middle"><title>${pajskChartEscape_(kelas)}</title>${pajskChartEscape_(shortClass)}</text><text class="pajsk-bar-gender-label" x="${groupLeft+slot/2}" y="${plotBottom+51}" text-anchor="middle">${gender.key==='LELAKI'?'L':gender.key==='PEREMPUAN'?'P':'?'}</text>`;
+  }).join('');
+  const legend=activeGenders.map(g=>`<span class="pajsk-chart-legend-item"><i class="pajsk-chart-legend-swatch ${g.cls}"></i>${g.label}</span>`).join('');
+  const total=sorted.reduce((sum,g)=>sum+Number(g.JUMLAH||0),0);
+  return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${total.toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg pajsk-grade-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bar jumlah murid mengikut gred, kelas dan jantina. Paksi X ialah gred, kelas dan jantina; paksi Y ialah jumlah murid."><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-7}" text-anchor="middle">Gred • Kelas • Jantina</text></svg></div>`;
+}
 function pajskPiePath_(cx,cy,r,startAngle,endAngle){
   const x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);
   const x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);
@@ -675,7 +715,7 @@ function renderPajskSchoolGradeSlide_(){
   const rows=Array.isArray(PAJSK_GRADE_CHART_DATA_.summary?.rows)?PAJSK_GRADE_CHART_DATA_.summary.rows:[];
   const level=PAJSK_GRADE_SLIDE_INDEX_+1;
   const gradeRow=rows.find(r=>Number(r.TINGKATAN)===level)||{TINGKATAN:level,A:0,B:0,C:0,D:0,E:0,TL_TD:0,JUMLAH_MURID:0};
-  const classData=(PAJSK_GRADE_CHART_DATA_.classGenderStats||[]).find(x=>Number(x.TINGKATAN)===level)||{TINGKATAN:level,classes:[]};
+  const classData=(PAJSK_GRADE_CHART_DATA_.gradeClassGenderStats||[]).find(x=>Number(x.TINGKATAN)===level)||{TINGKATAN:level,groups:[]};
   const formTotal=Number(gradeRow.JUMLAH_MURID||0);
   const prevDisabled=PAJSK_GRADE_SLIDE_INDEX_<=0?'disabled':'';
   const nextDisabled=PAJSK_GRADE_SLIDE_INDEX_>=4?'disabled':'';
@@ -687,8 +727,8 @@ function renderPajskSchoolGradeSlide_(){
     </div>
     <div class="pajsk-grade-dashboard-grid">
       <section class="pajsk-grade-dashboard-card">
-        <header><span>BAR GRAF</span><h5>Bilangan Murid Mengikut Kelas &amp; Jantina</h5><small>Paksi X: Kelas • Siri bar: Jantina (Lelaki / Perempuan) • Paksi Y: Jumlah murid</small></header>
-        ${pajskClassGenderSvg_(classData)}
+        <header><span>BAR GRAF</span><h5>Bilangan Murid Mengikut Gred, Kelas &amp; Jantina</h5><small>Paksi X: Gred • Kelas • Jantina &nbsp; | &nbsp; Paksi Y: Jumlah murid</small></header>
+        ${pajskGradeClassGenderSvg_(classData)}
       </section>
       <section class="pajsk-grade-dashboard-card pajsk-grade-pie-card">
         <header><span>PIE GRAF</span><h5>Peratus Murid Mengikut Gred</h5><small>Peratus murid mengikut gred A, B, C, D dan E</small></header>
@@ -700,8 +740,8 @@ function renderPajskSchoolGradeSlide_(){
   host.querySelector('[data-pajsk-grade-next]')?.addEventListener('click',()=>{PAJSK_GRADE_SLIDE_INDEX_=Math.min(4,PAJSK_GRADE_SLIDE_INDEX_+1);renderPajskSchoolGradeSlide_();});
   host.querySelectorAll('[data-pajsk-grade-level]').forEach(btn=>btn.addEventListener('click',()=>{PAJSK_GRADE_SLIDE_INDEX_=Math.max(0,Math.min(4,Number(btn.dataset.pajskGradeLevel)-1));renderPajskSchoolGradeSlide_();}));
 }
-function renderPajskSchoolGradeChart_(summary,classGenderStats=[]){
-  PAJSK_GRADE_CHART_DATA_={summary:summary||{rows:[]},classGenderStats:Array.isArray(classGenderStats)?classGenderStats:[]};
+function renderPajskSchoolGradeChart_(summary,classGenderStats=[],gradeClassGenderStats=[]){
+  PAJSK_GRADE_CHART_DATA_={summary:summary||{rows:[]},classGenderStats:Array.isArray(classGenderStats)?classGenderStats:[],gradeClassGenderStats:Array.isArray(gradeClassGenderStats)?gradeClassGenderStats:[]};
   PAJSK_GRADE_SLIDE_INDEX_=Math.max(0,Math.min(4,PAJSK_GRADE_SLIDE_INDEX_));
   renderPajskSchoolGradeSlide_();
 }
@@ -746,6 +786,32 @@ function renderPajskSchoolGradeSummary_(summary){
     </div>`;
 }
 
+function pajskOpenUnitRecordModal_(payload){
+  document.getElementById('pajskUnitRecordsModal')?.remove();
+  const records=Array.isArray(payload?.records)?payload.records:[];
+  const cards=records.map(record=>{
+    const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
+    const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
+    const meta=[person,record.KELAS_MURID,record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
+    const type=pencapaianNormalizeEngagementType_(record.JENIS_PENGLIBATAN||record.TAJUK_PENGLIBATAN||'');
+    const engagement=type?`Penglibatan ${type}${record.PERANAN_PENGLIBATAN?' · '+record.PERANAN_PENGLIBATAN:''}: ${Number(record.MARKAH_PENGLIBATAN||0)} markah`:'Jenis Penglibatan belum direkodkan';
+    const achievement=`Pencapaian: ${Number(record.MARKAH_PENCAPAIAN||0)} markah`;
+    const evidence=String(record.PAUTAN_BUKTI||'').trim();
+    const link=/^https?:\/\//i.test(evidence)?`<a href="${analysisEsc_(evidence)}" target="_blank" rel="noopener noreferrer">Buka bukti ↗</a>`:'';
+    return `<article class="pajsk-unit-record-modal-item"><div><b>${analysisEsc_(title)}</b><small>${analysisEsc_(meta)}</small></div><p>${analysisEsc_(engagement)} · ${analysisEsc_(achievement)}</p>${link}</article>`;
+  }).join('');
+  const overlay=document.createElement('div');
+  overlay.id='pajskUnitRecordsModal';overlay.className='pajsk-unit-record-modal-backdrop';
+  overlay.innerHTML=`<section class="pajsk-unit-record-modal" role="dialog" aria-modal="true" aria-labelledby="pajskUnitRecordsModalTitle"><header><div><span>PAJSK / REKOD UNIT</span><h3 id="pajskUnitRecordsModalTitle">${analysisEsc_(payload?.unitName||'Butiran Pencapaian')}</h3><small>${records.length} rekod pencapaian</small></div><button type="button" class="pajsk-unit-record-modal-close" aria-label="Tutup">×</button></header><div class="pajsk-unit-record-modal-list">${cards||'<div class="pajsk-chart-empty">Tiada butiran pencapaian.</div>'}</div><footer><button type="button" class="pajsk-unit-record-modal-close">Tutup</button></footer></section>`;
+  document.body.appendChild(overlay);
+  const close=()=>{overlay.remove();document.body.classList.remove('pajsk-modal-open');document.removeEventListener('keydown',onKey);};
+  const onKey=e=>{if(e.key==='Escape')close();};
+  overlay.querySelectorAll('.pajsk-unit-record-modal-close').forEach(button=>button.addEventListener('click',close));
+  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+  document.addEventListener('keydown',onKey);
+  document.body.classList.add('pajsk-modal-open');
+  overlay.querySelector('.pajsk-unit-record-modal-close')?.focus();
+}
 function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
   const host=$('pajskSchoolUnitTableWrap');if(!host)return;
   // Rumah Sukan tidak termasuk dalam analisis PAJSK sekolah. Kekalkan kategori
@@ -761,26 +827,11 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
   const keys=[...categoryOrder.filter(k=>groups.has(k)),...Array.from(groups.keys()).filter(k=>!categoryOrder.includes(k)).sort((a,b)=>a.localeCompare(b,'ms'))];
   const loose=(unassignedRecords||[]);
   if(!keys.length&&!loose.length){host.innerHTML='<div class="analysis-empty">Tiada unit atau rekod pencapaian untuk tahun ini.</div>';return;}
-  const recordText=records=>{
+  const recordModalGroups=[];
+  const recordText=(records,unitName)=>{
     if(!records.length)return '<span class="pajsk-table-muted">Belum ada rekod pencapaian</span>';
-    const items=records.map(record=>{
-      const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
-      const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
-      const meta=[person,record.KELAS_MURID,record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
-      const type=pencapaianNormalizeEngagementType_(record.JENIS_PENGLIBATAN||record.TAJUK_PENGLIBATAN||'');
-      const engagement=type?`Penglibatan ${type}${record.PERANAN_PENGLIBATAN?' · '+record.PERANAN_PENGLIBATAN:''}: ${Number(record.MARKAH_PENGLIBATAN||0)} markah`:'Jenis Penglibatan belum direkodkan';
-      const achievement=`Pencapaian: ${Number(record.MARKAH_PENCAPAIAN||0)} markah`;
-      const evidence=String(record.PAUTAN_BUKTI||'').trim();
-      const link=/^https?:\/\//i.test(evidence)?` <a href="${analysisEsc_(evidence)}" target="_blank" rel="noopener noreferrer">Bukti ↗</a>`:'';
-      return `<li><b>${analysisEsc_(title)}</b><small>${analysisEsc_(meta)}</small><small class="pajsk-record-score-detail">${analysisEsc_(engagement)} · ${analysisEsc_(achievement)}</small>${link}</li>`;
-    }).join('');
-    return `<details class="pajsk-unit-record-details">
-      <summary><span>Lihat butiran pencapaian</span><b>${records.length} REKOD</b></summary>
-      <div class="pajsk-unit-record-popover">
-        <div class="pajsk-unit-record-popover-head"><b>Senarai Butiran Pencapaian</b><button type="button" class="pajsk-unit-record-close" data-pajsk-record-close>Tutup ×</button></div>
-        <ul class="pajsk-table-records">${items}</ul>
-      </div>
-    </details>`;
+    const modalIndex=recordModalGroups.push({unitName:String(unitName||'Unit'),records})-1;
+    return `<button type="button" class="pajsk-unit-record-open-btn" data-pajsk-record-open="${modalIndex}" aria-label="Lihat ${records.length} butiran pencapaian bagi ${analysisEsc_(unitName||'unit')}"><span aria-hidden="true">↗</span> Butiran <b>${records.length}</b></button>`;
   };
   const groupsHtml=keys.map(key=>{
     const units=(groups.get(key)||[]).slice().sort((a,b)=>String(a.NAMA_UNIT||'').localeCompare(String(b.NAMA_UNIT||''),'ms'));
@@ -794,10 +845,10 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
         <td><b>${analysisEsc_(unit.NAMA_UNIT||'-')}</b></td>
         <td>${analysisEsc_(categoryLabels[key]||unit.KATEGORI||'-')}</td>
         <td class="num">${analysisNum_(unit.AHLI).toLocaleString('ms-MY')}</td>
-        <td class="num pajsk-gps-unit-cell">${gps===null||gps===undefined?'<span class="pajsk-table-muted">—</span>':pajskGpsText_(gps)}<small>GPS gred (1=A, 5=E; lebih rendah lebih baik)</small><small>${Number(unit.GPS_BILANGAN_MURID||0).toLocaleString('ms-MY')} / ${Number(unit.AHLI||0).toLocaleString('ms-MY')} murid dikira</small><small class="pajsk-unit-score-avg">Markah PAJSK purata: ${Number(unit.MARKAH_UNIT_PURATA||0).toFixed(2)}/100</small><small class="pajsk-unit-element-breakdown">J ${Number(unit.ELEMEN_PURATA?.JAWATAN||0).toFixed(1)}/10 · P ${Number(unit.ELEMEN_PURATA?.PENGLIBATAN||0).toFixed(1)}/20 · K ${Number(unit.ELEMEN_PURATA?.KOMITMEN||0).toFixed(1)}/10 · KS ${Number(unit.ELEMEN_PURATA?.KHIDMAT_SUMBANGAN||0).toFixed(1)}/10 · H ${Number(unit.ELEMEN_PURATA?.KEHADIRAN||0).toFixed(1)}/40 · Pc ${Number(unit.ELEMEN_PURATA?.PENCAPAIAN||0).toFixed(1)}/20</small></td>
+        <td class="num pajsk-gps-unit-cell">${gps===null||gps===undefined?'<span class="pajsk-table-muted">—</span>':pajskGpsText_(gps)}<small>${Number(unit.GPS_BILANGAN_MURID||0).toLocaleString('ms-MY')} / ${Number(unit.AHLI||0).toLocaleString('ms-MY')} murid dikira</small><small class="pajsk-unit-score-avg">Markah PAJSK purata: ${Number(unit.MARKAH_UNIT_PURATA||0).toFixed(2)}/100</small><small class="pajsk-unit-element-breakdown">J ${Number(unit.ELEMEN_PURATA?.JAWATAN||0).toFixed(1)}/10 · P ${Number(unit.ELEMEN_PURATA?.PENGLIBATAN||0).toFixed(1)}/20 · K ${Number(unit.ELEMEN_PURATA?.KOMITMEN||0).toFixed(1)}/10 · KS ${Number(unit.ELEMEN_PURATA?.KHIDMAT_SUMBANGAN||0).toFixed(1)}/10 · H ${Number(unit.ELEMEN_PURATA?.KEHADIRAN||0).toFixed(1)}/40 · Pc ${Number(unit.ELEMEN_PURATA?.PENCAPAIAN||0).toFixed(1)}/20</small></td>
         <td class="num">${total.toLocaleString('ms-MY')}</td>
         <td class="num">${share.toFixed(1)}%</td>
-        <td>${recordText(records)}</td>
+        <td>${recordText(records,unit.NAMA_UNIT)}</td>
       </tr>`;
     }).join('');
     return `<section class="pajsk-unit-category-group">
@@ -817,13 +868,9 @@ function renderPajskSchoolUnits_(rows,unassignedRecords=[]){
     </table></div>
   </section>`:'';
   host.innerHTML=groupsHtml+looseHtml;
-  host.querySelectorAll('[data-pajsk-record-close]').forEach(button=>button.addEventListener('click',()=>{
-    const disclosure=button.closest('details.pajsk-unit-record-details');
-    if(disclosure)disclosure.open=false;
-  }));
-  host.querySelectorAll('details.pajsk-unit-record-details').forEach(disclosure=>disclosure.addEventListener('toggle',()=>{
-    if(!disclosure.open)return;
-    host.querySelectorAll('details.pajsk-unit-record-details[open]').forEach(other=>{if(other!==disclosure)other.open=false;});
+  host.querySelectorAll('[data-pajsk-record-open]').forEach(button=>button.addEventListener('click',()=>{
+    const payload=recordModalGroups[Number(button.dataset.pajskRecordOpen)];
+    if(payload)pajskOpenUnitRecordModal_(payload);
   }));
 }
 function pajskGpsValue_(value){
@@ -881,7 +928,7 @@ async function importPajskGpsCsv_(){
 async function loadPajskSchoolAnalysis_(force=false){
   if(!$('analysisSchoolView')||!state.token)return;
   const year=String($('pajskSchoolYearFilter')?.value||pajskWorkflowYear_()),status=$('pajskSchoolStatus');
-  if(status)status.textContent='Mengira ringkasan sebenar daripada Google Sheets...';
+  if(status){status.textContent='';status.hidden=true;}
   if($('pajskSchoolYearFilter')&&!$('pajskSchoolYearFilter').options.length)$('pajskSchoolYearFilter').innerHTML=`<option value="${pajskEsc_(year)}">${pajskEsc_(year)}</option>`;
   if(!force&&$('pajskSchoolYearFilter')?.dataset.loadedYear===year)return;
   const unitHost=$('pajskSchoolUnitTableWrap');if(unitHost)unitHost.innerHTML='<div class="analysis-empty">Memuatkan rekod mengikut unit...</div>';
@@ -901,11 +948,11 @@ async function loadPajskSchoolAnalysis_(force=false){
     if(gpsOverallText)gpsOverallText.innerHTML=gpsMarked>0?pajskGpsText_(gpsOverall):'<span class="pajsk-gps-pending">BELUM DIKIRA</span>';
     const gpsNote=$('pajskSchoolGpsNote');if(gpsNote)gpsNote.textContent=d.gpsMode==='AUTO_SEMENTARA'?`${gpsMarked.toLocaleString('ms-MY')} / ${Number(d.totalStudents||0).toLocaleString('ms-MY')} murid dikira. Nilai kosong = 0; Komitmen sementara 0; Ekstra 0 sehingga direkodkan.`:`${gpsMarked.toLocaleString('ms-MY')} daripada ${Number(d.totalStudents||0).toLocaleString('ms-MY')} murid mempunyai markah PAJSK.`;
     analysisSetKpi_('pajskSchoolGpsTotalStudents',Number(d.totalStudents||0).toLocaleString('ms-MY'));
-    renderPajskSchoolGradeChart_(d.gradeSummary||{rows:[],total:{}},d.classGenderStats||[]);
+    renderPajskSchoolGradeChart_(d.gradeSummary||{rows:[],total:{}},d.classGenderStats||[],d.gradeClassGenderStats||[]);
     renderPajskSchoolGradeSummary_(d.gradeSummary||{rows:[],total:{}});
     renderPajskSchoolUnits_(d.unitStats||[],d.unassignedRecords||[]);
-    if(status)status.textContent=`GPS sementara tahun ${year} dikemas kini daripada ${Number(d.totalStudents||0)} murid aktif, rekod kehadiran, jawatan, penglibatan dan ${Number(d.totalAchievements||0)} rekod pencapaian.`;
-  }catch(e){if(status)status.textContent=e.message||'Gagal memuatkan analisis.';toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
+    if(status){status.textContent='';status.hidden=true;}
+  }catch(e){if(status){status.textContent='';status.hidden=true;}toast(e.message||'Analisis PAJSK gagal dimuatkan.');}
 }
 
 async function openPajskAssignmentSetup_(userId,kind){
