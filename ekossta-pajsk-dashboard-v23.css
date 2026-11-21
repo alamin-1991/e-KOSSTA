@@ -1,0 +1,45 @@
+/* e-KOSSTA v23 — restore the original Light Mode canvas; spacing-only chart refinement.
+   Text contrast stays dark in Light Mode. Dark Mode is intentionally untouched. */
+html:not(.dark) .pajsk-grade-chart-panel {
+  --ekt-lime: #405B0B;
+  --ekt-muted: #40564B;
+  --ekt-line-soft: #82998D;
+  --surface: #F3F1E6;
+  --surface2: #F3F1E6;
+  --text: #18332B;
+  --muted: #40564B;
+  --border: #9AADA2;
+  color: #18332B !important;
+  background: var(--bg, #F3F1E6) !important;
+  border-color: #82998D !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-dashboard-card {
+  color: #18332B !important;
+  background: var(--bg, #F3F1E6) !important;
+  border-color: #9AADA2 !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-slice {
+  stroke: #F3F1E6 !important;
+}
+/* Keep the paired Lelaki/Perempuan bars visually close at every Gred × Kelas. */
+.pajsk-grade-class-gender-svg .pajsk-bar-gender-label {
+  font-weight: 800;
+  font-size: 9px;
+}
+.pajsk-grade-class-gender-svg .pajsk-bar-grade-label {
+  font-weight: 800;
+  font-size: 9px;
+}
+.pajsk-grade-class-gender-svg .pajsk-bar-class-label {
+  font-size: 9px;
+}
+/* The chart now uses only the central total and per-grade values in the legend. */
+.pajsk-grade-chart-panel .pajsk-chart-footnote,
+.pajsk-grade-chart-panel .pajsk-pie-total small {
+  display: none !important;
+}
+@media(max-width:520px){
+  .pajsk-grade-class-gender-svg .pajsk-bar-gender-label,
+  .pajsk-grade-class-gender-svg .pajsk-bar-grade-label,
+  .pajsk-grade-class-gender-svg .pajsk-bar-class-label { font-size: 8px; }
+}

@@ -635,20 +635,34 @@ function pajskClassGenderSvg_(formData){
   return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${(totals.LELAKI+totals.PEREMPUAN+totals.TIDAK_DIREKOD).toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bar bilangan murid mengikut kelas dan jantina. Paksi X ialah kelas; siri bar ialah jantina; paksi Y ialah jumlah murid."><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-5}" text-anchor="middle">Kelas (mengikut jantina)</text></svg></div>`;
 }
 function pajskGradeClassGenderSvg_(formData){
-  const groups=Array.isArray(formData?.groups)?formData.groups.filter(g=>Number(g.JUMLAH||0)>0):[];
-  if(!groups.length)return '<div class="pajsk-chart-empty">Tiada data gred, kelas dan jantina untuk tingkatan ini.</div>';
+  const source=Array.isArray(formData?.groups)?formData.groups.filter(g=>Number(g.JUMLAH||0)>0):[];
+  if(!source.length)return '<div class="pajsk-chart-empty">Tiada data gred, kelas dan jantina untuk tingkatan ini.</div>';
+
+  // Pair male/female bars inside each Gred × Kelas group. This keeps the
+  // gender bars adjacent even when more grades/classes are present.
   const genderSeries=[
-    {key:'LELAKI',label:'Lelaki',cls:'male'},
-    {key:'PEREMPUAN',label:'Perempuan',cls:'female'},
-    {key:'TIDAK_DIREKOD',label:'Jantina tidak direkod',cls:'unknown'}
+    {key:'LELAKI',label:'Lelaki',short:'L',cls:'male'},
+    {key:'PEREMPUAN',label:'Perempuan',short:'P',cls:'female'},
+    {key:'TIDAK_DIREKOD',label:'Jantina tidak direkod',short:'?',cls:'unknown'}
   ];
-  const activeGenders=genderSeries.filter(g=>groups.some(row=>String(row.JANTINA||'')===g.key));
-  const maximum=Math.max(1,...groups.map(g=>Number(g.JUMLAH||0)));
+  const gradeOrder={A:0,B:1,C:2,D:3,E:4,'TL/TD':5};
+  const categoryMap=new Map();
+  source.forEach(row=>{
+    const grade=String(row.GRED||'E').trim().toUpperCase()||'E';
+    const kelas=String(row.KELAS||'Kelas tidak direkod').trim()||'Kelas tidak direkod';
+    const gender=genderSeries.some(x=>x.key===String(row.JANTINA||''))?String(row.JANTINA):'TIDAK_DIREKOD';
+    const key=grade+'\u001f'+kelas;
+    if(!categoryMap.has(key))categoryMap.set(key,{GRED:grade,KELAS:kelas,counts:{LELAKI:0,PEREMPUAN:0,TIDAK_DIREKOD:0}});
+    categoryMap.get(key).counts[gender]+=Math.max(0,Number(row.JUMLAH||0));
+  });
+  const categories=[...categoryMap.values()].sort((a,b)=>(gradeOrder[a.GRED]??9)-(gradeOrder[b.GRED]??9)||String(a.KELAS).localeCompare(String(b.KELAS),'ms',{numeric:true}));
+  const activeGenders=genderSeries.filter(g=>g.key!=='TIDAK_DIREKOD'||categories.some(c=>c.counts.TIDAK_DIREKOD>0));
+  const maximum=Math.max(1,...categories.flatMap(c=>activeGenders.map(g=>c.counts[g.key])));
   const step=Math.max(1,Math.ceil(maximum/4));
   const maxAxis=step*4;
-  const left=54,top=18,plotHeight=210,right=22,bottom=104;
-  const slot=Math.max(112,Math.floor(980/groups.length));
-  const width=left+right+slot*groups.length;
+  const left=54,top=18,plotHeight=210,right=22,bottom=100;
+  const slot=Math.max(112,Math.floor(900/categories.length));
+  const width=left+right+slot*categories.length;
   const height=top+plotHeight+bottom;
   const plotBottom=top+plotHeight;
   const plotWidth=width-left-right;
@@ -656,23 +670,28 @@ function pajskGradeClassGenderSvg_(formData){
     const val=maxAxis-i*step,y=top+(plotHeight/4)*i;
     return `<line class="pajsk-bar-grid" x1="${left}" y1="${y}" x2="${width-right}" y2="${y}"/><text class="pajsk-bar-axis-label" x="${left-9}" y="${y+4}" text-anchor="end">${val}</text>`;
   }).join('');
-  const gradeOrder={A:0,B:1,C:2,D:3,E:4};
-  const sorted=groups.slice().sort((a,b)=>(gradeOrder[String(a.GRED||'E')]??9)-(gradeOrder[String(b.GRED||'E')]??9)||String(a.KELAS||'').localeCompare(String(b.KELAS||''),'ms',{numeric:true})||genderSeries.findIndex(g=>g.key===a.JANTINA)-genderSeries.findIndex(g=>g.key===b.JANTINA));
-  const bars=sorted.map((g,i)=>{
-    const value=Math.max(0,Number(g.JUMLAH||0));
-    const groupLeft=left+i*slot,barWidth=Math.min(38,Math.max(20,slot*.34));
-    const x=groupLeft+(slot-barWidth)/2,h=value/maxAxis*plotHeight,y=plotBottom-h;
-    const gender=genderSeries.find(x=>x.key===g.JANTINA)||genderSeries[2];
-    const grade=String(g.GRED||'—'),kelas=String(g.KELAS||'—');
-    const genderLabel=gender.label;
-    const shortClass=kelas.length>16?kelas.slice(0,15)+'…':kelas;
-    const fullTitle=`Gred ${grade} • ${kelas} • ${genderLabel}: ${value} murid`;
-    const valueLabel=value?`<text class="pajsk-bar-value" x="${x+barWidth/2}" y="${Math.max(top+10,y-5)}" text-anchor="middle">${value}</text>`:'';
-    return `<rect class="pajsk-bar-column ${gender.cls}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth}" height="${Math.max(0,h).toFixed(2)}" rx="3"><title>${pajskChartEscape_(fullTitle)}</title></rect>${valueLabel}<text class="pajsk-bar-grade-label" x="${groupLeft+slot/2}" y="${plotBottom+19}" text-anchor="middle">GRED ${pajskChartEscape_(grade)}</text><text class="pajsk-bar-class-label" x="${groupLeft+slot/2}" y="${plotBottom+35}" text-anchor="middle"><title>${pajskChartEscape_(kelas)}</title>${pajskChartEscape_(shortClass)}</text><text class="pajsk-bar-gender-label" x="${groupLeft+slot/2}" y="${plotBottom+51}" text-anchor="middle">${gender.key==='LELAKI'?'L':gender.key==='PEREMPUAN'?'P':'?'}</text>`;
+  const bars=categories.map(category=>{
+    const groupIndex=categories.indexOf(category),groupLeft=left+groupIndex*slot;
+    const barWidth=Math.min(22,Math.max(15,slot*.18));
+    const pairGap=3;
+    const pairWidth=activeGenders.length*barWidth+(activeGenders.length-1)*pairGap;
+    const pairStart=groupLeft+(slot-pairWidth)/2;
+    const labelX=groupLeft+slot/2;
+    const rects=activeGenders.map((gender,j)=>{
+      const value=category.counts[gender.key]||0;
+      const x=pairStart+j*(barWidth+pairGap),h=value/maxAxis*plotHeight,y=plotBottom-h;
+      const valueLabel=value?`<text class="pajsk-bar-value" x="${x+barWidth/2}" y="${Math.max(top+10,y-5)}" text-anchor="middle">${value}</text>`:'';
+      const genderLabel=`<text class="pajsk-bar-gender-label" x="${x+barWidth/2}" y="${plotBottom+14}" text-anchor="middle">${gender.short}</text>`;
+      const tooltip=`Gred ${category.GRED} • ${category.KELAS} • ${gender.label}: ${value} murid`;
+      return `<rect class="pajsk-bar-column ${gender.cls}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${Math.max(0,h).toFixed(2)}" rx="3"><title>${pajskChartEscape_(tooltip)}</title></rect>${valueLabel}${genderLabel}`;
+    }).join('');
+    const kelas=String(category.KELAS||'—');
+    const shortClass=kelas.length>17?kelas.slice(0,16)+'…':kelas;
+    return `${rects}<text class="pajsk-bar-grade-label" x="${labelX}" y="${plotBottom+34}" text-anchor="middle">GRED ${pajskChartEscape_(category.GRED)}</text><text class="pajsk-bar-class-label" x="${labelX}" y="${plotBottom+51}" text-anchor="middle"><title>${pajskChartEscape_(kelas)}</title>${pajskChartEscape_(shortClass)}</text>`;
   }).join('');
   const legend=activeGenders.map(g=>`<span class="pajsk-chart-legend-item"><i class="pajsk-chart-legend-swatch ${g.cls}"></i>${g.label}</span>`).join('');
-  const total=sorted.reduce((sum,g)=>sum+Number(g.JUMLAH||0),0);
-  return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${total.toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg pajsk-grade-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bar jumlah murid mengikut gred, kelas dan jantina. Paksi X ialah gred, kelas dan jantina; paksi Y ialah jumlah murid."><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-7}" text-anchor="middle">Gred • Kelas • Jantina</text></svg></div>`;
+  const total=categories.reduce((sum,c)=>sum+activeGenders.reduce((inner,g)=>inner+Number(c.counts[g.key]||0),0),0);
+  return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${total.toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg pajsk-grade-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bar jumlah murid mengikut gred, kelas dan jantina. Paksi X menunjukkan gred, kelas dan jantina; bar lelaki dan perempuan dipasangkan rapat. Paksi Y ialah jumlah murid."><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-7}" text-anchor="middle">Gred • Kelas • Jantina</text></svg></div>`;
 }
 function pajskPiePath_(cx,cy,r,startAngle,endAngle){
   const x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);
@@ -708,7 +727,7 @@ function pajskGradePie_(gradeRow){
     const pct=item.value/total*100;
     return `<div class="pajsk-pie-legend-row"><span><i class="pajsk-chart-legend-swatch grade-${item.cls}"></i><b>${item.key}</b></span><strong>${pct.toFixed(1)}%</strong><small>${item.value.toLocaleString('ms-MY')} murid</small></div>`;
   }).join('');
-  return `<div class="pajsk-pie-content"><div class="pajsk-pie-visual"><svg viewBox="0 0 220 220" role="img" aria-label="Carta pai peratus murid mengikut gred A hingga E">${paths}</svg><div class="pajsk-pie-total"><b>${total.toLocaleString('ms-MY')}</b><small>murid bergred</small></div></div><div class="pajsk-pie-legend">${legend}</div></div><p class="pajsk-chart-footnote">Peratus dikira daripada murid bergred A–E. Murid TL/TD tidak termasuk dalam pengiraan carta pai.</p>`;
+  return `<div class="pajsk-pie-content"><div class="pajsk-pie-visual"><svg viewBox="0 0 220 220" role="img" aria-label="Carta pai peratus murid mengikut gred A hingga E">${paths}</svg><div class="pajsk-pie-total"><b>${total.toLocaleString('ms-MY')}</b></div></div><div class="pajsk-pie-legend">${legend}</div></div>`;
 }
 function renderPajskSchoolGradeSlide_(){
   const host=$('pajskSchoolGradeChart');if(!host)return;
