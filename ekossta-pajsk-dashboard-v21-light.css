@@ -1,0 +1,87 @@
+/* e-KOSSTA v21 — Light Mode contrast correction for PAJSK charts.
+   Dark Mode rules and palette are intentionally untouched. */
+html:not(.dark) .pajsk-grade-chart-panel {
+  --ekt-lime: #405B0B;
+  --ekt-muted: #40564B;
+  --ekt-line-soft: #82998D;
+  --surface: #FFFFFF;
+  --surface2: #F1F5EF;
+  --text: #18332B;
+  --muted: #40564B;
+  --border: #9AADA2;
+  color: #18332B !important;
+  background: #FFFFFF !important;
+  border-color: #82998D !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .analysis-panel-index,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-chart-heading h4,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-chart-type {
+  color: #18332B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-chart-heading .analysis-panel-index {
+  color: #405B0B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slider-toolbar,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-scroll {
+  border-color: #9AADA2 !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slide-status > span,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-dashboard-card > header > span {
+  color: #405B0B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slide-status > b,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slide-status > small,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slide-status > b i,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-dashboard-card > header h5,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-dashboard-card > header small,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-chart-legend-item,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-chart-total,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-total b,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-total small,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-legend-row > span,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-legend-row > strong,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-legend-row > small,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-chart-footnote,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-chart-empty {
+  color: #18332B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-dashboard-card {
+  color: #18332B !important;
+  background: #FFFFFF !important;
+  border-color: #9AADA2 !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slide-arrow {
+  color: #405B0B !important;
+  background: #F1F5EF !important;
+  border-color: #82998D !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slide-arrow:hover:not(:disabled) {
+  color: #263A08 !important;
+  background: #E2EBD5 !important;
+  border-color: #405B0B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slider-dots button {
+  border-color: #536A5D !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-grade-slider-dots button.is-active {
+  background: #405B0B !important;
+  border-color: #405B0B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-grid {
+  stroke: #C2D0C7 !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-axis {
+  stroke: #536A5D !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-axis-label,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-class-label,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-axis-title,
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-bar-value {
+  fill: #18332B !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-slice {
+  stroke: #FFFFFF !important;
+}
+html:not(.dark) .pajsk-grade-chart-panel .pajsk-pie-legend-row {
+  border-bottom-color: #C6D2CA !important;
+}

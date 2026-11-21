@@ -632,7 +632,7 @@ function pajskClassGenderSvg_(formData){
   }).join('');
   const legend=series.map(s=>`<span class="pajsk-chart-legend-item"><i class="pajsk-chart-legend-swatch ${s.cls}"></i>${s.label}</span>`).join('');
   const totals=classes.reduce((acc,c)=>{series.forEach(s=>acc[s.key]+=Number(c[s.key]||0));return acc;},{LELAKI:0,PEREMPUAN:0,TIDAK_DIREKOD:0});
-  return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${(totals.LELAKI+totals.PEREMPUAN+totals.TIDAK_DIREKOD).toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bilangan murid mengikut kelas dan jantina"><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-5}" text-anchor="middle">Kelas</text></svg></div>`;
+  return `<div class="pajsk-chart-legend">${legend}<span class="pajsk-chart-total">${(totals.LELAKI+totals.PEREMPUAN+totals.TIDAK_DIREKOD).toLocaleString('ms-MY')} murid</span></div><div class="pajsk-bar-scroll"><svg class="pajsk-class-gender-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Graf bar bilangan murid mengikut kelas dan jantina. Paksi X ialah kelas; siri bar ialah jantina; paksi Y ialah jumlah murid."><text class="pajsk-bar-axis-title" transform="translate(15 ${top+plotHeight/2}) rotate(-90)" text-anchor="middle">Jumlah murid</text>${grid}<line class="pajsk-bar-axis" x1="${left}" y1="${plotBottom}" x2="${width-right}" y2="${plotBottom}"/>${bars}<text class="pajsk-bar-axis-title" x="${left+plotWidth/2}" y="${height-5}" text-anchor="middle">Kelas (mengikut jantina)</text></svg></div>`;
 }
 function pajskPiePath_(cx,cy,r,startAngle,endAngle){
   const x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);
@@ -687,11 +687,11 @@ function renderPajskSchoolGradeSlide_(){
     </div>
     <div class="pajsk-grade-dashboard-grid">
       <section class="pajsk-grade-dashboard-card">
-        <header><span>BAR GRAF</span><h5>Bilangan Murid Mengikut Kelas &amp; Jantina</h5><small>Paksi X: Kelas dan jantina • Paksi Y: Jumlah murid</small></header>
+        <header><span>BAR GRAF</span><h5>Bilangan Murid Mengikut Kelas &amp; Jantina</h5><small>Paksi X: Kelas • Siri bar: Jantina (Lelaki / Perempuan) • Paksi Y: Jumlah murid</small></header>
         ${pajskClassGenderSvg_(classData)}
       </section>
       <section class="pajsk-grade-dashboard-card pajsk-grade-pie-card">
-        <header><span>PIE GRAF</span><h5>Peratus Murid Mengikut Gred</h5><small>Taburan gred A, B, C, D dan E</small></header>
+        <header><span>PIE GRAF</span><h5>Peratus Murid Mengikut Gred</h5><small>Peratus murid mengikut gred A, B, C, D dan E</small></header>
         ${pajskGradePie_(gradeRow)}
       </section>
     </div>
