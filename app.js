@@ -1,6 +1,6 @@
 /* EKOSSTA_UNIT_LAYOUT_BUILD: UNIT_TABLE_V7_20261022 */
 /* EKOSSTA_ANALYSIS_MODULE_BUILD: ANALYSIS_LIVE_DATA_V1_20261023 */
-/* EKOSSTA_PAJSK_CLASS_REPORT: V4_20261121_GRADE_CLASS_GENDER_MODAL */
+/* EKOSSTA_PAJSK_CLASS_REPORT: V5_20261122_PRINT_COMPLETE_REPORT */
 window.__EKOSSTA_UNIT_LAYOUT_BUILD__ = "UNIT_TABLE_V7_20261022";
 const $=id=>document.getElementById(id);
 const state={apiUrl:localStorage.getItem('ekossta_model_b_api_url')||'',dark:localStorage.getItem('ekossta_model_b_dark')==='1',token:sessionStorage.getItem('ekossta_v2_token')||'',user:JSON.parse(sessionStorage.getItem('ekossta_v2_user')||'null')};
@@ -20,6 +20,7 @@ let PAJSK_WORKFLOW_CACHE_={loaded:false,year:'',classes:[],assignedElements:[],s
 let PAJSK_ASSIGNMENT_USER_=null;
 let PAJSK_GRADE_SLIDE_INDEX_=0;
 let PAJSK_GRADE_CHART_DATA_={summary:null,classGenderStats:[],gradeClassGenderStats:[]};
+let PAJSK_SCHOOL_PRINT_DATA_={year:"",unitStats:[],unassignedRecords:[]};
 const PAJSK_CATEGORIES_=['KELAB / PERSATUAN','UNIT BERUNIFORM','SUKAN / PERMAINAN'];
 const PAJSK_CATEGORY_LABELS_={'KELAB / PERSATUAN':'Kelab / Persatuan','UNIT BERUNIFORM':'Badan Beruniform','SUKAN / PERMAINAN':'Sukan / Permainan','RUMAH SUKAN':'Rumah Sukan','ACARA / PENYERTAAN':'Acara / Penyertaan'};
 let DASHBOARD_SUMMARY_CACHE_={murid:null,units:null};
@@ -661,22 +662,25 @@ function pajskGradeClassGenderSvg_(formData){
   const step=Math.max(1,Math.ceil(maximum/4));
   const maxAxis=step*4;
   const left=54,top=18,plotHeight=210,right=22,bottom=100;
-  // Gunakan slot yang lebih padat supaya pasangan bar Lelaki/Perempuan
-  // tidak berjauhan antara kelas/gred, tetapi kekalkan ruang label dan scroll
-  // untuk kombinasi gred-kelas yang banyak.
-  const slot=Math.max(108,Math.min(152,Math.ceil(456/categories.length)));
-  const width=left+right+slot*categories.length;
+  // Kekalkan kanvas graf yang stabil dan rapatkan kumpulan bar di tengah.
+  // Untuk 1–6 kumpulan, lebar jalur data berkembang secara beransur;
+  // apabila kategori bertambah, ruang penuh digunakan dan graf boleh discroll.
+  const width=Math.max(820,left+right+categories.length*92);
   const height=top+plotHeight+bottom;
   const plotBottom=top+plotHeight;
   const plotWidth=width-left-right;
+  const bandRatio=Math.min(1,Math.max(.5,categories.length/6));
+  const bandWidth=plotWidth*bandRatio;
+  const slot=bandWidth/categories.length;
+  const bandStart=left+(plotWidth-bandWidth)/2;
   const grid=Array.from({length:5},(_,i)=>{
     const val=maxAxis-i*step,y=top+(plotHeight/4)*i;
     return `<line class="pajsk-bar-grid" x1="${left}" y1="${y}" x2="${width-right}" y2="${y}"/><text class="pajsk-bar-axis-label" x="${left-9}" y="${y+4}" text-anchor="end">${val}</text>`;
   }).join('');
   const bars=categories.map(category=>{
-    const groupIndex=categories.indexOf(category),groupLeft=left+groupIndex*slot;
-    const barWidth=Math.min(22,Math.max(15,slot*.18));
-    const pairGap=3;
+    const groupIndex=categories.indexOf(category),groupLeft=bandStart+groupIndex*slot;
+    const barWidth=Math.min(22,Math.max(13,slot*.17));
+    const pairGap=2;
     const pairWidth=activeGenders.length*barWidth+(activeGenders.length-1)*pairGap;
     const pairStart=groupLeft+(slot-pairWidth)/2;
     const labelX=groupLeft+slot/2;
@@ -732,12 +736,73 @@ function pajskGradePie_(gradeRow){
   }).join('');
   return `<div class="pajsk-pie-content"><div class="pajsk-pie-visual"><svg viewBox="0 0 220 220" role="img" aria-label="Carta pai peratus murid mengikut gred A hingga E">${paths}</svg><div class="pajsk-pie-total"><b>${total.toLocaleString('ms-MY')}</b></div></div><div class="pajsk-pie-legend">${legend}</div></div>`;
 }
+function pajskSchoolGpsPrintHtml_(summary,year){
+  const rows=Array.isArray(summary?.rows)?summary.rows:[];
+  const total=summary?.total||{};
+  const count=v=>Number(v||0).toLocaleString('ms-MY');
+  const fmt=v=>Number(v||0).toFixed(2);
+  const cells=r=>`<td>${count(r.TL_TD)}</td><td>${count(r.E)}</td><td>${count(r.D)}</td><td>${count(r.C)}</td><td>${count(r.B)}</td><td>${count(r.A)}</td><td>${count(r.JUMLAH_LAKSANA)}</td><td>${count(r.JUMLAH_MURID)}</td><td>${fmt(r.GPS)}</td><td>${fmt(r.PERATUS_GPS)}</td>`;
+  const body=rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>TINGKATAN ${count(r.TINGKATAN)}</b></td>${cells(r)}</tr>`).join('');
+  const pct=k=>Number(total.PERATUS_GRED?.[k]||0).toFixed(2);
+  const laksanaPct=Number(total.JUMLAH_LAKSANA||0)>0?100:0;
+  const muridPct=Number(total.JUMLAH_MURID||0)>0?100:0;
+  return `<section class="pajsk-report-extra-page pajsk-gps-print-page">
+    <div class="print-topline"><span>${pajskChartEscape_(getAppName_())} • ANALISIS PAJSK</span><span>TAHUN ${pajskChartEscape_(year)}</span></div>
+    <header class="pajsk-grade-print-title"><span>RUMUSAN SEKOLAH</span><h1>Jadual GPS Asal</h1><p>Taburan gred kokurikulum mengikut Tingkatan 1 hingga 5</p></header>
+    <table class="pajsk-gps-print-table"><thead>
+      <tr><th rowspan="2">BIL.</th><th rowspan="2">TINGKATAN / TAHUN</th><th colspan="6">MARKAH KOKURIKULUM</th><th rowspan="2">JUMLAH LAKSANA (A–E)</th><th rowspan="2">JUMLAH MURID</th><th rowspan="2">GPS</th><th rowspan="2">% GPS</th></tr>
+      <tr><th>TL/TD</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th></tr>
+    </thead><tbody>${body}</tbody><tfoot>
+      <tr class="total"><th colspan="2">JUMLAH</th>${cells(total)}</tr>
+      <tr class="percent"><th colspan="2">%</th><td>${pct('TL_TD')}</td><td>${pct('E')}</td><td>${pct('D')}</td><td>${pct('C')}</td><td>${pct('B')}</td><td>${pct('A')}</td><td>${fmt(laksanaPct)}</td><td>${fmt(muridPct)}</td><td>—</td><td>—</td></tr>
+      <tr><th colspan="2">% PENCAPAIAN KESELURUHAN</th><td colspan="2">${fmt(total.PERATUS_DAN_E)}%</td><td colspan="4">${fmt(total.PERATUS_A_B_C)}%</td><td colspan="4"></td></tr>
+      <tr><th colspan="2">GPS KOKURIKULUM</th><td colspan="6">${fmt(total.GPS)}</td><td colspan="4"></td></tr>
+      <tr><th colspan="2">% GPS KOKURIKULUM</th><td colspan="6">${fmt(total.PERATUS_GPS)}%</td><td colspan="4"></td></tr>
+    </tfoot></table>
+  </section>`;
+}
+function pajskSchoolUnitsPrintHtml_(unitStats,unassignedRecords,year){
+  const categoryOrder=['UNIT BERUNIFORM','KELAB / PERSATUAN','SUKAN / PERMAINAN'];
+  const labels={'UNIT BERUNIFORM':'Unit Beruniform','KELAB / PERSATUAN':'Kelab / Persatuan','SUKAN / PERMAINAN':'Sukan / Permainan'};
+  const groups=new Map();
+  (Array.isArray(unitStats)?unitStats:[]).filter(row=>analysisCategoryKey_(row.KATEGORI)!=='RUMAH SUKAN').forEach(row=>{
+    const key=analysisCategoryKey_(row.KATEGORI);
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(row);
+  });
+  const keys=[...categoryOrder.filter(k=>groups.has(k)),...Array.from(groups.keys()).filter(k=>!categoryOrder.includes(k)).sort((a,b)=>a.localeCompare(b,'ms'))];
+  const detailHtml=record=>{
+    const title=record.NAMA_PENCAPAIAN||record.NAMA_AKTIVITI||'Rekod pencapaian';
+    const person=record.NAMA_MURID||(['BERPASUKAN','UNIT'].includes(String(record.KATEGORI||'').toUpperCase())?'Rekod unit / pasukan':'Rekod unit');
+    const meta=[person,record.KELAS_MURID,record.PERINGKAT,record.KEDUDUKAN,analysisDateLabel_(record.TARIKH)].filter(v=>v&&v!=='-').join(' • ');
+    const type=pencapaianNormalizeEngagementType_(record.JENIS_PENGLIBATAN||record.TAJUK_PENGLIBATAN||'');
+    const role=String(record.PERANAN_PENGLIBATAN||'').trim();
+    const engagement=type?`Penglibatan ${type}${role?' ('+role+')':''}: ${Number(record.MARKAH_PENGLIBATAN||0)} markah`:'Penglibatan tidak direkodkan';
+    const achievement=`Pencapaian: ${Number(record.MARKAH_PENCAPAIAN||0)} markah`;
+    return `<div class="pajsk-unit-print-record"><b>${pajskChartEscape_(title)}</b><small>${pajskChartEscape_(meta)}</small><small>${pajskChartEscape_(engagement)} • ${pajskChartEscape_(achievement)}</small></div>`;
+  };
+  const categorySections=keys.map(key=>{
+    const units=(groups.get(key)||[]).slice().sort((a,b)=>String(a.NAMA_UNIT||'').localeCompare(String(b.NAMA_UNIT||''),'ms'));
+    const body=units.map((unit,index)=>{
+      const records=Array.isArray(unit.REKOD)?unit.REKOD:[];
+      const gps=unit.GPS_UNIT??unit.GPS??unit.gpsUnit;
+      const breakdown=unit.ELEMEN_PURATA||{};
+      const scoreDetails=`<small>${Number(unit.GPS_BILANGAN_MURID||0)} / ${Number(unit.AHLI||0)} murid dikira</small><small>Markah PAJSK purata: ${Number(unit.MARKAH_UNIT_PURATA||0).toFixed(2)}/100</small><small>J ${Number(breakdown.JAWATAN||0).toFixed(1)}/10 · P ${Number(breakdown.PENGLIBATAN||0).toFixed(1)}/20 · K ${Number(breakdown.KOMITMEN||0).toFixed(1)}/10 · KS ${Number(breakdown.KHIDMAT_SUMBANGAN||0).toFixed(1)}/10 · H ${Number(breakdown.KEHADIRAN||0).toFixed(1)}/40 · Pc ${Number(breakdown.PENCAPAIAN||0).toFixed(1)}/20</small>`;
+      return `<tr><td>${index+1}</td><td><b>${pajskChartEscape_(unit.NAMA_UNIT||'-')}</b></td><td>${pajskChartEscape_(labels[key]||unit.KATEGORI||key)}</td><td class="num">${Number(unit.AHLI||0).toLocaleString('ms-MY')}</td><td class="num"><b>${gps===null||gps===undefined?'—':Number(gps).toFixed(2)}</b>${scoreDetails}</td><td class="num">${Number(unit.REKOD_PENCAPAIAN||records.length).toLocaleString('ms-MY')}</td><td class="num">${Number(unit.PERATUS_SUMBER_REKOD||0).toFixed(1)}%</td><td>${records.length?records.map(detailHtml).join(''):'Belum ada rekod pencapaian'}</td></tr>`;
+    }).join('');
+    return `<section class="pajsk-unit-print-category"><h2>${pajskChartEscape_(labels[key]||key)} <small>${units.length} unit</small></h2><table class="pajsk-unit-print-table"><thead><tr><th>BIL.</th><th>UNIT</th><th>KATEGORI</th><th>AHLI AKTIF</th><th>GPS UNIT / MARKAH PURATA</th><th>REKOD PENCAPAIAN</th><th>BAHAGIAN REKOD</th><th>BUTIRAN PENCAPAIAN</th></tr></thead><tbody>${body}</tbody></table></section>`;
+  }).join('');
+  const loose=Array.isArray(unassignedRecords)?unassignedRecords:[];
+  const looseSection=loose.length?`<section class="pajsk-unit-print-category"><h2>Rekod belum dipautkan kepada unit <small>${loose.length} rekod</small></h2><table class="pajsk-unit-print-table"><thead><tr><th>BIL.</th><th>REKOD PENCAPAIAN</th><th>MURID / PEMILIK</th><th>PERINGKAT</th><th>KEDUDUKAN</th><th>TARIKH</th></tr></thead><tbody>${loose.map((r,i)=>`<tr><td>${i+1}</td><td>${pajskChartEscape_(r.NAMA_PENCAPAIAN||r.NAMA_AKTIVITI||'Rekod pencapaian')}</td><td>${pajskChartEscape_(r.NAMA_MURID||'Rekod unit / pasukan')}</td><td>${pajskChartEscape_(r.PERINGKAT||'—')}</td><td>${pajskChartEscape_(r.KEDUDUKAN||'—')}</td><td>${pajskChartEscape_(analysisDateLabel_(r.TARIKH))}</td></tr>`).join('')}</tbody></table></section>`:'';
+  const empty=!categorySections&&!looseSection?'<div class="pajsk-print-empty">Tiada rekod unit atau pencapaian untuk tahun ini.</div>':'';
+  return `<section class="pajsk-report-extra-page pajsk-units-print-page"><div class="print-topline"><span>${pajskChartEscape_(getAppName_())} • ANALISIS PAJSK</span><span>TAHUN ${pajskChartEscape_(year)}</span></div><header class="pajsk-grade-print-title"><span>PRESTASI KOKURIKULUM</span><h1>Rekod Pencapaian Mengikut Unit</h1><p>GPS unit, purata markah, rekod pencapaian dan butiran penyertaan murid</p></header>${categorySections}${looseSection}${empty}</section>`;
+}
 function pajskSchoolGradePrintHtml_(){
   const data=PAJSK_GRADE_CHART_DATA_||{};
   const summary=data.summary||{};
   const rows=Array.isArray(summary.rows)?summary.rows:[];
   if(!rows.length)return '';
-  const year=String($('pajskSchoolYearFilter')?.value||PAJSK_CACHE_.year||new Date().getFullYear());
+  const year=String($('pajskSchoolYearFilter')?.value||PAJSK_SCHOOL_PRINT_DATA_.year||PAJSK_CACHE_.year||new Date().getFullYear());
   const pages=[1,2,3,4,5].map((level,index)=>{
     const gradeRow=rows.find(r=>Number(r.TINGKATAN)===level)||{TINGKATAN:level,A:0,B:0,C:0,D:0,E:0,TL_TD:0,JUMLAH_MURID:0};
     const classData=(data.gradeClassGenderStats||[]).find(x=>Number(x.TINGKATAN)===level)||{TINGKATAN:level,groups:[]};
@@ -752,7 +817,10 @@ function pajskSchoolGradePrintHtml_(){
       <footer class="pajsk-grade-print-footer">${pajskChartEscape_(getAppName_())} • Analisis PAJSK • Tingkatan ${level} daripada 5</footer>
     </section>`;
   }).join('');
+  const gpsTable=pajskSchoolGpsPrintHtml_(summary,year);
+  const unitSection=pajskSchoolUnitsPrintHtml_(PAJSK_SCHOOL_PRINT_DATA_.unitStats,PAJSK_SCHOOL_PRINT_DATA_.unassignedRecords,year);
   const printCss=`
+    html,body,.pajsk-grade-print-page,.pajsk-report-extra-page,.pajsk-grade-print-card,.pajsk-grade-print-grid,.pajsk-grade-print-page svg,.pajsk-report-extra-page table{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
     .pajsk-grade-print-page{min-height:170mm;break-after:page;page-break-after:always;padding:0 0 3mm;color:#17251e}
     .pajsk-grade-print-page.is-last{break-after:auto;page-break-after:auto}
     .pajsk-grade-print-title{text-align:center;margin:5mm 0 6mm;padding:0 0 4mm;border-bottom:1px solid #91a89a}
@@ -763,6 +831,9 @@ function pajskSchoolGradePrintHtml_(){
     .pajsk-grade-print-card{min-width:0;border:1px solid #aebdb2;padding:4mm;background:#fff;color:#17251e}
     .pajsk-grade-print-card h2{font-size:9pt;margin:0 0 3mm;padding:0 0 2mm;border-bottom:1px solid #d5ded7;color:#1c3527}
     .pajsk-grade-print-page .pajsk-chart-legend-item,.pajsk-grade-print-page .pajsk-chart-total{color:#253a2d}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.male,.pajsk-grade-print-page .pajsk-bar-column.male{background:#58A6A0!important;fill:#58A6A0!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.female,.pajsk-grade-print-page .pajsk-bar-column.female{background:#D49AAF!important;fill:#D49AAF!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.unknown,.pajsk-grade-print-page .pajsk-bar-column.unknown{background:#83909A!important;fill:#83909A!important}
     .pajsk-grade-print-page .pajsk-bar-scroll{overflow:visible!important;border-color:#b9c8bd}
     .pajsk-grade-print-page .pajsk-class-gender-svg{display:block;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important}
     .pajsk-grade-print-page .pajsk-bar-grid{stroke:#d5ded8}
@@ -771,17 +842,47 @@ function pajskSchoolGradePrintHtml_(){
     .pajsk-grade-print-page .pajsk-pie-content{grid-template-columns:1fr;gap:3mm;justify-items:center}
     .pajsk-grade-print-page .pajsk-pie-visual{width:48mm;max-width:48mm}
     .pajsk-grade-print-page .pajsk-pie-total b{color:#17251e}
-    .pajsk-grade-print-page .pajsk-pie-total small{color:#52665a}
     .pajsk-grade-print-page .pajsk-pie-legend{width:100%}
     .pajsk-grade-print-page .pajsk-pie-legend-row>span,.pajsk-grade-print-page .pajsk-pie-legend-row>strong{color:#17251e}
     .pajsk-grade-print-page .pajsk-pie-legend-row>small{color:#52665a}
-    .pajsk-grade-print-page .pajsk-pie-slice{stroke:#fff}
+    .pajsk-grade-print-page .pajsk-pie-slice{stroke:#fff;stroke-width:1.5}
+    .pajsk-grade-print-page .pajsk-pie-slice.a{fill:#32866b!important}
+    .pajsk-grade-print-page .pajsk-pie-slice.b{fill:#78984d!important}
+    .pajsk-grade-print-page .pajsk-pie-slice.c{fill:#b59a39!important}
+    .pajsk-grade-print-page .pajsk-pie-slice.d{fill:#c47a35!important}
+    .pajsk-grade-print-page .pajsk-pie-slice.e{fill:#b4534b!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.grade-a{background:#32866b!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.grade-b{background:#78984d!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.grade-c{background:#b59a39!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.grade-d{background:#c47a35!important}
+    .pajsk-grade-print-page .pajsk-chart-legend-swatch.grade-e{background:#b4534b!important}
     .pajsk-grade-print-page .pajsk-chart-empty{color:#52665a;border-color:#aebdb2}
     .pajsk-grade-print-footer{margin-top:5mm;padding-top:2mm;border-top:1px solid #cbd6ce;text-align:center;color:#64766a;font-size:7pt}
-    @media screen{.pajsk-grade-print-page{min-height:0;margin-bottom:10mm;padding:8mm;background:#fff;box-shadow:0 0 0 1px #d4ded6}.pajsk-grade-print-grid{grid-template-columns:minmax(0,1.72fr) minmax(240px,.88fr)}}
-    @media print{.pajsk-grade-print-page{min-height:0}.pajsk-grade-print-card,.pajsk-grade-print-title{break-inside:avoid;page-break-inside:avoid}}
+    .pajsk-report-extra-page{break-before:page;page-break-before:always;color:#17251e}
+    .pajsk-gps-print-page .pajsk-grade-print-title{margin-top:0}
+    .pajsk-gps-print-table,.pajsk-unit-print-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.7pt}
+    .pajsk-gps-print-table th,.pajsk-gps-print-table td,.pajsk-unit-print-table th,.pajsk-unit-print-table td{border:1px solid #aabbb1;padding:4px 3px;vertical-align:middle;overflow-wrap:anywhere}
+    .pajsk-gps-print-table th,.pajsk-unit-print-table th{background:#172A22!important;color:#D8E267!important;text-align:center;font-size:6.3pt}
+    .pajsk-gps-print-table td{text-align:center}
+    .pajsk-gps-print-table tfoot th,.pajsk-gps-print-table tfoot td{background:#e8eee8!important;font-weight:800}
+    .pajsk-gps-print-table .total th,.pajsk-gps-print-table .total td{background:#dfe9e1!important}
+    .pajsk-gps-print-table .percent th,.pajsk-gps-print-table .percent td{background:#f0f1ea!important}
+    .pajsk-unit-print-category{margin:0 0 7mm;break-inside:auto;page-break-inside:auto}
+    .pajsk-unit-print-category h2{font-size:10pt;color:#17372a;margin:5mm 0 2mm;padding-bottom:2mm;border-bottom:1px solid #91a89a}
+    .pajsk-unit-print-category h2 small{font-size:7pt;color:#52665a;font-weight:400;margin-left:4mm}
+    .pajsk-unit-print-table thead{display:table-header-group}
+    .pajsk-unit-print-table tr{break-inside:avoid;page-break-inside:avoid}
+    .pajsk-unit-print-table td small{display:block;font-size:5.7pt;color:#53675a;margin-top:1px;line-height:1.2}
+    .pajsk-unit-print-table td.num{text-align:center}
+    .pajsk-unit-print-record{padding:2px 0 3px;margin-bottom:2px;border-bottom:1px dotted #aabbb1}
+    .pajsk-unit-print-record:last-child{border-bottom:0}
+    .pajsk-unit-print-record b{display:block;font-size:6.2pt;color:#17372a}
+    .pajsk-unit-print-record small{display:block;font-size:5.7pt;color:#52665a;margin-top:1px}
+    .pajsk-print-empty{padding:8mm;border:1px solid #aabbb1;color:#52665a}
+    @media screen{.pajsk-grade-print-page{min-height:0;margin-bottom:10mm;padding:8mm;background:#fff;box-shadow:0 0 0 1px #d4ded6}.pajsk-grade-print-grid{grid-template-columns:minmax(0,1.72fr) minmax(240px,.88fr)}.pajsk-report-extra-page{margin-bottom:10mm;padding:8mm;background:#fff;box-shadow:0 0 0 1px #d4ded6}}
+    @media print{.pajsk-grade-print-page{min-height:0}.pajsk-grade-print-card,.pajsk-grade-print-title{break-inside:avoid;page-break-inside:avoid}.pajsk-unit-print-table{font-size:6.1pt}}
   `;
-  return `<style>${printCss}</style>${pages}`;
+  return `<style>${printCss}</style>${pages}${gpsTable}${unitSection}`;
 }
 function printPajskSchoolGradeAnalysis_(){
   const data=PAJSK_GRADE_CHART_DATA_||{};
@@ -1019,6 +1120,7 @@ async function loadPajskSchoolAnalysis_(force=false){
     const d=await apiGet('getPajskSchoolAnalysis',{token:state.token,tahun:year},30000);
     if(d.ok===false)throw Error(d.error||'Analisis sekolah gagal dimuatkan.');
     $('pajskSchoolYearFilter').dataset.loadedYear=year;
+    PAJSK_SCHOOL_PRINT_DATA_={year,unitStats:Array.isArray(d.unitStats)?d.unitStats:[],unassignedRecords:Array.isArray(d.unassignedRecords)?d.unassignedRecords:[]};
     analysisSetKpi_('pajskSchoolKpiStudents',Number(d.totalStudents||0).toLocaleString('ms-MY'));
     analysisSetKpi_('pajskSchoolKpiExtra',Number(d.extraComplete||0).toLocaleString('ms-MY'));
     const extraNote=$('pajskSchoolKpiExtraNote');if(extraNote)extraNote.textContent=`Lengkap 6 elemen • ${Number(d.extraCompletePct||0).toFixed(1)}% daripada murid aktif`;
