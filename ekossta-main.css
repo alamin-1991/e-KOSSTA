@@ -10775,3 +10775,29 @@ html.dark .unit-achievement-label{border-left-color:var(--ekt-lime)}
 .ekossta-dtp-help{margin:10px 0 0;color:var(--muted);font-size:11px}
 @media(max-width:600px){.ekossta-dtp-overlay{padding:8px}.ekossta-dtp-dialog{padding:14px;border-radius:15px;max-height:94vh}.ekossta-dtp-calendar{gap:4px}.ekossta-dtp-day{border-radius:7px;font-size:12px}.ekossta-dtp-calendar-head{grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) 34px;gap:5px}.ekossta-dtp-nav{height:36px}.ekossta-dtp-time{gap:8px}.ekossta-dtp-time-value{font-size:20px;padding:11px 2px}.ekossta-dtp-actions{justify-content:stretch}.ekossta-dtp-actions button{flex:1;min-width:0}}
 @media(prefers-reduced-motion:reduce){.ekossta-dtp-dialog{animation:none}.ekossta-dtp-trigger,.ekossta-dtp-day{transition:none}}
+
+
+/* eKOSSTA v31 — PAJSK rubric-aligned data-entry surfaces */
+.pajsk-entry-tabs{display:flex;gap:.55rem;flex-wrap:wrap;margin:0 0 1rem;padding:.4rem;border:1px solid var(--border);background:var(--surface);border-radius:14px;width:max-content;max-width:100%}
+.pajsk-entry-tabs .btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.pajsk-aspect-unit-select{min-width:min(360px,100%);flex:1}
+.pajsk-unit-aspect-table{width:100%;min-width:980px;border-collapse:separate;border-spacing:0;font-size:.82rem}
+.pajsk-unit-aspect-table th,.pajsk-unit-aspect-table td{padding:.7rem .65rem;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;background:var(--surface)}
+.pajsk-unit-aspect-table th{position:sticky;top:0;z-index:1;color:var(--muted);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;background:var(--surface2)}
+.pajsk-unit-aspect-table td small{display:block;margin-top:.2rem;color:var(--muted);font-size:.72rem}
+.pajsk-aspect-attendance{white-space:nowrap;font-variant-numeric:tabular-nums}
+.pajsk-aspect-main{display:flex;align-items:center;gap:.45rem;min-width:145px;font-size:.78rem;font-weight:700}
+.pajsk-aspect-details{min-width:175px;position:relative}
+.pajsk-aspect-details>summary{cursor:pointer;border:1px solid var(--border);border-radius:9px;padding:.48rem .55rem;background:var(--surface2);font-size:.76rem;font-weight:700}
+.pajsk-aspect-details>summary b{float:right;color:var(--primary)}
+.pajsk-aspect-checklist{display:grid;grid-template-columns:1fr;gap:.2rem;min-width:260px;padding:.5rem;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin-top:.35rem}
+.pajsk-aspect-check{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.4rem;font-size:.72rem;padding:.18rem}
+.pajsk-aspect-check b{color:var(--primary);font-variant-numeric:tabular-nums}
+.pajsk-unit-aspect-table select{min-width:165px;max-width:220px}
+.pajsk-aspect-note{color:var(--muted);font-size:.78rem;margin:.9rem 0}
+.unit-ajk-appointment-form>div{min-width:0}
+.unit-ajk-appointment-form input[type=number],.unit-ajk-appointment-form input[type=text]{width:100%}
+@media(max-width:760px){.pajsk-entry-tabs{width:100%}.pajsk-entry-tabs .btn{flex:1}.pajsk-unit-aspect-table{min-width:900px}}
+
+/* PAJSK v31: required IDME commitment items are locked on active/AJK records. */
+.pajsk-aspect-check input:disabled{opacity:.65;cursor:not-allowed}

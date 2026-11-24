@@ -371,8 +371,11 @@
     <div id="unitAjkCandidateCount" class="unit-ajk-candidate-count" aria-live="polite"></div>
     <div id="unitAjkCandidateTableWrap" class="table-wrap"><div class="empty">Memuatkan calon AJK...</div></div>
     <div class="unit-ajk-appointment-form">
-      <div class="unit-ajk-position-field"><label for="unitAjkPositionSelect">Jenis jawatan AJK</label><select id="unitAjkPositionSelect"><option value="">-- Pilih Jenis AJK --</option></select></div>
-      <div class="unit-ajk-save-field"><p class="muted">Pilih seorang murid dalam jadual, kemudian pilih jawatan.</p><button id="unitAjkSaveBtn" class="btn primary" type="button" disabled>▣ Simpan Pelantikan</button></div>
+      <div class="unit-ajk-position-field"><label for="unitAjkPositionSelect">Jawatan organisasi</label><select id="unitAjkPositionSelect"><option value="">-- Pilih jawatan --</option></select></div>
+      <div><label for="unitAjkRankInput">Pangkat / gred unit beruniform (jika berkaitan)</label><input id="unitAjkRankInput" maxlength="80" placeholder="Contoh: Sarjan, Koperal, Pegawai Waran"></div>
+      <div><label for="unitAjkMonthsHeld">Tempoh memegang jawatan (bulan)</label><input id="unitAjkMonthsHeld" type="number" min="0" max="12" step="1" value="0"></div>
+      <div><label><input id="unitAjkAgmApproved" type="checkbox"> Disahkan Mesyuarat Agung</label><small class="muted">Untuk jawatan Kelab/Persatuan dan Sukan/Permainan, syarat tempoh 7 bulan dan pengesahan AGM perlu dipenuhi.</small></div>
+      <div class="unit-ajk-save-field"><p class="muted">Pilih seorang murid, tetapkan jawatan serta pangkat jika berkenaan.</p><button id="unitAjkSaveBtn" class="btn primary" type="button" disabled>▣ Simpan Pelantikan</button></div>
     </div>
     <p id="unitAjkStatus" class="result muted" role="status" aria-live="polite"></p>
   </div>
@@ -394,6 +397,7 @@
       <div><label>Tarikh Perjumpaan</label><input id="attTarikh" type="date"></div>
       <div><label>Minggu Persekolahan</label><input id="attMinggu" type="number" min="1" max="52" placeholder="Contoh: 1"></div>
       <div><label>No. Perjumpaan</label><input id="attNoPerjumpaan" type="number" min="1" readonly></div>
+      <div><label for="attTempohMinit">Tempoh perjumpaan (minit)</label><input id="attTempohMinit" type="number" min="1" max="720" step="1" value="180"><small class="muted">Sekolah menengah harian lazimnya 180 minit. Rujuk jenis sekolah dan jadual rasmi.</small></div>
     </div>
     <div class="attendance-actions"><button id="attLoadBtn" class="btn primary" type="button">Muat Senarai Ahli</button><button id="attSaveBtn" class="btn primary" type="button" disabled>Simpan Kehadiran</button></div>
     <div id="attFormResult" class="result muted"></div>
@@ -503,6 +507,7 @@
         
         <div><label for="pencapaianRecordYear">Tahun *</label><input id="pencapaianRecordYear" type="number" min="2000" max="2100" required></div>
         <div><label for="pencapaianRecordLevel">Peringkat *</label><select id="pencapaianRecordLevel" required><option value="">Pilih peringkat</option><option>SEKOLAH</option><option>ZON</option><option>DAERAH</option><option value="ZON/DAERAH">ZON/DAERAH</option><option>NEGERI</option><option value="BAHAGIAN">BAHAGIAN (SABAH/SARAWAK)</option><option>KEBANGSAAN</option><option>ANTARABANGSA</option></select></div>
+        <div><label for="pencapaianRecordEventType">Jenis acara *</label><select id="pencapaianRecordEventType" required><option value="BERPASUKAN" selected>Berpasukan / berkumpulan</option><option value="INDIVIDU">Individu</option></select><small class="pencapaian-help">Tempat keempat dan kelima hanya diberi markah PAJSK bagi acara sukan individu.</small></div>
         <div><label for="pencapaianRecordPosition">Kedudukan *</label><select id="pencapaianRecordPosition" required><option value="">Pilih kedudukan</option><option value="JOHAN">Johan</option><option value="NAIB JOHAN">Naib Johan</option><option value="KETIGA">Ketiga</option><option value="KEEMPAT">Keempat</option><option value="KELIMA">Kelima</option><option value="PENYERTAAN">Penyertaan sahaja</option><option value="EMAS">Emas</option><option value="PERAK">Perak</option><option value="GANGSA">Gangsa</option><option value="ANUGERAH KHAS">Anugerah Khas</option><option value="LAIN-LAIN">Lain-lain</option></select></div>
         <div><label for="pencapaianRecordCategory">Kategori Penyertaan *</label><select id="pencapaianRecordCategory" required><option value="">Pilih kategori</option><option value="UNIT BERUNIFORM">Unit Beruniform</option><option value="KELAB / PERSATUAN">Kelab / Persatuan</option><option value="SUKAN / PERMAINAN">Sukan / Permainan</option><option value="RUMAH SUKAN">Rumah Sukan</option></select><small class="pencapaian-help">Setiap murid dipautkan kepada unit masing-masing berdasarkan kategori dan tahun. Contoh: Ali → Pengakap, Abu → Bomba.</small><div id="pencapaianUnitMappingPreview" class="pencapaian-unit-mapping-preview" aria-live="polite"><span class="pencapaian-preview-muted">Pilih kategori dan tahun untuk menyemak unit bagi setiap peserta.</span></div></div>
         <div><label for="pencapaianRecordDate">Tarikh *</label><input id="pencapaianRecordDate" type="date" required></div>
@@ -670,7 +675,7 @@
     <div id="pajskSchoolStatus" class="analysis-status" role="status" aria-live="polite" hidden></div>
     <div class="analysis-pajsk-kpi-grid">
       <article class="analysis-kpi"><span class="analysis-kpi-label">JUMLAH MURID</span><strong id="pajskSchoolKpiStudents">—</strong><small>Murid aktif dalam tahun dipilih</small><span class="analysis-kpi-index">01</span></article>
-      <article class="analysis-kpi"><span class="analysis-kpi-label">EKSTRA LENGKAP</span><strong id="pajskSchoolKpiExtra">—</strong><small id="pajskSchoolKpiExtraNote">Murid lengkap keenam-enam elemen</small><span class="analysis-kpi-index">02</span></article>
+      <article class="analysis-kpi"><span class="analysis-kpi-label">EKSTRA LENGKAP</span><strong id="pajskSchoolKpiExtra">—</strong><small id="pajskSchoolKpiExtraNote">Murid lengkap lima elemen Ekstra</small><span class="analysis-kpi-index">02</span></article>
       <article class="analysis-kpi analysis-kpi-accent"><span class="analysis-kpi-label">DISAHKAN</span><strong id="pajskSchoolKpiConfirmed">—</strong><small>Rekod murid telah disahkan</small><span class="analysis-kpi-index">03</span></article>
       <article class="analysis-kpi"><span class="analysis-kpi-label">PERATUS PENGESAHAN</span><strong id="pajskSchoolKpiPct">—</strong><small>Kadar pengesahan rekod</small><span class="analysis-kpi-index">04</span></article>
     </div>
@@ -710,6 +715,20 @@
   </div>
 </section>
 <section id="ekstraSection" class="page-section page-ekstra" hidden>
+  <div class="pajsk-entry-tabs" role="tablist" aria-label="Rekod PAJSK">
+    <button id="pajskUnitAspectTabBtn" class="btn secondary active" type="button" role="tab" aria-selected="false">Penilaian Komponen Kokurikulum</button>
+    <button id="pajskExtraTabBtn" class="btn secondary" type="button" role="tab" aria-selected="true">Ekstra Kurikulum</button>
+  </div>
+  <div id="analysisUnitAspectEntryView" class="analysis-pajsk-workflow-view" hidden>
+    <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • ENAM ELEMEN</span><h2>Penilaian Komponen Kokurikulum</h2><p>Rekod Jawatan melalui Pengurusan AJK. Rekod Komitmen (maksimum empat aspek) dan Khidmat Sumbangan bagi aktiviti utama unit ini.</p></div><div class="analysis-actions"><button id="pajskUnitAspectSaveAllBtn" class="btn primary" type="button">Simpan Semua Penilaian</button><button id="pajskUnitAspectRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
+    <div class="analysis-filterbar analysis-pajsk-filterbar">
+      <div><label for="pajskUnitAspectYearFilter">Tahun</label><input id="pajskUnitAspectYearFilter" type="number" min="2000" max="2100"></div>
+      <div class="pajsk-aspect-unit-select"><label for="pajskUnitAspectUnitFilter">Unit kokurikulum</label><select id="pajskUnitAspectUnitFilter"><option value="">Pilih unit kokurikulum</option></select></div>
+    </div>
+    <div id="pajskUnitAspectStatus" class="analysis-status" role="status" aria-live="polite">Pilih unit untuk memaparkan senarai murid.</div>
+    <div id="pajskUnitAspectTableWrap" class="table-wrap"><div class="analysis-empty">Pilih unit kokurikulum untuk mula merekod.</div></div>
+    <p class="pajsk-aspect-note">Had rubrik: Jawatan 10, Penglibatan 20, Komitmen 10, Khidmat Sumbangan 10, Kehadiran 40 dan Pencapaian 20 (jumlah 110 bagi setiap komponen). Penilaian Komitmen dan Khidmat Sumbangan hendaklah dibuat berdasarkan aktiviti utama sahaja.</p>
+  </div>
   <div id="analysisExtraEntryView" class="analysis-pajsk-workflow-view" hidden>
   <div class="analysis-heading"><div><span class="analysis-kicker">PAJSK • REKOD ELEMEN EKSTRA</span><h2>Rekod Ekstra Kurikulum</h2><p>Guru Kelas mengisi semua elemen Ekstra murid dalam satu jadual. Pilih senarai pencapaian; sistem menentukan markah secara automatik.</p></div><div class="analysis-actions"><button id="pajskExtraSaveAllBtn" class="btn primary" type="button">Simpan Semua</button><button id="pajskExtraConfirmAllBtn" class="btn secondary" type="button" hidden disabled>Sahkan</button><button id="pajskExtraRefreshBtn" class="btn secondary" type="button">↻ Kemas Kini</button></div></div>
   <div class="analysis-filterbar analysis-pajsk-filterbar">

@@ -337,23 +337,115 @@ function switchAnalysisView_(view){
   if(view==='school')loadPajskSchoolAnalysis_(false);
 }
 function switchEkstraView_(view='extra',load=true){
-  CURRENT_EKSTRA_VIEW_='extra';
+  view=view==='unit-aspects'?'unit-aspects':'extra';
+  CURRENT_EKSTRA_VIEW_=view;
   const role=String(state.user?.role||'').toUpperCase(),admin=['ADMIN','PENTADBIR'].includes(role),teacher=['GURU','PENYELARAS'].includes(role);
   const canAccessExtra=admin||(teacher&&(PAJSK_WORKFLOW_CACHE_.assignedElements.length>0||PAJSK_WORKFLOW_CACHE_.classes.length>0));
-  const entry=$('analysisExtraEntryView');if(entry)entry.hidden=!canAccessExtra;
+  const canAccessUnitAspects=admin||teacher;
+  const entry=$('analysisExtraEntryView');if(entry)entry.hidden=!canAccessExtra||view!=='extra';
+  const unitEntry=$('analysisUnitAspectEntryView');if(unitEntry)unitEntry.hidden=!canAccessUnitAspects||view!=='unit-aspects';
+  const extraTab=$('pajskExtraTabBtn'),unitTab=$('pajskUnitAspectTabBtn');
+  if(extraTab){extraTab.classList.toggle('active',view==='extra');extraTab.setAttribute('aria-selected',view==='extra'?'true':'false');}
+  if(unitTab){unitTab.classList.toggle('active',view==='unit-aspects');unitTab.setAttribute('aria-selected',view==='unit-aspects'?'true':'false');}
   const legacyReview=$('analysisClassReviewView');if(legacyReview)legacyReview.hidden=true;
   const subnav=$('pageSubnav');if(subnav&&CURRENT_PAGE==='ekstra'){subnav.hidden=true;subnav.innerHTML='';}
-  if(load)loadPajskTeacherWorkspace_(false,'extra');
+  if(load){if(view==='unit-aspects')loadPajskUnitAssessmentWorkspace_(true);else loadPajskTeacherWorkspace_(false,'extra');}
 }
+const PAJSK_COMMITMENT_OPTIONS_UI_=[
+  ['MENUNJUKKAN_KEPIMPINAN','Menunjukkan Kepimpinan',3],['MENGURUS_AKTIVITI','Mengurus Aktiviti',3],['MEMBANTU_GURU_ATAU_RAKAN','Membantu Guru atau Rakan',2],
+  ['MENYEDIA_PERALATAN','Menyedia Peralatan',2],['MENGEMAS_PERALATAN','Mengemas Peralatan',2],['MEMBERSIH_KAWASAN','Membersih Kawasan',2],
+  ['MENEPATI_WAKTU','Menepati Waktu',2],['MENUNJUKKAN_MINAT','Menunjukkan Minat',2],['MENUNJUKKAN_KESUNGGUHAN','Menunjukkan Kesungguhan',2],
+  ['MENGIKUT_ARAHAN','Mengikut Arahan',2],['MENCUBA','Mencuba',2],['MEMBERI_KERJASAMA','Memberi Kerjasama',2],['NILAI_MURNI','Mana-mana Nilai Murni yang Boleh Diperhatikan',2]
+];
+const PAJSK_CONTRIBUTION_UI_=[['TIADA','Tiada',0],['ATLET_PESERTA','Atlet / Peserta',10],['KEMAHIRAN_KHUSUS','Kemahiran Khusus',10],['JAWATANKUASA','Jawatankuasa',8],['SOKONGAN','Sokongan',5]];
+let PAJSK_UNIT_ASPECT_DATA_={year:'',units:[],unit:null,members:[]};
+function loadPajskUnitAssessmentWorkspace_(force=false){
+  const status=$('pajskUnitAspectStatus'),year=String($('pajskUnitAspectYearFilter')?.value||pajskWorkflowYear_()),unitId=String($('pajskUnitAspectUnitFilter')?.value||'');
+  if(status)status.textContent='Memuatkan senarai ahli dan rekod penilaian...';
+  if($('pajskUnitAspectTableWrap'))$('pajskUnitAspectTableWrap').innerHTML='<div class="analysis-empty">Memuatkan senarai murid...</div>';
+  return apiGet('getPajskUnitAssessmentWorkspace',{token:state.token,tahun:year,unitId},30000).then(d=>{
+    if(!d||d.ok===false)throw Error(d?.error||'Data penilaian unit gagal dimuatkan.');
+    PAJSK_UNIT_ASPECT_DATA_=d;
+    const y=$('pajskUnitAspectYearFilter');if(y&&!y.value)y.value=year;
+    const u=$('pajskUnitAspectUnitFilter');if(u){const previous=unitId;u.innerHTML='<option value="">Pilih unit kokurikulum</option>'+(d.units||[]).map(x=>`<option value="${pajskEsc_(x.UNIT_ID)}">${pajskEsc_(x.NAMA_UNIT)} • ${pajskEsc_(x.KATEGORI)}</option>`).join('');if(previous&&(d.units||[]).some(x=>String(x.UNIT_ID)===previous))u.value=previous;else u.value='';}
+    if(!unitId){if(status)status.textContent=`${(d.units||[]).length} unit boleh direkod. Pilih unit untuk memaparkan murid.`;return;}
+    renderPajskUnitAssessmentTable_();
+    if(status)status.textContent=`${(d.members||[]).length} murid • ${d.unit?.NAMA_UNIT||''} • Tahun ${year}. Komitmen maksimum 4 pilihan; markah hanya untuk aktiviti utama.`;
+  }).catch(e=>{if(status)status.textContent=e.message||'Gagal memuatkan data.';if($('pajskUnitAspectTableWrap'))$('pajskUnitAspectTableWrap').innerHTML=`<div class="analysis-empty">${pajskEsc_(e.message||'Gagal memuatkan data.')}</div>`;toast(e.message||'Gagal memuatkan penilaian unit.');});
+}
+function pajskCommitmentRuleUi_(member){
+  const attendance=Number(member?.HADIR||0),role=String(member?.JAWATAN||'').trim().toUpperCase().replace(/[_-]+/g,' ').replace(/\s+/g,' '),rank=String(member?.PANGKAT||'').trim().toUpperCase();
+  const ordinary=['','-','AHLI','AHLI BIASA','AHLI BERDAFTAR','PESERTA'].includes(role),rankIsMember=!rank||['AHLI','AHLI BIASA','AHLI BERDAFTAR','AHLI AKTIF'].includes(rank),hasOffice=!ordinary||!rankIsMember;
+  if(attendance>=6||hasOffice)return 'AHLI_AKTIF_AJK';
+  if(attendance<=2)return 'AHLI_BERDAFTAR';
+  return 'UMUM';
+}
+function pajskCommitmentScoreUi_(keys){return Math.min(10,keys.reduce((sum,k)=>sum+(PAJSK_COMMITMENT_OPTIONS_UI_.find(x=>x[0]===k)?.[2]||0),0));}
+function pajskUnitAspectRowScoreUpdate_(row){
+  const main=!!row.querySelector('[data-aspect-main]')?.checked;
+  const selected=[...row.querySelectorAll('[data-aspect-commitment]:checked')].map(x=>x.value);
+  const commitment=main?pajskCommitmentScoreUi_(selected):0;
+  const serviceKey=main?String(row.querySelector('[data-aspect-service]')?.value||'TIADA'):'TIADA';
+  const service=PAJSK_CONTRIBUTION_UI_.find(x=>x[0]===serviceKey)?.[2]||0;
+  const preview=row.querySelector('[data-aspect-score]');if(preview)preview.textContent=`${commitment}/10 + ${service}/10`;
+  const mainLabel=row.querySelector('[data-aspect-main-label]');if(mainLabel)mainLabel.textContent=main?'Aktiviti utama':'Bukan aktiviti utama';
+}
+function renderPajskUnitAssessmentTable_(){
+  const wrap=$('pajskUnitAspectTableWrap');if(!wrap)return;
+  const members=PAJSK_UNIT_ASPECT_DATA_.members||[];
+  if(!PAJSK_UNIT_ASPECT_DATA_.unit){wrap.innerHTML='<div class="analysis-empty">Pilih unit kokurikulum dahulu.</div>';return;}
+  if(!members.length){wrap.innerHTML='<div class="analysis-empty">Tiada ahli aktif bagi unit dan tahun ini.</div>';return;}
+  const rows=members.map((m,i)=>{
+    let existing=[];try{existing=JSON.parse(m.KOMITMEN_JSON||'[]');}catch(e){}
+    const commitmentRule=pajskCommitmentRuleUi_(m),coreKeys=['MENUNJUKKAN_KEPIMPINAN','MENGURUS_AKTIVITI'];
+    if(commitmentRule==='AHLI_AKTIF_AJK'){
+      const extras=existing.filter(k=>!coreKeys.includes(k)).slice(0,2);
+      existing=[...coreKeys,...extras];
+    }else if(commitmentRule==='AHLI_BERDAFTAR')existing=existing.filter(k=>!coreKeys.includes(k)).slice(0,4);
+    const availableOptions=PAJSK_COMMITMENT_OPTIONS_UI_.filter(([key])=>commitmentRule!=='AHLI_BERDAFTAR'||!coreKeys.includes(key));
+    const commitmentOptions=availableOptions.map(([key,label,score])=>`<label class="pajsk-aspect-check"><input type="checkbox" data-aspect-commitment value="${key}" ${existing.includes(key)?'checked':''} ${commitmentRule==='AHLI_AKTIF_AJK'&&coreKeys.includes(key)?'disabled':''}><span>${pajskEsc_(label)}</span><b>${score}</b></label>`).join('');
+    const commitmentHelp=commitmentRule==='AHLI_AKTIF_AJK'?'AJK/Ahli Aktif: dua aspek teras wajib + dua aspek tambahan (10 markah).':commitmentRule==='AHLI_BERDAFTAR'?'Ahli Berdaftar (0–2 kehadiran): pilih aspek selain dua aspek teras; dua markah setiap pilihan.':'Maksimum empat aspek mengikut pemerhatian guru; 3–5 kehadiran perlu disemak mengikut arahan sekolah.';
+    const serviceOptions=PAJSK_CONTRIBUTION_UI_.map(([key,label,score])=>`<option value="${key}" ${String(m.KHIDMAT_SUMBANGAN||'TIADA')===key?'selected':''}>${pajskEsc_(label)} (${score})</option>`).join('');
+    const main=m.AKTIVITI_UTAMA?'checked':'';
+    return `<tr data-pajsk-aspect-row="${pajskEsc_(m.NO_KP)}"><td><b>${pajskEsc_(m.NAMA)}</b><small>${pajskEsc_(m.KELAS||'')} • ${pajskEsc_(m.TINGKATAN||'')}</small></td><td class="pajsk-aspect-attendance"><b>${Number(m.HADIR||0)}/12</b><small>${pajskEsc_(m.JAWATAN||'Ahli')} ${m.PANGKAT?'• '+pajskEsc_(m.PANGKAT):''}</small></td><td><label class="pajsk-aspect-main"><input type="checkbox" data-aspect-main ${main}><span data-aspect-main-label>${m.AKTIVITI_UTAMA?'Aktiviti utama':'Bukan aktiviti utama'}</span></label></td><td><details class="pajsk-aspect-details"><summary>Pilih Komitmen <b>${existing.length}/4</b></summary><div class="pajsk-aspect-checklist">${commitmentOptions}</div><small>${pajskEsc_(commitmentHelp)}</small></details></td><td><select data-aspect-service>${serviceOptions}</select><small>Markah mengikut rubrik sekolah.</small></td><td><b data-aspect-score>—</b></td></tr>`;
+  }).join('');
+  wrap.innerHTML=`<table class="pajsk-unit-aspect-table"><thead><tr><th>Murid</th><th>Kehadiran / Jawatan</th><th>Aktiviti Utama</th><th>Komitmen (10)</th><th>Khidmat Sumbangan (10)</th><th>Pratonton</th></tr></thead><tbody>${rows}</tbody></table>`;
+  wrap.querySelectorAll('[data-pajsk-aspect-row]').forEach(row=>{
+    row.querySelectorAll('[data-aspect-main],[data-aspect-service],[data-aspect-commitment]').forEach(el=>el.addEventListener('change',()=>{
+      const selected=row.querySelectorAll('[data-aspect-commitment]:checked');
+      if(selected.length>4){el.checked=false;toast('Komitmen hanya membenarkan maksimum empat aspek.');}
+      const summary=row.querySelector('.pajsk-aspect-details summary');if(summary)summary.innerHTML=`Pilih Komitmen <b>${row.querySelectorAll('[data-aspect-commitment]:checked').length}/4</b>`;
+      pajskUnitAspectRowScoreUpdate_(row);
+    }));
+    pajskUnitAspectRowScoreUpdate_(row);
+  });
+}
+async function savePajskUnitAssessmentBatch_(){
+  const unitId=String($('pajskUnitAspectUnitFilter')?.value||''),year=String($('pajskUnitAspectYearFilter')?.value||pajskWorkflowYear_());
+  if(!unitId)return toast('Pilih unit kokurikulum terlebih dahulu.');
+  const rows=[...document.querySelectorAll('[data-pajsk-aspect-row]')];if(!rows.length)return toast('Tiada murid untuk disimpan.');
+  const payload=rows.map(row=>{
+    const member=(PAJSK_UNIT_ASPECT_DATA_.members||[]).find(m=>String(m.NO_KP)===String(row.dataset.pajskAspectRow))||{};
+    const selected=[...row.querySelectorAll('[data-aspect-commitment]:checked')].map(x=>x.value),rule=pajskCommitmentRuleUi_(member),main=!!row.querySelector('[data-aspect-main]')?.checked;
+    if(main&&rule==='AHLI_AKTIF_AJK'&&(!selected.includes('MENUNJUKKAN_KEPIMPINAN')||!selected.includes('MENGURUS_AKTIVITI')||selected.length!==4))throw Error('AJK/Ahli Aktif perlu dua aspek teras dan dua aspek tambahan: '+(member.NAMA||member.NO_KP));
+    if(main&&rule==='AHLI_BERDAFTAR'&&selected.some(k=>['MENUNJUKKAN_KEPIMPINAN','MENGURUS_AKTIVITI'].includes(k)))throw Error('Ahli Berdaftar tidak memilih dua aspek teras: '+(member.NAMA||member.NO_KP));
+    return {noKp:row.dataset.pajskAspectRow,aktivitiUtama:main?'YA':'TIDAK',komitmen:selected,khidmatSumbangan:row.querySelector('[data-aspect-service]')?.value||'TIADA'};
+  });
+  const button=$('pajskUnitAspectSaveAllBtn'),status=$('pajskUnitAspectStatus');if(button){button.disabled=true;button.textContent='Menyimpan...';}
+  if(status)status.textContent=`Menyimpan penilaian ${payload.length} murid...`;
+  try{const d=await apiGet('savePajskUnitAspectBatch',{token:state.token,tahun:year,unitId,rows:JSON.stringify(payload)},60000);if(d.ok===false)throw Error(d.error||'Simpanan gagal.');toast(d.message||'Penilaian unit disimpan.');if(status)status.textContent=d.message||'Penilaian unit disimpan.';await loadPajskUnitAssessmentWorkspace_(true);}
+  catch(e){if(status)status.textContent=e.message||'Gagal menyimpan penilaian.';toast(e.message||'Gagal menyimpan penilaian PAJSK.');}
+  finally{if(button){button.disabled=false;button.textContent='Simpan Semua Penilaian';}}
+}
+
 function pajskEsc_(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-const PAJSK_EXTRA_ELEMENT_LABELS_={PERKHIDMATAN:'Perkhidmatan',ANUGERAH_KHAS:'Anugerah Khas',KHIDMAT_MASYARAKAT:'Khidmat Masyarakat',NILAM:'NILAM',TIMSS_PISA:'TIMSS dan PISA',TUGAS_KHAS:'Tugas-tugas Khas'};
+const PAJSK_EXTRA_ELEMENT_LABELS_={PERKHIDMATAN:'Perkhidmatan',ANUGERAH_KHAS:'Anugerah Khas',KHIDMAT_MASYARAKAT:'Khidmat Masyarakat',NILAM:'NILAM',TIMSS_PISA:'TIMSS dan PISA'};
 const PAJSK_KHIDMAT_ITEMS_=[['KEJIRANAN','Kejiranan / Komuniti'],['ALAM_SEKITAR','Alam Sekitar'],['BENCANA','Bencana Alam'],['KHIDMAT_JABATAN','Khidmat Jabatan / Agensi'],['KEBUDAYAAN','Kebudayaan / Kesenian / Integrasi'],['KEROHANIAN','Kerohanian'],['INSANIAH','Insaniah']];
 const PAJSK_EXTRA_OPTIONS_={
   PERKHIDMATAN:[['KETUA_MURID','Ketua Murid',10],['TIMBALAN_KETUA_MURID','Timbalan / Penolong Ketua Murid',8],['PENGURUSAN_UTAMA','Pengawas / Ketua Asrama / Ketua PRS / BADAR / Pengerusi Badan Perkhidmatan Sekolah',7],['PENOLONG_KETUA_ASRAMA','Penolong Ketua Asrama / Pengawas Pusat Sumber / BADAR',6],['AJK_UTAMA','AJK Utama / Bendahari / Setiausaha / Ketua Biro / Ketua Kelas / Ketua Tingkatan',5],['AJK_KECIL','AJK Kecil Biro / Ketua Bilik / Ketua Dorm / Penolong Ketua Kelas',3]],
   ANUGERAH_KHAS:[['ARP_EMAS','Anugerah Remaja Perdana (ARP) — Emas',10],['ARP_PERAK','Anugerah Remaja Perdana (ARP) — Perak',7],['ARP_GANGSA','Anugerah Remaja Perdana (ARP) — Gangsa',5],['MFLS_TIER3','Malaysia Future Leaders School (MFLS) — Tier 3',7],['MFLS_TIER2','Malaysia Future Leaders School (MFLS) — Tier 2',4],['PENGAKAP_RAJA','Anugerah Pengakap Raja',10],['PANDU_PUTERI_RAJA','Anugerah Pandu Puteri Raja',10],['PUTERI_AZ_ZAHRA','Anugerah Puteri Az-Zahra (PPIM)',10],['GRAND_PRIOR','Anugerah Grand Prior (SJAM)',10],['KHAS_KOKO_KEBANGSAAN','Anugerah Khas Kokurikulum dan Sukan — Kebangsaan',10],['KHAS_KOKO_NEGERI','Anugerah Khas Kokurikulum dan Sukan — Negeri',8],['KHAS_KOKO_DAERAH','Anugerah Khas Kokurikulum dan Sukan — Zon / Daerah / Bahagian',6],['KHAS_KOKO_SEKOLAH','Anugerah Khas Kokurikulum dan Sukan — Sekolah',4],['ANTARABANGSA_EMAS','Penyertaan Antarabangsa (bukan anjuran KPM) — Emas',5],['ANTARABANGSA_PERAK','Penyertaan Antarabangsa (bukan anjuran KPM) — Perak',4],['ANTARABANGSA_GANGSA','Penyertaan Antarabangsa (bukan anjuran KPM) — Gangsa',3],['OLAHRAGAWAN_KEBANGSAAN','Olahragawan / Olahragawati Kebangsaan',10],['OLAHRAGAWAN_NEGERI','Olahragawan / Olahragawati Negeri',7],['OLAHRAGAWAN_DAERAH','Olahragawan / Olahragawati Daerah',5],['OLAHRAGAWAN_SEKOLAH','Olahragawan / Olahragawati Peringkat Sekolah',2],['SETARA_KEBANGSAAN','Anugerah / Penghargaan Khas Setara — Kebangsaan',10],['SETARA_NEGERI','Anugerah / Penghargaan Khas Setara — Negeri',7],['SETARA_DAERAH','Anugerah / Penghargaan Khas Setara — Zon / Daerah / Bahagian',5],['SETARA_SEKOLAH','Anugerah / Penghargaan Khas Setara — Peringkat Sekolah',2],['SUKAN_TERTINGGI','Mewakili negara — Olimpik / Komanwel / Asia / Asia Tenggara',10]],
   NILAM:[['SEKOLAH_1','Sekolah — 1 Bintang',3],['SEKOLAH_2','Sekolah — 2 Bintang',4],['SEKOLAH_3','Sekolah — 3 Bintang',5],['SEKOLAH_4','Sekolah — 4 Bintang',6],['SEKOLAH_5','Sekolah — 5 Bintang',7],['DAERAH_1','Daerah / Zon / Bahagian — 1 Bintang',4],['DAERAH_2','Daerah / Zon / Bahagian — 2 Bintang',5],['DAERAH_3','Daerah / Zon / Bahagian — 3 Bintang',6],['DAERAH_4','Daerah / Zon / Bahagian — 4 Bintang',7],['DAERAH_5','Daerah / Zon / Bahagian — 5 Bintang',8],['NEGERI_5','Negeri — 5 Bintang',9],['KEBANGSAAN_5','Kebangsaan — 5 Bintang',10]],
   TIMSS_PISA:[['ANTARABANGSA_CEMERLANG','Penyertaan Antarabangsa — Tahap Cemerlang',10],['ANTARABANGSA','Penyertaan Antarabangsa',8],['KEBANGSAAN','Penyertaan Kebangsaan',6]],
-  TUGAS_KHAS:[['KEBANGSAAN','Peserta / Atlet persembahan padang, perarakan / perbarisan — Kebangsaan / Sukan SEA / Asia / Bulan Sukan Negara',7],['NEGERI','Peserta persembahan padang / perarakan / perbarisan — Peringkat Negeri',6],['SUKARELAWAN','Sukarelawan program sukan / kokurikulum / seni yang diiktiraf',5],['SOKONGAN','Penonton / penyokong / ahli sorak bagi program yang diiktiraf',3]]
 };
 function pajskExtraScore_(element,key){if(!key)return null;if(key==='TIADA')return 0;const row=(PAJSK_EXTRA_OPTIONS_[element]||[]).find(x=>x[0]===key);return row?Number(row[2]):null;}
 function pajskExtraSelectHtml_(element,selected,kp){
@@ -393,8 +485,9 @@ function applyPajskWorkflowPermissions_(){
   const role=String(state.user?.role||'').toUpperCase(),admin=['ADMIN','PENTADBIR'].includes(role),teacher=['GURU','PENYELARAS'].includes(role);
   const school=$('sideAnalysisPajsk'),ekstraNav=$('ekstraNavItem'),entryView=$('analysisExtraEntryView');
   const canAccessExtra=admin||(teacher&&(PAJSK_WORKFLOW_CACHE_.assignedElements.length>0||PAJSK_WORKFLOW_CACHE_.classes.length>0));
+  const canAccessUnitAssessment=admin||teacher;
   if(school)school.hidden=!admin;
-  if(ekstraNav)ekstraNav.hidden=!canAccessExtra;
+  if(ekstraNav)ekstraNav.hidden=!(canAccessExtra||canAccessUnitAssessment);
   if(entryView&&!canAccessExtra)entryView.hidden=true;
   const elementFilterWrap=$('pajskExtraElementFilterWrap');if(elementFilterWrap)elementFilterWrap.hidden=admin||PAJSK_WORKFLOW_CACHE_.classes.length>0;
   const pageSubnav=$('pageSubnav');if(pageSubnav&&CURRENT_PAGE==='ekstra'){pageSubnav.hidden=true;pageSubnav.innerHTML='';}
@@ -423,10 +516,9 @@ function renderPajskExtraEntry_(){
   const tableRows=rows.map(m=>{
     const kp=String(m.NO_KP||''),r=saved[kp]||{},khidmat={...emptyKhidmat};try{Object.assign(khidmat,JSON.parse(r.KHIDMAT_JSON||'{}'));}catch(e){}
     const currentKhidmatScore=Number(r.KHIDMAT_SCORE||0);
-    const khidmatHtml=`<details class="pajsk-khidmat-details"><summary><span>Butiran</span><b data-khidmat-score-label>${currentKhidmatScore}/10</b></summary><div class="pajsk-khidmat-details-panel"><table class="pajsk-khidmat-mini"><thead><tr><th>Aktiviti</th><th>Bil.</th></tr></thead><tbody>${PAJSK_KHIDMAT_ITEMS_.map(([key,label])=>`<tr><td>${pajskEsc_(label)}</td><td><input type="number" min="0" max="5" step="1" inputmode="numeric" value="${Number(khidmat[key]||0)}" data-khidmat-count="${key}" data-kp="${pajskEsc_(kp)}" aria-label="Bilangan ${pajskEsc_(label)}"></td></tr>`).join('')}</tbody></table><small>Skor Khidmat Masyarakat: <b data-khidmat-score-value>${currentKhidmatScore}/10</b></small></div></details>`;
-    const opts=['PERKHIDMATAN','ANUGERAH_KHAS','NILAM','TIMSS_PISA','TUGAS_KHAS'];
-    const selectCells=opts.map(key=>pajskExtraSelectHtml_(key,r[{PERKHIDMATAN:'PERKHIDMATAN_KEY',ANUGERAH_KHAS:'ANUGERAH_KEY',NILAM:'NILAM_KEY',TIMSS_PISA:'TIMSS_KEY',TUGAS_KHAS:'TUGAS_KHAS_KEY'}[key]]||'TIADA',kp));
-    const mark=pajskExtraScore_('TUGAS_KHAS',r.TUGAS_KHAS_KEY||'')??0;
+    const khidmatHtml=`<details class="pajsk-khidmat-details"><summary><span>Butiran</span><b data-khidmat-score-label>${currentKhidmatScore}/10</b></summary><div class="pajsk-khidmat-details-panel"><table class="pajsk-khidmat-mini"><thead><tr><th>Aktiviti</th><th>Bil. (≥3 jam)</th></tr></thead><tbody>${PAJSK_KHIDMAT_ITEMS_.map(([key,label])=>`<tr><td>${pajskEsc_(label)}</td><td><input type="number" min="0" max="5" step="1" inputmode="numeric" value="${Number(khidmat[key]||0)}" data-khidmat-count="${key}" data-kp="${pajskEsc_(kp)}" aria-label="Bilangan ${pajskEsc_(label)}"></td></tr>`).join('')}</tbody></table><small>Skor Khidmat Masyarakat: <b data-khidmat-score-value>${currentKhidmatScore}/10</b></small></div></details>`;
+    const opts=['PERKHIDMATAN','ANUGERAH_KHAS','NILAM','TIMSS_PISA'];
+    const selectCells=opts.map(key=>pajskExtraSelectHtml_(key,r[{PERKHIDMATAN:'PERKHIDMATAN_KEY',ANUGERAH_KHAS:'ANUGERAH_KEY',NILAM:'NILAM_KEY',TIMSS_PISA:'TIMSS_KEY'}[key]]||'TIADA',kp));
     const ek=Number(r.EK_SCORE||0);
     const done=!!r.COMPLETED;
     const isLegacy=(PAJSK_WORKFLOW_CACHE_.legacyGridStudents||[]).includes(kp);
@@ -435,11 +527,11 @@ function renderPajskExtraEntry_(){
     return `<tr data-ekstra-grid-row="${pajskEsc_(kp)}" data-ekstra-legacy="${isLegacy?'true':'false'}">
       <td class="pajsk-grid-student"><b>${pajskEsc_(m.NAMA||'-')}</b>${legacyHtml}</td>
       <td>${selectCells[0]}</td><td>${selectCells[1]}</td><td class="pajsk-grid-khidmat">${khidmatHtml}</td>
-      <td>${selectCells[2]}</td><td>${selectCells[3]}</td><td>${selectCells[4]}</td>
-      <td class="pajsk-grid-markah" data-grid-markah="${pajskEsc_(kp)}">${mark}</td><td class="pajsk-grid-ek" data-grid-ek="${pajskEsc_(kp)}">${ek.toFixed(0)}</td>
+      <td>${selectCells[2]}</td><td>${selectCells[3]}</td>
+      <td class="pajsk-grid-ek" data-grid-ek="${pajskEsc_(kp)}">${ek.toFixed(0)}</td>
     </tr>`;
   }).join('');
-  host.innerHTML=rows.length?`<div class="pajsk-grid-scroll"><table class="analysis-table pajsk-ekstra-grid-table"><thead><tr><th>NAMA</th><th>PERKHIDMATAN</th><th>ANUGERAH</th><th>KHIDMAT MASYARAKAT</th><th>NILAM</th><th>TIMSS</th><th>TAMBAHAN</th><th>MARKAH</th><th>EK</th></tr></thead><tbody>${tableRows}</tbody></table></div><div class="pajsk-grid-footnote">Pilih jawatan / anugerah / tahap sebenar. Markah dijana oleh sistem. Khidmat Masyarakat: setiap aktiviti yang layak 3 jam menyumbang 1 markah; ikut borang rujukan yang dibekalkan, maksimum 5 pilihan aktiviti; skor elemen ini maksimum 10. TAMBAHAN ialah Tugas-tugas Khas; MARKAH ialah skornya. EK mengambil markah tertinggi daripada enam elemen sahaja.</div>`:'<div class="analysis-empty">Tiada murid sepadan dengan penapis.</div>';
+  host.innerHTML=rows.length?`<div class="pajsk-grid-scroll"><table class="analysis-table pajsk-ekstra-grid-table"><thead><tr><th>NAMA</th><th>PERKHIDMATAN</th><th>ANUGERAH</th><th>KHIDMAT MASYARAKAT</th><th>NILAM</th><th>TIMSS / PISA</th><th>EKSTRA (maksimum 10)</th></tr></thead><tbody>${tableRows}</tbody></table></div><div class="pajsk-grid-footnote">Pilih jawatan / anugerah / tahap sebenar. Markah dijana oleh sistem. Khidmat Masyarakat: masukkan bilangan aktiviti yang setiap satunya sekurang-kurangnya 3 jam; 1 aktiviti=2 markah, 2=4, 3=6, 4=8, 5 atau lebih=10; skor elemen ini maksimum 10. EKSTRA mengambil markah tertinggi daripada lima elemen PAJSK sahaja; rekod Tugas-tugas Khas lama dikekalkan dalam helaian sebagai data arkib tetapi tidak dimasukkan dalam pengiraan rubrik ini.</div>`:'<div class="analysis-empty">Tiada murid sepadan dengan penapis.</div>';
   if(confirmButton){
     confirmButton.hidden=!classGrid;
     const renderedRows=[...host.querySelectorAll('[data-ekstra-grid-row]')];
@@ -471,18 +563,17 @@ function collectPajskExtraGridRow_(kp){
   }
   const khidmat={};PAJSK_KHIDMAT_ITEMS_.forEach(([key])=>{const el=row.querySelector(`[data-khidmat-count="${key}"]`),n=Number(el?.value||0);if(!Number.isInteger(n)||n<0||n>5)throw Error('Bilangan setiap aktiviti Khidmat Masyarakat mesti 0 hingga 5.');khidmat[key]=n;});
   const types=Object.values(khidmat).filter(n=>n>0).length;if(types>5)throw Error('Khidmat Masyarakat: maksimum lima jenis aktiviti boleh mempunyai bilangan lebih daripada 0.');
-  const khidmatScore=Math.min(10,Object.values(khidmat).reduce((a,b)=>a+b,0));
-  const scores={PERKHIDMATAN:pajskExtraScore_('PERKHIDMATAN',get('PERKHIDMATAN')),ANUGERAH_KHAS:pajskExtraScore_('ANUGERAH_KHAS',get('ANUGERAH_KHAS')),KHIDMAT_MASYARAKAT:khidmatScore,NILAM:pajskExtraScore_('NILAM',get('NILAM')),TIMSS_PISA:pajskExtraScore_('TIMSS_PISA',get('TIMSS_PISA')),TUGAS_KHAS:pajskExtraScore_('TUGAS_KHAS',get('TUGAS_KHAS'))};
+  const khidmatScore=Math.min(10,Object.values(khidmat).reduce((a,b)=>a+b,0)*2);
+  const scores={PERKHIDMATAN:pajskExtraScore_('PERKHIDMATAN',get('PERKHIDMATAN')),ANUGERAH_KHAS:pajskExtraScore_('ANUGERAH_KHAS',get('ANUGERAH_KHAS')),KHIDMAT_MASYARAKAT:khidmatScore,NILAM:pajskExtraScore_('NILAM',get('NILAM')),TIMSS_PISA:pajskExtraScore_('TIMSS_PISA',get('TIMSS_PISA'))};
   if(Object.values(scores).some(v=>v===null))throw Error('Pilihan markah tidak sah.');
-  return {perkhidmatan:get('PERKHIDMATAN'),anugerah:get('ANUGERAH_KHAS'),khidmat,nilam:get('NILAM'),timss:get('TIMSS_PISA'),tugasKhas:get('TUGAS_KHAS'),scores,ek:Math.max(...Object.values(scores))};
+  return {perkhidmatan:get('PERKHIDMATAN'),anugerah:get('ANUGERAH_KHAS'),khidmat,nilam:get('NILAM'),timss:get('TIMSS_PISA'),scores,ek:Math.max(...Object.values(scores))};
 }
 function updatePajskExtraGridPreview_(kp){
   try{
     const d=collectPajskExtraGridRow_(kp),row=document.querySelector(`[data-ekstra-grid-row="${CSS.escape(kp)}"]`);
     if(!row)return;
-    const mark=row.querySelector(`[data-grid-markah="${CSS.escape(kp)}"]`),ek=row.querySelector(`[data-grid-ek="${CSS.escape(kp)}"]`);
+    const ek=row.querySelector(`[data-grid-ek="${CSS.escape(kp)}"]`);
     const khLabel=row.querySelector('[data-khidmat-score-label]'),khValue=row.querySelector('[data-khidmat-score-value]');
-    if(mark)mark.textContent=String(d.scores.TUGAS_KHAS);
     if(ek)ek.textContent=String(d.ek);
     if(khLabel)khLabel.textContent=`${d.scores.KHIDMAT_MASYARAKAT}/10`;
     if(khValue)khValue.textContent=`${d.scores.KHIDMAT_MASYARAKAT}/10`;
@@ -2025,6 +2116,12 @@ function init(){
   bind('analysisExportBtn','click',exportAnalysisUnitsCsv_);
   bind('analysisPajskRefreshBtn','click',()=>loadPajskClassReport_(true));
   bind('pajskExtraRefreshBtn','click',()=>loadPajskTeacherWorkspace_(true,'extra'));
+  bind('pajskExtraTabBtn','click',()=>switchEkstraView_('extra',true));
+  bind('pajskUnitAspectTabBtn','click',()=>switchEkstraView_('unit-aspects',true));
+  bind('pajskUnitAspectRefreshBtn','click',()=>loadPajskUnitAssessmentWorkspace_(true));
+  bind('pajskUnitAspectUnitFilter','change',()=>loadPajskUnitAssessmentWorkspace_(true));
+  bind('pajskUnitAspectYearFilter','change',()=>loadPajskUnitAssessmentWorkspace_(true));
+  bind('pajskUnitAspectSaveAllBtn','click',savePajskUnitAssessmentBatch_);
   bind('pajskExtraSaveAllBtn','click',savePajskExtraGridAll_);
   bind('pajskExtraConfirmAllBtn','click',confirmPajskExtraGridAll_);
   bind('pajskSchoolRefreshBtn','click',()=>loadPajskSchoolAnalysis_(true));
@@ -2069,6 +2166,9 @@ function init(){
   bind('unitAjkSearch','input',renderUnitAjkCandidates_);
   $('unitAjkCandidateTableWrap')?.addEventListener('change',e=>{const radio=e.target.closest('[data-ajk-select]');if(radio){UNIT_AJK_SELECTED_KP=String(radio.value||'');updateUnitAjkSaveButton_();}});
   bind('unitAjkPositionSelect','change',updateUnitAjkSaveButton_);
+  bind('unitAjkRankInput','input',updateUnitAjkSaveButton_);
+  bind('unitAjkMonthsHeld','change',updateUnitAjkSaveButton_);
+  bind('unitAjkAgmApproved','change',updateUnitAjkSaveButton_);
   bind('unitAjkSaveBtn','click',saveSelectedUnitAjk_);
   bind('unitMemberForm','submit',saveUnitMemberFromModal_);
   bind('unitMemberStudentSearch','input',filterUnitMemberOptions_);
@@ -3582,7 +3682,7 @@ function renderUnitOverviewAjk_(rows){
   const w=$('unitOverviewAjk');if(!w)return;
   const sorted=sortUnitAjkRows_(rows);
   if(!sorted.length){w.innerHTML='<div class="empty">Belum ada rekod AJK untuk unit ini bagi tahun tersebut.</div>';return;}
-  w.innerHTML=`<table class="unit-overview-table"><thead><tr><th>#</th><th>Murid</th><th>Jawatan</th><th>Tingkatan</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${sorted.map((r,i)=>`<tr><td>${i+1}</td><td><b>${unitOverviewEsc_(r.NAMA)}</b></td><td><span class="uo-role">${unitOverviewEsc_(r.JAWATAN)}</span></td><td>${unitOverviewEsc_(r.TINGKATAN)}</td><td>${unitOverviewEsc_(r.KELAS)}</td><td>${unitOverviewEsc_(r.STATUS)}</td></tr>`).join('')}</tbody></table>`;
+  w.innerHTML=`<table class="unit-overview-table"><thead><tr><th>#</th><th>Murid</th><th>Jawatan / Pangkat</th><th>Tempoh</th><th>AGM</th><th>Tingkatan</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${sorted.map((r,i)=>`<tr><td>${i+1}</td><td><b>${unitOverviewEsc_(r.NAMA)}</b></td><td><span class="uo-role">${unitOverviewEsc_(r.JAWATAN)}</span></td><td>${unitOverviewEsc_(r.TINGKATAN)}</td><td>${unitOverviewEsc_(r.KELAS)}</td><td>${unitOverviewEsc_(r.STATUS)}</td></tr>`).join('')}</tbody></table>`;
 }
 
 /* =========================================================
@@ -3628,7 +3728,7 @@ function renderUnitAjkCurrent_(){
   const wrap=$('unitAjkCurrentTableWrap');if(!wrap)return;
   const rows=sortUnitAjkRows_(UNIT_AJK_DATA?.ajk||[]);
   if(!rows.length){wrap.innerHTML='<div class="empty">Belum ada AJK bagi unit dan tahun ini.</div>';return;}
-  wrap.innerHTML=`<table class="unit-overview-table unit-ajk-table"><thead><tr><th>#</th><th>Nama</th><th>Jawatan</th><th>Tingkatan</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>${ajkEsc_(r.NAMA)}</b></td><td><span class="uo-role ${unitAjkRoleRank_(r.JAWATAN)===1?'uo-role-chair':''}">${ajkEsc_(r.JAWATAN)}</span></td><td>${ajkEsc_(r.TINGKATAN)}</td><td>${ajkEsc_(r.KELAS)}</td><td>${ajkEsc_(r.STATUS||'AKTIF')}</td></tr>`).join('')}</tbody></table>`;
+  wrap.innerHTML=`<table class="unit-overview-table unit-ajk-table"><thead><tr><th>#</th><th>Nama</th><th>Jawatan / Pangkat</th><th>Tempoh</th><th>AGM</th><th>Tingkatan</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>${ajkEsc_(r.NAMA)}</b></td><td><span class="uo-role ${unitAjkRoleRank_(r.JAWATAN)===1?'uo-role-chair':''}">${ajkEsc_(r.PANGKAT||r.JAWATAN)}</span></td><td>${Number(r.BULAN_BERKHIDMAT||0)} bulan</td><td>${ajkEsc_(r.DISAHKAN_AGM||'TIDAK')}</td><td>${ajkEsc_(r.TINGKATAN)}</td><td>${ajkEsc_(r.KELAS)}</td><td>${ajkEsc_(r.STATUS||'AKTIF')}</td></tr>`).join('')}</tbody></table>`;
 }
 function renderUnitAjkCandidates_(){
   const wrap=$('unitAjkCandidateTableWrap');if(!wrap)return;
@@ -3663,15 +3763,15 @@ async function saveSelectedUnitAjk_(){
   if(button){button.disabled=true;button.textContent='Menyimpan...';}
   if($('unitAjkStatus'))$('unitAjkStatus').textContent=`Menyimpan pelantikan ${candidate.NAMA} sebagai ${jawatan}. Elakkan menekan butang berulang kali.`;
   try{
-    const d=await apiGet('saveUnitAjk',{token:state.token,unitId:UNIT_OVERVIEW_ID,tahun:UNIT_OVERVIEW_YEAR,noKp,jawatan},60000);
+    const d=await apiGet('saveUnitAjk',{token:state.token,unitId:UNIT_OVERVIEW_ID,tahun:UNIT_OVERVIEW_YEAR,noKp,jawatan,pangkat:String($('unitAjkRankInput')?.value||'').trim(),bulanBerkhidmat:Number($('unitAjkMonthsHeld')?.value||0),disahkanAgm:$('unitAjkAgmApproved')?.checked?'YA':'TIDAK'},60000);
     // Update the local table from the server response instead of rereading all tabs.
-    const appointed={...candidate,AJK_ID:d.ajkId||'',JAWATAN:jawatan,STATUS:'AKTIF'};
+    const appointed={...candidate,AJK_ID:d.ajkId||'',JAWATAN:jawatan,PANGKAT:String($('unitAjkRankInput')?.value||''),BULAN_BERKHIDMAT:Number($('unitAjkMonthsHeld')?.value||0),DISAHKAN_AGM:$('unitAjkAgmApproved')?.checked?'YA':'TIDAK',STATUS:'AKTIF'};
     if(!UNIT_AJK_DATA)UNIT_AJK_DATA={candidates:[],ajk:[]};
     UNIT_AJK_DATA.ajk=[...(UNIT_AJK_DATA.ajk||[]),appointed];
     UNIT_AJK_DATA.candidates=(UNIT_AJK_DATA.candidates||[]).filter(x=>String(x.NO_KP)!==noKp);
     if(UNIT_OVERVIEW_DATA){UNIT_OVERVIEW_DATA.ajk=[...(UNIT_OVERVIEW_DATA.ajk||[]),appointed];UNIT_OVERVIEW_DATA.stats=UNIT_OVERVIEW_DATA.stats||{};UNIT_OVERVIEW_DATA.stats.jumlahAJK=(UNIT_OVERVIEW_DATA.stats.jumlahAJK||0)+1;}
     UNIT_AJK_SELECTED_KP='';
-    if($('unitAjkPositionSelect'))$('unitAjkPositionSelect').value='';
+    if($('unitAjkPositionSelect'))$('unitAjkPositionSelect').value='';if($('unitAjkRankInput'))$('unitAjkRankInput').value='';if($('unitAjkMonthsHeld'))$('unitAjkMonthsHeld').value='0';if($('unitAjkAgmApproved'))$('unitAjkAgmApproved').checked=false;
     renderUnitAjkCurrent_();renderUnitAjkCandidates_();
     const st=UNIT_OVERVIEW_DATA?.stats||{};
     if($('unitOverviewStats'))$('unitOverviewStats').innerHTML=`<div><b>${st.jumlahAhli||0}</b><small>Jumlah Ahli</small></div><div><b>${st.jumlahAJK||UNIT_AJK_DATA.ajk.length}</b><small>AJK</small></div><div><b>${st.jumlahMingguDirekodkan||0}</b><small>Minggu Direkodkan</small></div><div><b>${(UNIT_OVERVIEW_DATA?.minggu||[]).filter(x=>x.ADA_REKOD).length?Math.round((UNIT_OVERVIEW_DATA.minggu||[]).filter(x=>x.ADA_REKOD).reduce((a,x)=>a+x.PERATUS,0)/(UNIT_OVERVIEW_DATA.minggu||[]).filter(x=>x.ADA_REKOD).length):0}%</b><small>Purata Kehadiran</small></div>`;
@@ -3784,7 +3884,7 @@ async function loadAttendanceForm(){
   try{
     const d=await apiGet('getAttendanceForm',{token:state.token,unitId:unit,tahun,tarikh});
     if($('attMinggu')&&!minggu&&d.minggu)$('attMinggu').value=d.minggu;
-    if($('attNoPerjumpaan'))$('attNoPerjumpaan').value=d.noPerjumpaan||'';
+    if($('attNoPerjumpaan'))$('attNoPerjumpaan').value=d.noPerjumpaan||'';if($('attTempohMinit'))$('attTempohMinit').value=d.tempohMinit||d.tempohMinitDefault||180;
     ATT_ROWS=(d.members||[]).map(x=>({...x}));renderAttendanceTable_();
     $('attendanceEntryPanel').hidden=false;$('attSaveBtn').disabled=!ATT_ROWS.length;$('attFormResult').textContent=`${ATT_ROWS.length} ahli aktif • Perjumpaan ${d.noPerjumpaan||'-'}`;attSetKpi_();
   }catch(e){toast(e.message);$('attendanceEntryPanel').hidden=true}finally{b.disabled=false;b.textContent='Muat Senarai Ahli'}
@@ -3802,7 +3902,7 @@ async function saveAttendance(){
   if(!ATT_ROWS.length)return toast('Tiada senarai murid untuk disimpan.');
   const minggu=$('attMinggu')?.value;if(!minggu)return toast('Masukkan Minggu Persekolahan.');
   const b=$('attSaveBtn');b.disabled=true;b.textContent='Menyimpan...';
-  try{const p={token:state.token,unitId:$('attUnit').value,tahun:$('attTahun').value,tarikh:$('attTarikh').value,minggu,noPerjumpaan:$('attNoPerjumpaan').value,members:JSON.stringify(ATT_ROWS.map(r=>({NO_KP:r.NO_KP,STATUS:r.STATUS||'HADIR',CATATAN:r.CATATAN||''})))};const d=await apiGet('saveAttendance',p);$('attFormResult').textContent=d.message||'Berjaya.';toast(d.message||'Kehadiran berjaya disimpan.');await loadAttendanceRecords();}catch(e){toast(e.message)}finally{b.disabled=false;b.textContent='Simpan Kehadiran'}
+  try{const p={token:state.token,unitId:$('attUnit').value,tahun:$('attTahun').value,tarikh:$('attTarikh').value,minggu,noPerjumpaan:$('attNoPerjumpaan').value,tempohMinit:Number($('attTempohMinit')?.value||180),members:JSON.stringify(ATT_ROWS.map(r=>({NO_KP:r.NO_KP,STATUS:r.STATUS||'HADIR',CATATAN:r.CATATAN||''})))};const d=await apiGet('saveAttendance',p);$('attFormResult').textContent=d.message||'Berjaya.';toast(d.message||'Kehadiran berjaya disimpan.');await loadAttendanceRecords();}catch(e){toast(e.message)}finally{b.disabled=false;b.textContent='Simpan Kehadiran'}
 }
 async function loadAttendanceRecords(){
   if(!$('attendanceRecordsWrap'))return;
@@ -4782,7 +4882,7 @@ async function openPencapaianActivityRecord_(activityId,groupToOpen=null){
     $('pencapaianRecordYear').value=String(PENCAPAIAN_CURRENT_ACTIVITY_?.TARIKH||'').slice(0,4)||String(new Date().getFullYear());
     $('pencapaianRecordDate').value=pencapaianDateInput_(PENCAPAIAN_CURRENT_ACTIVITY_?.TARIKH)||pencapaianDateInput_(new Date());
     $('pencapaianRecordLevel').value=String(PENCAPAIAN_CURRENT_ACTIVITY_?.PERINGKAT||'').toUpperCase();
-    $('pencapaianRecordName').value='';PENCAPAIAN_STUDENT_ENGAGEMENT_={};if($('pencapaianBulkEngagementType'))$('pencapaianBulkEngagementType').value='';pencapaianUpdateBulkRoleOptions_();$('pencapaianRecordPosition').value='';$('pencapaianRecordCategory').value='';$('pencapaianRecordNotes').value='';$('pencapaianRecordEvidence').value='';
+    $('pencapaianRecordName').value='';if($('pencapaianRecordEventType'))$('pencapaianRecordEventType').value='BERPASUKAN';PENCAPAIAN_STUDENT_ENGAGEMENT_={};if($('pencapaianBulkEngagementType'))$('pencapaianBulkEngagementType').value='';pencapaianUpdateBulkRoleOptions_();$('pencapaianRecordPosition').value='';$('pencapaianRecordCategory').value='';$('pencapaianRecordNotes').value='';$('pencapaianRecordEvidence').value='';
     $('pencapaianRecordGroupId').value='';$('pencapaianRecordLegacyKey').value='';
     $('pencapaianRecordParticipantSearch').value='';
     const classes=[...new Set(PENCAPAIAN_RECORD_PARTICIPANTS_.map(x=>String(x.KELAS||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ms'));
@@ -4835,7 +4935,7 @@ function openPencapaianRecordGroup_(groupKey){
   PENCAPAIAN_CURRENT_GROUP_ID_=String(g.groupId||'');PENCAPAIAN_CURRENT_LEGACY_KEY_=g.groupId?null:g.legacyKey;
   $('pencapaianRecordGroupId').value=PENCAPAIAN_CURRENT_GROUP_ID_;
   $('pencapaianRecordLegacyKey').value=PENCAPAIAN_CURRENT_LEGACY_KEY_?JSON.stringify(PENCAPAIAN_CURRENT_LEGACY_KEY_):'';
-  $('pencapaianRecordName').value=String(r.NAMA_PENCAPAIAN||'');
+  $('pencapaianRecordName').value=String(r.NAMA_PENCAPAIAN||'');if($('pencapaianRecordEventType'))$('pencapaianRecordEventType').value=String(r.JENIS_ACARA||'BERPASUKAN').toUpperCase();
   PENCAPAIAN_STUDENT_ENGAGEMENT_={};
   if($('pencapaianBulkEngagementType'))$('pencapaianBulkEngagementType').value='';pencapaianUpdateBulkRoleOptions_();
   g.records.forEach(x=>{const kp=String(x.NO_KP||'');if(!kp)return;const type=pencapaianNormalizeEngagementType_(x.JENIS_PENGLIBATAN||x.TAJUK_PENGLIBATAN||'');if(['I','II','III'].includes(type)){const roles=PENCAPAIAN_ENGAGEMENT_ROLES_[type]||[];const savedRole=String(x.PERANAN_PENGLIBATAN||'').trim();PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]={type,role:roles.some(y=>y.value===savedRole)?savedRole:pencapaianDefaultEngagementRole_(type)};}});
@@ -5017,7 +5117,7 @@ async function savePencapaianActivityRecord_(event,returnAfterSave){
   const selected=[...PENCAPAIAN_SELECTED_KP_].map(kp=>({noKP:kp,jenisPenglibatan:pencapaianNormalizeEngagementType_(PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]?.type||''),perananPenglibatan:String(PENCAPAIAN_STUDENT_ENGAGEMENT_[kp]?.role||'')}));
   const p={
     token:state.token,aktivitiId:activityId,acaraPencapaian:$('pencapaianRecordName').value.trim(),
-    kategoriPenyertaan:$('pencapaianRecordCategory').value,peringkat:$('pencapaianRecordLevel').value,
+    kategoriPenyertaan:$('pencapaianRecordCategory').value,jenisAcara:$('pencapaianRecordEventType')?.value||'BERPASUKAN',peringkat:$('pencapaianRecordLevel').value,
     kedudukan:$('pencapaianRecordPosition').value,tarikh:$('pencapaianRecordDate').value,tahun:$('pencapaianRecordYear').value,
     muridDipilih:JSON.stringify(selected),kumpulanId:$('pencapaianRecordGroupId').value||'',legacyMatchKey:$('pencapaianRecordLegacyKey').value||'',
     catatan:$('pencapaianRecordNotes').value.trim(),pautanBukti:$('pencapaianRecordEvidence').value.trim()
